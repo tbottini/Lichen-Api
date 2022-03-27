@@ -1,0 +1,20 @@
+<mjml>
+  <mj-head>
+    <mj-font
+      name="FontAwesome"
+      href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-image
+          width="300px"
+          src="https://dev.lychen.fr/logo.png"
+        ></mj-image>
+      </mj-column>
+    </mj-section>
+
+    $email-body
+  </mj-body>
+</mjml>

@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "Event" ADD COLUMN     "userId" INTEGER,
+ALTER COLUMN "organisatorId" DROP NOT NULL;
+
+-- AddForeignKey
+ALTER TABLE "Event" ADD FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;

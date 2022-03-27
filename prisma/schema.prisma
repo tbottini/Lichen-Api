@@ -1,0 +1,147 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  password    String
+  firstname   String?
+  lastname    String?
+  pseudo      String?
+  src         String?
+  description String?
+  bio         String?
+  websiteUrl  String?
+  creation    DateTime @default(now())
+  role        Role     @default(USER)
+
+  //one to many
+  projects    Project[]
+  events      Event[]        @relation("EventsCreate")
+  // many to many -- explicit
+  likes       ArtworkLikes[]
+  eventFollow EventFollow[]
+  following   UserFollow[]   @relation("UserFollowing")
+  followed    UserFollow[]   @relation("UserFollowed")
+  geoReferenced Boolean?
+
+  gallery Gallery?
+  medium Medium?
+
+}
+
+model Gallery {
+  id        Int     @id @default(autoincrement())
+  longitude Float
+  latitude  Float  
+  open      Boolean @default(true)
+  user      User    @relation(fields: [userId], references: [id])
+  userId    Int
+}
+
+model Project {
+  id          Int       @id @default(autoincrement())
+  title       String?   @db.VarChar(255)
+  description String?   @db.Text
+  index       Int       @default(0)
+  create      DateTime  @default(now())
+  src         String?   @db.VarChar(255)
+  author      User      @relation(fields: [authorId], references: [id])
+  authorId    Int
+  artworks    Artwork[] @relation("ArtworksOfProject")
+  insertion   DateTime  @default(now())
+  medium      Medium?
+  yearStart   Int? 
+  yearEnd     Int?
+}
+
+enum Medium {
+  LIVING_ARTS
+  DRAWING
+  EDITING
+  STAMP
+  INSTALLATION
+  PAINTING
+  PHOTOGRAPH
+  SCULPTURE
+  STREET_ART
+  MIXED_TECHNIQUE
+  AUDIOVISUAL
+}
+
+model Artwork {
+  id          Int            @id @default(autoincrement())
+  title       String?        @db.VarChar(255)
+  description String?        @db.Text
+  src         String         @db.VarChar(255)
+  start       DateTime       @default(now())
+  project     Project        @relation("ArtworksOfProject", fields: [projectId], references: [id])
+  index       Int            @default(autoincrement())
+  projectId   Int
+  medium    Medium?
+  insertion   DateTime       @default(now())
+  width       Int?
+  length      Int? 
+  height      Int?
+  //many-to-many explicit
+  likeBy      ArtworkLikes[]
+}
+
+model Event {
+  id            Int           @id @default(autoincrement())
+  name          String        @db.VarChar(255)
+  description   String?       @db.Text
+  src           String?       @db.VarChar(255)
+  dateStart     DateTime      @default(now())
+  dateEnd       DateTime?
+  index         Int?
+  //many-to-many explicit
+  followBy      EventFollow[]
+  organisator   User          @relation("EventsCreate", fields: [organisatorId], references: [id])
+  organisatorId Int
+  insertion     DateTime      @default(now())
+  latitude      Float? 
+  longitude     Float?
+  medium        Medium?
+}
+
+model ArtworkLikes {
+  id        Int      @id @default(autoincrement())
+  creation  DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    Int?
+  artwork   Artwork? @relation(fields: [artworkId], references: [id])
+  artworkId Int?
+}
+
+model UserFollow {
+  id              Int      @id @default(autoincrement())
+  creation        DateTime @default(now())
+  userFollowing   User?    @relation("UserFollowing", fields: [userFollowingId], references: [id])
+  userFollowingId Int?
+  userFollowed    User?    @relation("UserFollowed", fields: [userFollowedId], references: [id])
+  userFollowedId  Int?
+}
+
+model EventFollow {
+  id       Int      @id @default(autoincrement())
+  creation DateTime @default(now())
+  user     User?    @relation(fields: [userId], references: [id])
+  userId   Int?
+  event    Event?   @relation(fields: [eventId], references: [id])
+  eventId  Int?
+}
