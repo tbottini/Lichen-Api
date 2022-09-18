@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ path: getEnvFile() });
 const cors = require("cors");
 const users = require("./route/users");
 const logger = require("./modules/logger");
@@ -14,8 +14,8 @@ const projects = require("./route/projects"),
 	events = require("./route/events"),
 	artworks = require("./route/artworks"),
 	news = require("./route/news");
-const expressSwagger = require('express-swagger-generator')(app);
-expressSwagger(require("./swagger.options.js"))
+const expressSwagger = require("express-swagger-generator")(app);
+expressSwagger(require("./swagger.options.js"));
 
 logger.info("NODE_ENV", process.env.NODE_ENV);
 
@@ -24,16 +24,14 @@ if (process.env.DATABASE_URL == null) {
 	process.exit(1);
 }
 
-if (process.env.NODE_ENV != "production")
-	app.use(cors())
+if (process.env.NODE_ENV != "production") app.use(cors());
 
-app
-	.use(middlewareLogger)
+app.use(middlewareLogger)
 	.use(express.json())
 	.use("/_ipx", createIPXMiddleware(ipx))
 	.use(bodyParser.urlencoded({ extended: false }))
 	.use(bodyParser.json())
-	.use(express.static("public"))
+	.use(express.static("public"));
 
 // define a route handler for the default home page
 app.get("/", (req, res) => {
@@ -56,6 +54,21 @@ if (process.env.NODE_ENV !== "test") {
 		/api-docs for documentation
 		`);
 	});
+}
+
+function getEnvFile(): string {
+	switch (process.env.NODE_ENV) {
+		case "production":
+			return ".env";
+		case "test":
+			return ".env.test";
+		case "dev":
+			return ".env.dev";
+		default:
+			throw new Error(
+				"env variable NODE_ENV isn't not valid value : production / dev / test"
+			);
+	}
 }
 
 module.exports = app;
