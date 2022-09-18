@@ -8,9 +8,6 @@ COPY package*.json ./
 COPY prisma ./prisma/
 
 RUN yarn
-
-RUN npx prisma -v
-
 RUN yarn generate
 
 COPY . .
