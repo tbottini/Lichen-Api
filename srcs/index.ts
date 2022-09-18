@@ -5,7 +5,7 @@ const logger = require("./modules/logger");
 const bodyParser = require("body-parser");
 const express = require("express");
 const app = express();
-const port = 8080; // default port to listen
+const PORT = 8080; // default port to listen
 const { createIPX, createIPXMiddleware } = require("ipx");
 const ipx = createIPX();
 const middlewareLogger = require("./modules/middleware-logger");
@@ -16,8 +16,6 @@ const projects = require("./route/projects"),
 	news = require("./route/news");
 const expressSwagger = require("express-swagger-generator")(app);
 expressSwagger(require("./swagger.options.js"));
-
-logger.info("NODE_ENV", process.env.NODE_ENV);
 
 if (process.env.DATABASE_URL == null) {
 	logger.error("env DATABASE_URL isnt defined");
@@ -49,8 +47,8 @@ logger.info("NODE_ENV", process.env.NODE_ENV);
 
 if (process.env.NODE_ENV !== "test") {
 	// start the Express server
-	app.listen(port, () => {
-		logger.info(`server started at http://localhost:${port}
+	app.listen(PORT, () => {
+		logger.info(`server started at http://localhost:${PORT}
 		/api-docs for documentation
 		`);
 	});
