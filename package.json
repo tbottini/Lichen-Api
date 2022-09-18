@@ -1,11 +1,11 @@
 {
 	"scripts": {
-		"start:prod": "sudo DATABASE_URL=postgresql://postgres:psql@localhost:5432/lichen_2?schema=public pm2 start yarn ts-node -- --transpile-only srcs/index.ts",
+		"start:prod": "DATABASE_URL=postgresql://postgres:psql@localhost:5432/lichen_2?schema=public pm2 start yarn ts-node -- --transpile-only srcs/index.ts",
 		"start:dev": "NODE_ENV=dev DATABASE_URL=postgresql://postgres:psql@localhost:5432/lichen_2?schema=public ts-node ./srcs/index.ts",
-		"migrate:update": "sudo DATABASE_URL=postgresql://postgres:psql@localhost:5432/lichen_2?schema=public yarn prisma migrate deploy && yarn prisma generate && sudo yarn add --dev prisma@latest && sudo yarn add @prisma/client@latest",
-		"logs": "sudo pm2 logs",
-		"restart": "sudo pm2 restart 0",
-		"stop": "sudo pm2 stop 0",
+		"migrate:update": "DATABASE_URL=postgresql://postgres:psql@localhost:5432/lichen_2?schema=public yarn prisma migrate deploy && yarn prisma generate",
+		"logs": " pm2 logs",
+		"restart": " pm2 restart 0",
+		"stop": " pm2 stop 0",
 		"studio": "yarn prisma studio",
 		"format": "yarn prettier --write .",
 		"reset:test": "DATABASE_URL=postgresql://postgres:psql@localhost:5432/lichen_test?schema=public yarn prisma migrate reset --force",
