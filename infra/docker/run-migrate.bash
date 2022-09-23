@@ -1,0 +1,1 @@
+docker compose run api yarn migrate:update
