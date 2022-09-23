@@ -1,3 +1,5 @@
+docker build . --tag lichen_api
+
 docker run \
     --name postgresql \
     -e POSTGRES_USER=postgres \
