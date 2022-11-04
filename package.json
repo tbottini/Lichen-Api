@@ -2,6 +2,7 @@
 	"scripts": {
 		"start:prod": "DATABASE_URL=postgresql://postgres:psql@postgres:5432/lichen_2?schema=public pm2 start yarn ts-node -- --transpile-only srcs/index.ts",
 		"start:dev": "NODE_ENV=dev DATABASE_URL=postgresql://postgres:psql@postgres:5432/lichen_2?schema=public ts-node ./srcs/index.ts",
+		"start:local": "NODE_ENV=dev DATABASE_URL=postgresql://postgres:psql@localhost:5432/lichen_2?schema=public ts-node ./srcs/index.ts",
 		"generate": "DATABASE_URL=postgresql://postgres:psql@postgres:5432/lichen_2?schema=public yarn prisma generate",
 		"migrate:update": "DATABASE_URL=postgresql://postgres:psql@postgres:5432/lichen_2?schema=public yarn prisma migrate deploy && yarn prisma generate",
 		"logs": " pm2 logs",
@@ -23,6 +24,7 @@
 		"dotenv": "^10.0.0",
 		"express": "^4.17.1",
 		"express-jwt": "^6.0.0",
+		"greenlock-express": "^4.0.3",
 		"ipx": "^0.9.4",
 		"jsonwebtoken": "^8.5.1",
 		"lodash": "^4.17.21",
