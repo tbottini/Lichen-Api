@@ -1,4 +1,5 @@
 require("dotenv").config({ path: getEnvFile() });
+const pkg = require("../package.json");
 const cors = require("cors");
 const users = require("./route/users");
 const logger = require("./modules/logger");
@@ -45,7 +46,7 @@ app.use("/users/", users.router)
 
 logger.info("NODE_ENV", process.env.NODE_ENV);
 
-if (process.env.NODE_ENV !== "test") {
+if (process.env.NODE_ENV !== "test" && false) {
 	// start the Express server
 	app.listen(PORT, () => {
 		logger.info(`server started at http://localhost:${PORT}
@@ -53,6 +54,18 @@ if (process.env.NODE_ENV !== "test") {
 		`);
 	});
 }
+
+require("greenlock-express")
+	.init({
+		packageRoot: __dirname + "/../",
+		configDir: "./greenlock.d",
+		maintainerEmail: "thomasbottini@protonmail.com",
+		cluster: false,
+		packageAgent: pkg.name + "/" + pkg.version
+	})
+	.serve(function (req, res) {
+		app(req, res);
+	});
 
 function getEnvFile(): string {
 	switch (process.env.NODE_ENV) {
