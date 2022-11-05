@@ -1,4 +1,4 @@
-import { applyMigration, getDatabaseEnv, sh } from './migrate'
+import { applyMigration, getDatabaseEnv, sh } from './shell-helpers'
 
 const config = require('config')
 
