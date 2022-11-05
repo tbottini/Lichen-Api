@@ -3,23 +3,21 @@ const config = require('config')
 
 console.log(process.env.NODE_ENV, config)
 
-const CMD_RUN = 'npm run'
-const CMD_LAUNCH = 'npm'
 const CMD_EXEC = 'npx'
 
-function npx(command) {
+export function npx(command) {
   return CMD_EXEC + ' ' + command
 }
 
-function installDevDep(dep) {
+export function installDevDep(dep) {
   return `npm install --save-dev ${dep}`
 }
 
-function sudo(cmd) {
+export function sudo(cmd) {
   return 'sudo ' + cmd
 }
 
-function sh(cmd) {
+export function sh(cmd) {
   console.log(cmd)
   return execShPromise(cmd)
 }
