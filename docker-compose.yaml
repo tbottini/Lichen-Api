@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.2'
 services:
   api:
     container_name: api
@@ -6,13 +6,12 @@ services:
     image: 938875074697.dkr.ecr.eu-west-3.amazonaws.com/lichen
     ports:
       - 8080:8080
+      - 80:80
+      - 443:443
     depends_on:
       - db
     volumes:
       - ./public:/usr/lichen/public
-    labels:
-      - "traefik.http.routers.api.rule=Host(`whoami.docker.localhost`)"
-
 
   db:
     container_name: postgres
@@ -21,22 +20,7 @@ services:
       - '5432:5432'
     volumes:
       - ./database-data:/var/lib/postgresql/data
+      - "./letsencrypt:/letsencrypt"
     environment:
       - POSTGRES_PASSWORD=psql
       - POSTGRES_USER=postgres
-
-  reverse-proxy:
-    image: traefik:v2.8
-    command:
-      - "--api.insecure=true" 
-      - "--providers.docker"
-      - "--log.LEVEL=DEBUG"
-      - "--entryPoints.web.address=:80"
-      - "--entryPoints.websecure.address=:443"
-    ports:
-      - "80:80"
-      - "443:443"
-      - "8081:8080"
-    volumes:
-      # So that Traefik can listen to the Docker events
-      - /var/run/docker.sock:/var/run/docker.sock
