@@ -1,0 +1,5 @@
+{
+  "database": {
+    "url": "postgresql://postgres:psql@postgres:5432/lichen_test?schema=public"
+  }
+}

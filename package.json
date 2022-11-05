@@ -5,6 +5,7 @@
     "start:local": "NODE_ENV=dev ts-node ./srcs/index.ts",
     "generate": "DATABASE_URL=postgresql://postgres:psql@postgres:5432/lichen_2?schema=public npx prisma generate",
     "migrate:update": "ts-node scripts/migrate",
+    "migrate:ci": "NODE_ENV=ci ts-node scripts/migrate",
     "migrate:test": "NODE_ENV=test ts-node scripts/migrate",
     "format": "yarn prettier --write .",
     "reset:test": "DATABASE_URL=postgresql://postgres:psql@postgres:5432/lichen_test?schema=public yarn prisma migrate reset --force",
