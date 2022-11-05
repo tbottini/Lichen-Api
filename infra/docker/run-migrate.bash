@@ -1,1 +1,1 @@
-docker compose run api yarn migrate:update
+NODE_ENV=prod docker compose run api npm run migrate:update

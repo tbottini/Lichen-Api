@@ -1,5 +1,6 @@
 # docker build . --tag lichen_api
 
+POSTGRESQL_LOCAL_PATH='/var/lib/postgresql/data'j
 docker run --name postgresql \
     -e POSTGRES_USER=postgres \
     -e POSTGRES_PASSWORD=psql \
