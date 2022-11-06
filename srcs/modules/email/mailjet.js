@@ -1,67 +1,60 @@
-const mailjet = require("node-mailjet");
-const logger = require("../logger");
+const mailjet = require('node-mailjet')
+const logger = require('../logger')
 
 function createMailjetService() {
-	return new MailjetSender(
-		process.env.MAILJET_APIKEY_PUBLIC,
-		process.env.MAILJET_APIKEY_PRIVATE
-	);
+  return new MailjetSender(
+    process.env.MAILJET_APIKEY_PUBLIC,
+    process.env.MAILJET_APIKEY_PRIVATE
+  )
 }
 
 class MailjetSender {
-	constructor(publicKey, privateKey) {
-		if (publicKey == null)
-		{
-			throw new Error("MailjetSender - MAILJET_APIKEY_PUBLIC is  undefined");
-		}
-		if (privateKey == null) {
-			throw new Error("MailjetSender - MAILJET_APIKEY_PRIVATE is undefined");
+  constructor(publicKey, privateKey) {
+    if (publicKey == null) {
+      throw new Error('MailjetSender - MAILJET_APIKEY_PUBLIC is  undefined')
+    }
+    if (privateKey == null) {
+      throw new Error('MailjetSender - MAILJET_APIKEY_PRIVATE is undefined')
+    }
+    this.sender = mailjet.connect(publicKey, privateKey)
+  }
 
-		}
-		this.sender = mailjet.connect(
-			publicKey, 
-			privateKey
-		);
-	}
+  async send(to, from, subject, message, attachments) {
+    //mailjet need the base64 data of attachments for sending them
+    attachments = attachments?.map(attach => {
+      return {
+        ContentType: attach.contentType,
+        Filename: attach.filename,
+        ContentID: attach.cid,
+        Base64Content: fs.readFileSync(attach.path, { encoding: 'base64' }),
+      }
+    })
 
-	async send(to, from, subject, message, attachments) {
+    var res = this.sender.post('send', { version: 'v3.1' }).request({
+      Messages: [
+        {
+          From: {
+            Email: from,
+            // "Name": ""
+          },
+          To: [
+            {
+              Email: to,
+              // "Name": "passenger 1"
+            },
+          ],
+          Subject: subject,
 
-        //mailjet need the base64 data of attachments for sending them
-        attachments = attachments?.map((attach) => {
-            return {
-                "ContentType": attach.contentType, 
-                "Filename": attach.filename,
-                "ContentID": attach.cid,
-                "Base64Content": fs.readFileSync(attach.path, {encoding: 'base64'})
-            };
-        });
+          HTMLPart: message,
+          attachments,
+        },
+      ],
+    })
 
+    logger.info(`Sending a mail to ${to} : "${subject}"`)
 
-		var res = this.sender.post("send", { version: "v3.1" }).request({
-			Messages: [
-				{
-					From: {
-						Email: from
-						// "Name": ""
-					},
-					To: [
-						{
-							Email: to
-							// "Name": "passenger 1"
-						}
-					],
-					Subject: subject,
-
-					HTMLPart: message, 
-                    attachments
-				}
-			]
-		});
-
-		logger.info(`Sending a mail to ${to} : "${subject}"`);
-
-		// logger.info(res.body);
-	}
+    // logger.info(res.body);
+  }
 }
 
-module.exports = { createMailjetService };
+module.exports = { createMailjetService }

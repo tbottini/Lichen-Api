@@ -6,7 +6,7 @@ const CMD_LAUNCH = 'npm'
 const CMD_EXEC = 'npx'
 
 function npx(command) {
-  return CMD_EXEC + ' ' + command;
+  return CMD_EXEC + ' ' + command
 }
 
 function installDevDep(dep) {
@@ -14,12 +14,12 @@ function installDevDep(dep) {
 }
 
 function sudo(cmd) {
-  return 'sudo ' + cmd;
+  return 'sudo ' + cmd
 }
 
 function sh(cmd) {
-  console.log(cmd);
-  return execShPromise(cmd);
+  console.log(cmd)
+  return execShPromise(cmd)
 }
 
 async function prismaMigrate(databaseUrl) {
@@ -36,19 +36,18 @@ export function applyMigration() {
 
 export function generatePrismaClient() {
   // sudo(installDevDep('prisma@latest'))
-  return [npx('prisma generate'), sudo(installDevDep('@prisma/client@latest'))].join(' && ')
+  return [
+    npx('prisma generate'),
+    sudo(installDevDep('@prisma/client@latest')),
+  ].join(' && ')
 }
 
-export function getDatabaseEnv(databaseUrl: string)  {
+export function getDatabaseEnv(databaseUrl: string) {
   return 'DATABASE_URL="' + databaseUrl + '"'
 }
 
 const commands = [applyMigration()]
 
-
-
 console.log(config.database.url)
 
-  sh(
-    sudo(getDatabaseEnv(config.database.url) + ' ' + commands.join( ' && ')))
-
+sh(sudo(getDatabaseEnv(config.database.url) + ' ' + commands.join(' && ')))

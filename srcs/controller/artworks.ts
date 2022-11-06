@@ -1,34 +1,34 @@
 import { PrismaClient } from '@prisma/client'
-var ZoneAttribute = require("../attr/zone");
+var ZoneAttribute = require('../attr/zone')
 const prisma = new PrismaClient()
-import logger from "../modules/logger";
-
+import logger from '../modules/logger'
 
 /**
- * 
- * @param idUser 
- * @param limit 
+ *
+ * @param idUser
+ * @param limit
  * @param zone : the research zone of artists
  * @returns des oeuvres que l'utilisateurs n'a pas liké et que ne lui appartiennent pas
  */
-async function getRandomArtwork(idUser : number, limit: number, zone: ZoneAttribute)
-{
-    
-    var whereZone = "";
-    var innerJoinZone = "";
-    const INNER_JOIN_GALLERY = `
+async function getRandomArtwork(
+  idUser: number,
+  limit: number,
+  zone: ZoneAttribute
+) {
+  var whereZone = ''
+  var innerJoinZone = ''
+  const INNER_JOIN_GALLERY = `
     inner join
         "Gallery" as gallery
     on
         gallery."userId" = u.id
-    `;
-    var zoneSelector = "";
-    if (zone != null)
-    {
-        //on fait un inner join de la gallery
-        //et on ajoute une condition where
-        var zoneFilter = zone.getZoneFilterPrisma();
-        whereZone = `
+    `
+  var zoneSelector = ''
+  if (zone != null) {
+    //on fait un inner join de la gallery
+    //et on ajoute une condition where
+    var zoneFilter = zone.getZoneFilterPrisma()
+    whereZone = `
         and
             gallery.latitude >= ${zoneFilter?.minLatitude}
         and
@@ -37,16 +37,14 @@ async function getRandomArtwork(idUser : number, limit: number, zone: ZoneAttrib
             gallery.longitude >= ${zoneFilter?.minLongitude}
         and
             gallery.longitude <= ${zoneFilter?.maxLongitude}
-        `;
+        `
 
-        innerJoinZone = INNER_JOIN_GALLERY;
+    innerJoinZone = INNER_JOIN_GALLERY
 
-         zoneSelector = ", gallery.longitude, gallery.latitude ";
-        
-    }
+    zoneSelector = ', gallery.longitude, gallery.latitude '
+  }
 
-
-    const getter = `
+  const getter = `
     select
         a.*, p.title, u.firstname, u.lastname, u.id as author ${zoneSelector}
     from
@@ -90,10 +88,9 @@ async function getRandomArtwork(idUser : number, limit: number, zone: ZoneAttrib
     limit ${limit}
     `
 
+  logger.debug(getter)
 
-    logger.debug(getter);
-
-    return await prisma.$queryRawUnsafe<any[]>(getter);
+  return await prisma.$queryRawUnsafe<any[]>(getter)
 }
 
-module.exports = {getRandomArtwork}
+module.exports = { getRandomArtwork }

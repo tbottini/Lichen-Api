@@ -1,5 +1,5 @@
 {
-	"database": {
-		"url": "postgresql://postgres:psql@localhost:5432/lichen_2?schema=public"
-	}
+  "database": {
+    "url": "postgresql://postgres:psql@localhost:5432/lichen_2?schema=public"
+  }
 }

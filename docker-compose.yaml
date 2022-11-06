@@ -20,7 +20,7 @@ services:
       - '5432:5432'
     volumes:
       - ./database-data:/var/lib/postgresql/data
-      - "./letsencrypt:/letsencrypt"
+      - './letsencrypt:/letsencrypt'
     environment:
       - POSTGRES_PASSWORD=psql
       - POSTGRES_USER=postgres
