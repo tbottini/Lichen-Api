@@ -1,279 +1,271 @@
-const { UserTestHandler } = require("./userTestHandler");
-const request = require("supertest");
-const app = require("../srcs/index");
+const { UserTestHandler } = require('./userTestHandler')
+const request = require('supertest')
+const app = require('../srcs/index')
 
+describe('Artworks Routes Test', () => {
+  user = null
 
-describe("Artworks Routes Test", () => {
-	user = null;
+  beforeAll(async () => {
+    await UserTestHandler.clearDatabase()
+    user = await UserTestHandler.addUser({
+      email: 'Jean@journaux.com',
+      firstname: 'jean',
+      lastname: 'dumont',
+    })
+  })
 
-	beforeAll(async () => {
-		await UserTestHandler.clearDatabase();
-		user = await UserTestHandler.addUser({
-			email: "Jean@journaux.com",
-			firstname: "jean",
-			lastname: "dumont"
-		});
-	});
+  afterAll(async () => {
+    await UserTestHandler.clearDatabase()
+  })
 
-	afterAll(async() => 
-    {
-        await UserTestHandler.clearDatabase();
+  var ref = {
+    project: undefined,
+    artwork: undefined,
+  }
+
+  it('should create an artwork', async () => {
+    var u = await UserTestHandler.addUser({
+      email: 'oulean@journaux.com',
+      firstname: 'jean',
+      lastname: 'dumont',
     })
 
-	var ref = {
-		project: undefined,
-		artwork: undefined
-	};
+    console.log('USER', u)
 
-	it("should create an artwork", async () => {
-		var u = await UserTestHandler.addUser({
-			email: "oulean@journaux.com",
-			firstname: "jean",
-			lastname: "dumont"
-		});
+    var project = await request(app)
+      .post('/projects')
+      .attach('file', './tests/img_test.jpg')
+      .set('Authorization', 'bearer ' + u.token)
+      .field('title', 'title')
+    project = project.body
 
-		console.log("USER", u);
+    console.log('Project', project)
 
-		var project = await request(app)
-			.post("/projects")
-			.attach("file", "./tests/img_test.jpg")
-			.set("Authorization", "bearer " + u.token)
-			.field("title", "title")
-		project = project.body;
+    var artwork = await request(app)
+      .post('/projects/' + project.id + '/artworks')
+      .attach('file', './tests/img_test.jpg')
+      .set('Authorization', 'bearer ' + u.token)
+      .field('title', 'title')
+      .field('height', 200)
+    artwork = artwork.body
 
-		console.log("Project", project);
+    expect(artwork).toMatchObject({
+      height: 200,
+      title: 'title',
+    })
+  })
 
-		var artwork = await request(app)
-			.post("/projects/" + project.id + "/artworks")
-			.attach("file", "./tests/img_test.jpg")
-			.set("Authorization", "bearer " + u.token)
-			.field("title", "title")
-			.field("height", 200);
-		artwork = artwork.body;
+  it('should modify an artwork (medium)', async () => {
+    var project = await UserTestHandler.createProject(user.token, {
+      title: 'casimodo',
+      artworks: [{ title: 'artwork1', medium: 'PAINTING' }],
+    })
 
-		expect(artwork).toMatchObject({
-			height: 200,
-			title: "title"
-		});
-	});
+    const artwork = project.artworks[0]
+    expect(artwork).toMatchObject({
+      title: 'artwork1',
+      medium: 'PAINTING',
+    })
 
-	it("should modify an artwork (medium)", async () => {
-		var project = await UserTestHandler.createProject(user.token, {
-			title: "casimodo",
-			artworks: [{ title: "artwork1", medium: "PAINTING" }]
-		});
+    res = await request(app)
+      .put('/artworks/' + artwork.id)
+      .set('Authorization', 'bearer ' + user.token)
+      .send({
+        medium: 'SCULPTURE',
+      })
 
-		const artwork = project.artworks[0];
-		expect(artwork).toMatchObject({
-			title: "artwork1",
-			medium: "PAINTING"
-		});
+    const artworkModified = res.body
+    expect(artworkModified).toMatchObject({
+      title: 'artwork1',
+      medium: 'SCULPTURE',
+    })
 
-		res = await request(app)
-			.put("/artworks/" + artwork.id)
-			.set("Authorization", "bearer " + user.token)
-			.send({
-				medium: "SCULPTURE"
-			});
+    ref.project = project
+    ref.artwork = artwork
+  })
 
-		const artworkModified = res.body;
-		expect(artworkModified).toMatchObject({
-			title: "artwork1",
-			medium: "SCULPTURE"
-		});
+  it('should modify an artwork dimension', async () => {
+    var res = await request(app)
+      .put('/artworks/' + ref.artwork.id)
+      .set('Authorization', 'bearer ' + user.token)
+      .send({
+        length: 30,
+        height: 20,
+        width: 20,
+      })
 
-		ref.project = project;
-		ref.artwork = artwork;
-	});
+    expect(res.body).toMatchObject({
+      height: 20,
+      width: 20,
+      length: 30,
+    })
+    expect(res.status).toBe(200)
+  })
 
-	it("should modify an artwork dimension", async () => {
-		var res = await request(app)
-			.put("/artworks/" + ref.artwork.id)
-			.set("Authorization", "bearer " + user.token)
-			.send({
-				length: 30,
-				height: 20,
-				width: 20
-			});
+  it('should update to null the dimension', async () => {
+    var res = await request(app)
+      .put('/artworks/' + ref.artwork.id)
+      .set('Authorization', 'bearer ' + user.token)
+      .field('length', 'null')
+      .field('height', 'null')
+    console.log(res.body)
 
-		expect(res.body).toMatchObject({
-			height: 20,
-			width: 20,
-			length: 30
-		});
-		expect(res.status).toBe(200);
-	});
+    expect(res.body).toMatchObject({
+      height: null,
+      width: 20,
+      length: null,
+    })
+    expect(res.status).toBe(200)
+  })
 
-	it("should update to null the dimension", async () => {
-		var res = await request(app)
-			.put("/artworks/" + ref.artwork.id)
-			.set("Authorization", "bearer " + user.token)
-			.field("length", "null")
-			.field("height", "null");
-		console.log(res.body);
+  it('should follow an artwork', async () => {
+    var follow = await request(app)
+      .post('/artworks/' + ref.artwork.id.toString() + '/like')
+      .set('Authorization', 'bearer ' + user.token)
 
-		expect(res.body).toMatchObject({
-			height: null,
-			width: 20,
-			length: null
-		});
-		expect(res.status).toBe(200);
-	});
+    expect(follow.status).toBe(200)
+    console.log('Artwork FOLLOW')
 
-	it("should follow an artwork", async () => {
-		var follow = await request(app)
-			.post("/artworks/" + ref.artwork.id.toString() + "/like")
-			.set("Authorization", "bearer " + user.token);
+    var self = await request(app)
+      .get('/users/self')
+      .set('Authorization', 'bearer ' + user.token)
 
-		expect(follow.status).toBe(200);
-		console.log("Artwork FOLLOW");
+    expect(self.body.likes.length).toBe(1)
+  })
 
-		var self = await request(app)
-			.get("/users/self")
-			.set("Authorization", "bearer " + user.token);
+  it('should unfollow an artwork', async () => {
+    var unfollow = await request(app)
+      .delete('/artworks/' + ref.artwork.id.toString() + '/like')
+      .set('Authorization', 'bearer ' + user.token)
 
-		expect(self.body.likes.length).toBe(1);
-	});
+    expect(unfollow.body).toMatchObject({
+      count: 1,
+    })
 
-	it("should unfollow an artwork", async () => {
-		var unfollow = await request(app)
-			.delete("/artworks/" + ref.artwork.id.toString() + "/like")
-			.set("Authorization", "bearer " + user.token);
+    var self = await request(app)
+      .get('/users/self')
+      .set('Authorization', 'bearer ' + user.token)
 
-		expect(unfollow.body).toMatchObject({
-			count: 1
-		});
+    expect(self.body.likes.length).toBe(0)
+  })
 
-		var self = await request(app)
-			.get("/users/self")
-			.set("Authorization", "bearer " + user.token);
+  it("should follow an artwork and them check that the artwork isn't followed after is deletion", async () => {
+    var u = await UserTestHandler.addUser({
+      email: 'oulean2@journaux.com',
+      firstname: 'jean',
+      lastname: 'dumont',
+      projects: [
+        {
+          title: 'test',
+          artworks: [
+            {
+              title: 'artwork#1',
+            },
+          ],
+        },
+      ],
+    })
 
-		expect(self.body.likes.length).toBe(0);
-	});
+    console.log('TOKEN', u)
 
-	it("should follow an artwork and them check that the artwork isn't followed after is deletion", async () => {
-		var u = await UserTestHandler.addUser({
-			email: "oulean2@journaux.com",
-			firstname: "jean",
-			lastname: "dumont", 
-			projects: [{
-				title: "test", 
-				artworks: [
-					{
-						title: "artwork#1", 
-					}
-				]
-			}]
-		});
+    var user = await UserTestHandler.self(u.token)
 
-		console.log("TOKEN", u);
+    console.log('USER', user)
 
-		var user = await UserTestHandler.self(u.token);
+    var uFollower = await UserTestHandler.addUser({
+      email: 'oulean.followerSS@journaux.com',
+      firstname: 'jean',
+      lastname: 'dumont',
+    })
 
-		console.log("USER", user);
+    console.log('USER2', uFollower)
 
-		var uFollower = await UserTestHandler.addUser({
-			email: "oulean.followerSS@journaux.com", 
-			firstname: "jean",
-			lastname: "dumont", 
+    var res = await request(app)
+      .post('/artworks/' + user.projects[0].artworks[0].id + '/like')
+      .set('Authorization', 'bearer ' + uFollower.token)
 
-		});
+    expect(res.status).toBe(200)
 
-		console.log("USER2", uFollower);
+    console.log('LIKED', res.body)
 
+    var uFollowerSelf = await UserTestHandler.self(uFollower.token)
 
-		var res = await request(app)
-		.post("/artworks/" + user.projects[0].artworks[0].id + "/like")
-		.set("Authorization", "bearer " + uFollower.token);
+    console.log('LIKE', uFollowerSelf)
+    expect(uFollowerSelf.likes.length).toBe(1)
 
-		expect(res.status).toBe(200);
+    res = await request(app)
+      .delete('/artworks/' + user.projects[0].artworks[0].id)
+      .set('Authorization', 'bearer ' + u.token)
 
-		console.log("LIKED", res.body); 
+    console.log('DELETE', res.body)
 
-		var uFollowerSelf = await UserTestHandler.self(uFollower.token); 
-		
-		console.log("LIKE", uFollowerSelf);
-		expect(uFollowerSelf.likes.length).toBe(1);
+    res = await UserTestHandler.self(u.token)
+    console.log('ARTWORK USER', res)
+    expect(res.projects[0].artworks.length).toBe(0)
 
-		 res = await request(app)
-		.delete("/artworks/" + user.projects[0].artworks[0].id)
-		.set("Authorization", "bearer " + u.token)
+    uFollowerSelf = await UserTestHandler.self(uFollower.token)
+    expect(uFollowerSelf.likes.length).toBe(0)
+  })
 
-		console.log("DELETE", res.body); 
+  it('should delete project and delete likes and artworks', async () => {
+    var u = await UserTestHandler.addUser({
+      email: 'test171@journaux.com',
+      firstname: 'jean',
+      lastname: 'dumont',
+      projects: [
+        {
+          title: 'test',
+          artworks: [
+            {
+              title: 'artwork#1',
+            },
+          ],
+        },
+      ],
+    })
 
-		 res = await UserTestHandler.self(u.token);
-		 console.log("ARTWORK USER", res);
-		 expect(res.projects[0].artworks.length).toBe(0);
+    console.log('TOKEN', u)
 
-		 uFollowerSelf = await UserTestHandler.self(uFollower.token); 
-		expect(uFollowerSelf.likes.length).toBe(0);
+    var user = await UserTestHandler.self(u.token)
+    var artwork = user.projects[0].artworks[0]
+    console.log('USER', user)
 
-	})
+    var uFollower = await UserTestHandler.addUser({
+      email: 'test172@journaux.com',
+      firstname: 'jean',
+      lastname: 'dumont',
+    })
 
-	it("should delete project and delete likes and artworks", async() => {
-		var u = await UserTestHandler.addUser({
-			email: "test171@journaux.com",
-			firstname: "jean",
-			lastname: "dumont", 
-			projects: [{
-				title: "test", 
-				artworks: [
-					{
-						title: "artwork#1", 
-					}
-				]
-			}]
-		});
+    console.log('USER2', uFollower)
 
-		console.log("TOKEN", u);
+    var res = await request(app)
+      .post('/artworks/' + user.projects[0].artworks[0].id + '/like')
+      .set('Authorization', 'bearer ' + uFollower.token)
 
-		var user = await UserTestHandler.self(u.token);
-		var artwork = user.projects[0].artworks[0];
-		console.log("USER", user);
+    expect(res.status).toBe(200)
 
+    console.log('LIKED', res.body)
 
-		var uFollower = await UserTestHandler.addUser({
-			email: "test172@journaux.com", 
-			firstname: "jean",
-			lastname: "dumont", 
+    var uFollowerSelf = await UserTestHandler.self(uFollower.token)
 
-		});
+    console.log('LIKE', uFollowerSelf)
+    expect(uFollowerSelf.likes.length).toBe(1)
 
-		console.log("USER2", uFollower);
+    // test part
+    res = await request(app)
+      .delete('/projects/' + user.projects[0].id)
+      .set('Authorization', 'bearer ' + u.token)
 
+    console.log('PROJECT DELETE', res.body)
 
-		var res = await request(app)
-		.post("/artworks/" + user.projects[0].artworks[0].id + "/like")
-		.set("Authorization", "bearer " + uFollower.token);
+    //on vérifie que l'artwork aggrégé par le projet n'éxiste plus
+    res = await request(app).get('/artworks/' + artwork.id)
+    expect(res.status).toBe(404)
+    expect(res.body).toHaveProperty('error')
+    console.log('ARTWORK GETTED', res.body)
 
-		expect(res.status).toBe(200);
-
-		console.log("LIKED", res.body); 
-
-		var uFollowerSelf = await UserTestHandler.self(uFollower.token); 
-		
-		console.log("LIKE", uFollowerSelf);
-		expect(uFollowerSelf.likes.length).toBe(1);
-
-		// test part
-		res = await request(app)
-		.delete("/projects/" + user.projects[0].id)
-		.set("Authorization", "bearer " + u.token)
-
-		console.log("PROJECT DELETE", res.body);
-
-
-		//on vérifie que l'artwork aggrégé par le projet n'éxiste plus
-		res = await request(app)
-		.get("/artworks/" + artwork.id);
-		expect(res.status).toBe(404);
-		expect(res.body).toHaveProperty("error");
-		console.log("ARTWORK GETTED", res.body);
-
-
-
-		//on vérifie que l'utilisateur ne suit plus l'artwork
-		uFollowerSelf = await UserTestHandler.self(uFollower.token);
-		expect(uFollowerSelf.likes.length).toBe(0);
-	})
-});
+    //on vérifie que l'utilisateur ne suit plus l'artwork
+    uFollowerSelf = await UserTestHandler.self(uFollower.token)
+    expect(uFollowerSelf.likes.length).toBe(0)
+  })
+})

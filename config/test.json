@@ -1,0 +1,9 @@
+{
+  "database": {
+    "url": "postgresql://postgres:psql@localhost:5432/lichen_test?schema=public"
+  },
+  "app": {
+    "port": 9000,
+    "host": ""
+  }
+}
