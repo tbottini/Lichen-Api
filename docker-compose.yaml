@@ -1,0 +1,26 @@
+version: '3.2'
+services:
+  api:
+    container_name: api
+    restart: always
+    image: 938875074697.dkr.ecr.eu-west-3.amazonaws.com/lichen
+    ports:
+      - 8080:8080
+      - 80:80
+      - 443:443
+    depends_on:
+      - db
+    volumes:
+      - ./public:/usr/lichen/public
+
+  db:
+    container_name: postgres
+    image: postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./database-data:/var/lib/postgresql/data
+      - "./letsencrypt:/letsencrypt"
+    environment:
+      - POSTGRES_PASSWORD=psql
+      - POSTGRES_USER=postgres
