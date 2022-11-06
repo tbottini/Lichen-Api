@@ -1,11 +1,11 @@
 {
-	"compilerOptions": {
-		"sourceMap": true,
-		"outDir": "./dist",
-		"strict": true,
-		"lib": ["esnext"],
-		"esModuleInterop": true,
-		"noImplicitAny": false,
-		"target": "es5"
-	}
+  "compilerOptions": {
+    "sourceMap": true,
+    "outDir": "./dist",
+    "strict": true,
+    "lib": ["esnext"],
+    "esModuleInterop": true,
+    "noImplicitAny": false,
+    "target": "es5"
+  }
 }
