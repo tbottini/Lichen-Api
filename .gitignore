@@ -1,3 +1,6 @@
 log/*
 public/images/*
 html-report
+.env
+database-data
+node_modules
