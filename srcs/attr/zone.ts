@@ -79,14 +79,7 @@ class ZoneFilterPrisma
 
 		const distLat : number =  ( 180 / Math.PI ) * ( distanceMeter / 6378137 );
 		const  distLong : number =  ( 180 / Math.PI ) * ( distanceMeter / 6378137 ) / Math.cos( position.latitude );
-
-		console.log(distLat + " " + distLong); 
-		console.log(distanceMeter);
-		console.log(position.latitude, position.longitude);
 	
-		console.log("maxLat", position.latitude + distLat);
-		console.log("pos/dist: ", position.latitude, distLat);	
-
 		this.radiusDegreesLagitude = distLat;
 
 		const zone : Zone = new Zone(
@@ -96,16 +89,12 @@ class ZoneFilterPrisma
 			position.longitude + distLong, 
 		);
 
-		zone.print();
 		return zone; 
 	}
 
 	isUnderCircleZone(point: Position) : boolean
 	
 	{
-		console.log(point);
-		console.log("center :", this.center);
-		console.log("radius", this.radiusDegreesLagitude);
 
 		const distTwoPoint = (point.latitude - this.center.latitude)**2 + (point.longitude - this.center.longitude)**2; //pythagore without racine² because
 		//we'll compare to radius who's proportionally on ²
