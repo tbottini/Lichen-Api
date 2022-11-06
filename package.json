@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start:prod": "NODE_ENV=prod ts-node srcs/index.ts",
+    "start:prod": "NODE_ENV=production ts-node srcs/index.ts",
     "start:dev": "NODE_ENV=dev ts-node ./srcs/index.ts",
     "start:local": "NODE_ENV=dev ts-node ./srcs/index.ts",
     "generate": "DATABASE_URL=postgresql://postgres:psql@postgres:5432/lichen_2?schema=public npx prisma generate",
