@@ -58,41 +58,7 @@ router
     const { dateStart, dateEnd, title, medium, latitude, longitude, radius } =
       req.query
 
-    logger.debug('afterparser', dateStart, dateEnd, title, medium)
-
     var zone: ZoneAttribute = ZoneAttribute.parse(latitude, longitude, radius)
-
-    console.log(
-      'artworks of artiste',
-      await prisma.artwork.findMany({
-        where: {
-          title: {
-            mode: 'insensitive',
-            contains: title,
-          },
-        },
-      }),
-      {
-        start: {
-          lte: dateEnd,
-          gte: dateStart,
-        },
-        title: {
-          mode: 'insensitive',
-          contains: title,
-        },
-        medium: medium,
-
-        project: !zone
-          ? undefined
-          : {
-              author: {
-                geoReferenced: !zone ? undefined : true,
-                gallery: zone.getZoneFilter(),
-              },
-            },
-      }
-    )
 
     const getGeoFilter = (zone: ZoneAttribute | undefined) =>
       !zone
