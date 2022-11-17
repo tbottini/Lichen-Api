@@ -63,7 +63,7 @@ async function getRandomArtwork(
     and
         u."geoReferenced" = true
     and 
-     a.id not in       
+     a.id not in
         (
         select
             a.id

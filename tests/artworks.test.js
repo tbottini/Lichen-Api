@@ -3,7 +3,7 @@ const request = require('supertest')
 const app = require('../srcs/index')
 
 describe('Artworks Routes Test', () => {
-  user = null
+  let user = null
 
   beforeAll(async () => {
     await UserTestHandler.clearDatabase()
@@ -67,7 +67,7 @@ describe('Artworks Routes Test', () => {
       medium: 'PAINTING',
     })
 
-    res = await request(app)
+    const res = await request(app)
       .put('/artworks/' + artwork.id)
       .set('Authorization', 'bearer ' + user.token)
       .send({
@@ -258,7 +258,7 @@ describe('Artworks Routes Test', () => {
 
     console.log('PROJECT DELETE', res.body)
 
-    //on vérifie que l'artwork aggrégé par le projet n'éxiste plus
+    //on vérifie que l'artwork aggrégé par le projet n'existe plus
     res = await request(app).get('/artworks/' + artwork.id)
     expect(res.status).toBe(404)
     expect(res.body).toHaveProperty('error')
