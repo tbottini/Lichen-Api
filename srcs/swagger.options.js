@@ -6,7 +6,7 @@ module.exports = {
       title: 'Lichen',
       version: '0.1.0',
     },
-    host: 'dev.lychen.com',
+    host: 'reseau-lichen.fr',
     basePath: '',
     produces: ['application/json'],
     schemes: ['http', 'https'],
