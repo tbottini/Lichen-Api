@@ -7,10 +7,10 @@ WORKDIR /usr/lichen
 COPY package*.json ./
 COPY prisma ./prisma/
 
-RUN npm ci
+RUN npm ci --production
 RUN npm run generate
 
 COPY . .
 
-EXPOSE 8080
+EXPOSE 9000
 CMD ["npm", "run", "start:prod"]

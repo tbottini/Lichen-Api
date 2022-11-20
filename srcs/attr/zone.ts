@@ -3,7 +3,7 @@
 /// toutes les coordonnées à l'intérieur du périmètres
 /// ce périmètre est défini grace à une position [centre]
 /// et un rayon [double]
-class ZoneAttribute {
+export class ZoneAttribute {
   latitude: number
   longitude: number
   radius: number
@@ -109,7 +109,7 @@ class ZoneFilterPrisma {
   }
 }
 
-class Position {
+export class Position {
   latitude: number
   longitude: number
 
@@ -119,7 +119,7 @@ class Position {
   }
 }
 
-class Zone {
+export class Zone {
   minLatitude: number
   minLongitude: number
   maxLatitude: number
@@ -147,5 +147,3 @@ class Zone {
     )
   }
 }
-
-module.exports = { ZoneAttribute, Position }

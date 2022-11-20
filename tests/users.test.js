@@ -38,7 +38,7 @@ describe('Users Routes Test', () => {
 
     expect(res.statusCode).toEqual(200)
     expect(res.body).toHaveProperty('token')
-    token = res.body.token
+    const token = res.body.token
 
     console.log(token)
 
@@ -58,7 +58,7 @@ describe('Users Routes Test', () => {
   })
 
   it('should set the geoReferenced on', async () => {
-    var res = await request(app)
+    let res = await request(app)
       .get('/users/self')
       .set('Authorization', 'bearer ' + user.token)
     expect(res.body).toMatchObject({
@@ -72,7 +72,7 @@ describe('Users Routes Test', () => {
     var userRef = res.body
 
     // test if we find the profile who'snt referenced
-    var res = await request(app).get(
+    res = await request(app).get(
       '/users/gallery?longMin=60&longMax=100&lagMin=60&lagMax=100'
     )
     res = res.body

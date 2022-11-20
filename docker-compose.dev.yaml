@@ -3,27 +3,26 @@ services:
   api:
     container_name: api
     restart: always
-    image: 938875074697.dkr.ecr.eu-west-3.amazonaws.com/lichen
+    build: .
     depends_on:
       - db
     volumes:
       - ./public:/usr/lichen/public
 
-
   web:
     container_name: web
     restart: always
-    image: 938875074697.dkr.ecr.eu-west-3.amazonaws.com/lichen-web
+    build: ../lichen-web
     ports:
       - 8081:8081
 
   reverse-proxy: 
-    image: 938875074697.dkr.ecr.eu-west-3.amazonaws.com/lichen-reverse-proxy
+    build: ./infra/reverse-proxy/
     container_name: reverse-proxy
     restart: unless-stopped
     ports: 
-      - 80:80
-      - 443:443
+      - 8085:80
+      - 8086:443
     depends_on:
       - api
       - web

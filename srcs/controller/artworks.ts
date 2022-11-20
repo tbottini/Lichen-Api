@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client'
-var ZoneAttribute = require('../attr/zone')
 const prisma = new PrismaClient()
+import { ZoneAttribute } from '../attr/zone'
 import logger from '../modules/logger'
 
 /**
@@ -63,7 +63,7 @@ async function getRandomArtwork(
     and
         u."geoReferenced" = true
     and 
-     a.id not in       
+     a.id not in
         (
         select
             a.id
