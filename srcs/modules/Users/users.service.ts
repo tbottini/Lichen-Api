@@ -8,14 +8,6 @@ export class UserService {
 
   constructor() {
     this.accountMailer = new AccountMailer()
-
-    this.accountMailer.resetPassword('thomasbottini@protonmail.com', {
-      token: 'ouioui',
-      id: 0,
-      firstname: 'thomas',
-      lastname: 'bottini',
-      email: 'thomasbottini@protonmail.com',
-    })
   }
 
   async forgotPassword(email: string): Promise<{ error?: string } | void> {

@@ -9,7 +9,6 @@ services:
     volumes:
       - ./public:/usr/lichen/public
 
-
   web:
     container_name: web
     restart: always

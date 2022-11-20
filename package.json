@@ -2,7 +2,6 @@
   "scripts": {
     "start:prod": "NODE_ENV=production ts-node srcs/index.ts",
     "start:dev": "NODE_ENV=development ts-node ./srcs/index.ts",
-    "generate": "DATABASE_URL=postgresql://postgres:psql@postgres:5432/lichen_2?schema=public npx prisma generate",
     "migrate:update": "ts-node scripts/migrate",
     "migrate:test": "NODE_ENV=test ts-node scripts/migrate",
     "format": "yarn prettier --write .",
@@ -34,7 +33,8 @@
     "uuid": "^8.3.2",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.5",
-    "winston-gelf": "^1.7.0"
+    "winston-gelf": "^1.7.0",
+    "express-swagger-generator": "^1.1.17"
   },
   "name": "api_lichen",
   "version": "3.0.52",
@@ -48,7 +48,6 @@
     "cross-env": "^7.0.3",
     "eslint": "^8.27.0",
     "eslint-plugin-jest": "^27.1.5",
-    "express-swagger-generator": "^1.1.17",
     "jest": "^27.0.4",
     "jest-html-reporters": "^2.1.6",
     "jest-mock-extended": "^1.0.16",
