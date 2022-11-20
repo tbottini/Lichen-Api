@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import { UserService } from '../modules/Users/users.service'
 const prisma = new PrismaClient()
 const { Router } = require('express')
 const regex = require('../modules/regexUtils')
@@ -18,7 +19,6 @@ const {
 } = require('../modules/middleware-parser')
 const { researchSort } = require('../modules/research')
 const { mediumDict } = require('../controller/mediumEnum')
-const mjml = require('../modules/email/mjml')
 const logger = require('../modules/logger')
 
 const querySearch = {
@@ -60,6 +60,8 @@ const scope = {
 }
 
 var router = new Router()
+
+const userService = new UserService()
 
 router
 
@@ -647,32 +649,11 @@ router
 
     if (!email) return res.status(400).json({ error: 'no email provided' })
 
-    const users = await prisma.user.findMany({
-      where: {
-        email: {
-          equals: email,
-          mode: 'insensitive',
-        },
-      },
-      select: {
-        id: true,
-        firstname: true,
-        lastname: true,
-        email: true,
-      },
-    })
-
-    if (users.length <= 0)
-      return res.status(400).json({ error: "email doesn't exist" })
-
-    const user = users[0]
-    user['token'] = jwt.create(user)
-
-    mjml
-      .resetPassword(user)
-      .send(email, 'Lichen - Réinitialisation de votre mot de passe')
-
-    return res.json({ msg: 'an email was sent to your email address' })
+    const result = await userService.forgotPassword(email)
+    if (result?.error) {
+      return res.status(400).json(result.error)
+    }
+    res.json({ msg: 'an email was sent to your email address' })
   })
 
 function reinjectUserFollow(user) {
