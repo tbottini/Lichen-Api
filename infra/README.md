@@ -10,6 +10,13 @@ pour faire tourner lichen en production : [./AWS.md]
 
 ### En local
 
+- Via docker-compose de dev
+
+`docker-compose -f ./docker-compose.dev.yaml -d --build`
+
+
+- Via les dockerfiles
+
 en local pour faire tourner les tests il faut lancer un container postgresql avec le script
 
 `./infra/docker/create-postgres-container.bash`

@@ -4,7 +4,7 @@ const app = require('../srcs/index')
 const { PrismaClient } = require('@prisma/client')
 
 describe('News Routes Test', () => {
-  ref = {}
+  const ref = {}
 
   beforeAll(async () => {
     ref.user = await UserTestHandler.addUser({
@@ -17,7 +17,7 @@ describe('News Routes Test', () => {
   })
 
   it('check the insertion time of elements database', async () => {
-    var newUser = await UserTestHandler.addUser({
+    let newUser = await UserTestHandler.addUser({
       email: 'lefantomeducoin@journaux.com',
       firstname: 'lefanto',
       lastname: 'me',
@@ -40,7 +40,7 @@ describe('News Routes Test', () => {
 
     console.log('NEWUSER', newUser)
 
-    var newUser = await request(app)
+    newUser = await request(app)
       .get('/users/self')
       .set('Authorization', 'bearer ' + newUser.token)
 

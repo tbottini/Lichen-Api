@@ -17,7 +17,7 @@ const fileMiddleware = require('../modules/middleware-file')
 const artworkController = require('../controller/artworks')
 const { researchSort } = require('../modules/research')
 const userScope = require('./users')
-const { ZoneAttribute, Position } = require('../attr/zone')
+import { ZoneAttribute, Position } from '../attr/zone'
 const { mediumDict } = require('../controller/mediumEnum')
 const logger = require('../modules/logger')
 
@@ -58,41 +58,7 @@ router
     const { dateStart, dateEnd, title, medium, latitude, longitude, radius } =
       req.query
 
-    logger.debug('afterparser', dateStart, dateEnd, title, medium)
-
-    var zone: ZoneAttribute = ZoneAttribute.parse(latitude, longitude, radius)
-
-    console.log(
-      'artworks of artiste',
-      await prisma.artwork.findMany({
-        where: {
-          title: {
-            mode: 'insensitive',
-            contains: title,
-          },
-        },
-      }),
-      {
-        start: {
-          lte: dateEnd,
-          gte: dateStart,
-        },
-        title: {
-          mode: 'insensitive',
-          contains: title,
-        },
-        medium: medium,
-
-        project: !zone
-          ? undefined
-          : {
-              author: {
-                geoReferenced: !zone ? undefined : true,
-                gallery: zone.getZoneFilter(),
-              },
-            },
-      }
-    )
+    var zone = ZoneAttribute.parse(latitude, longitude, radius)
 
     const getGeoFilter = (zone: ZoneAttribute | undefined) =>
       !zone

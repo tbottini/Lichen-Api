@@ -1,5 +1,4 @@
 const request = require('supertest')
-const { isArray } = require('util')
 const app = require('../srcs/index')
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
@@ -121,30 +120,30 @@ class UserTestHandler {
   }
 
   static async createProject(token, { title, artworks }) {
-    var res = await request(app)
+    const projectResult = await request(app)
       .post('/projects')
       .attach('file', './tests/img_test.jpg')
       .set('Authorization', 'bearer ' + token)
       .field('title', title || 'null')
 
-    console.log('TOKEN PROJECT', res.body)
+    console.log('TOKEN PROJECT', projectResult.body)
 
-    var project = res.body
+    const project = projectResult.body
     project.artworks = []
     console.log(title, artworks)
 
-    for (var i = 0; i < artworks.length; i++) {
-      var a = artworks[i]
-      var res = await request(app)
+    for (let i = 0; i < artworks.length; i++) {
+      const artwork = artworks[i]
+      const result = await request(app)
         .post('/projects/' + project.id + '/artworks')
         .attach('file', './tests/img_test.jpg')
         .set('Authorization', 'bearer ' + token)
-        .field('title', a.title || 'null')
-        .field('medium', a.medium || 'null')
+        .field('title', artwork.title || 'null')
+        .field('medium', artwork.medium || 'null')
 
-      console.log('ARTWORK NEW', res.body)
+      console.log('ARTWORK NEW', result.body)
 
-      project.artworks.push(res.body)
+      project.artworks.push(result.body)
     }
     return project
   }
@@ -152,10 +151,10 @@ class UserTestHandler {
   static async createUserList(listData) {
     // var users = await Promise.all(listData.map(async (data) => await this.addUser(data)));
 
-    var u
-    var uArray = []
+    let u
+    const uArray = []
 
-    for (var i = 0; i < listData.length; i++) {
+    for (let i = 0; i < listData.length; i++) {
       console.log('DATA####')
       u = await this.addUser(listData[i])
       console.log(u)
@@ -165,7 +164,7 @@ class UserTestHandler {
   }
 
   async searchUsers({ firstname, lastname, zone, style, medium }) {
-    var q = {}
+    const q = {}
     if (firstname) q['firstname'] = firstname
     if (lastname) q['lastname'] = lastname
     if (zone) {
@@ -180,7 +179,7 @@ class UserTestHandler {
       q['medium'] = medium
     }
 
-    res = await request(app).get('/users').query(q)
+    const res = await request(app).get('/users').query(q)
 
     return res.body
   }
@@ -191,7 +190,7 @@ class UserTestHandler {
     token,
     { name, description, dateStart, medium, longitude, latitude }
   ) {
-    var res = await request(app)
+    const res = await request(app)
       .post('/events')
       .attach('file', './tests/img_test.jpg')
       .set('Authorization', 'bearer ' + token)

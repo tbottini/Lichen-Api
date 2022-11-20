@@ -1,5 +1,8 @@
 {
   "database": {
     "url": "DATABASE_URL=postgresql://postgres:psql@postgres:5432/lichen_2?schema=public"
+  },
+  "app": {
+    "port": 9000
   }
 }
