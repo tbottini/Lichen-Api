@@ -12,5 +12,5 @@ RUN npm run generate
 
 COPY . .
 
-EXPOSE 8080
+EXPOSE 9000
 CMD ["npm", "run", "start:prod"]
