@@ -17,7 +17,7 @@ const fileMiddleware = require('../modules/middleware-file')
 const artworkController = require('../controller/artworks')
 const { researchSort } = require('../modules/research')
 const userScope = require('./users')
-const { ZoneAttribute, Position } = require('../attr/zone')
+import { ZoneAttribute, Position } from '../attr/zone'
 const { mediumDict } = require('../controller/mediumEnum')
 const logger = require('../modules/logger')
 
@@ -58,7 +58,7 @@ router
     const { dateStart, dateEnd, title, medium, latitude, longitude, radius } =
       req.query
 
-    var zone: ZoneAttribute = ZoneAttribute.parse(latitude, longitude, radius)
+    var zone = ZoneAttribute.parse(latitude, longitude, radius)
 
     const getGeoFilter = (zone: ZoneAttribute | undefined) =>
       !zone
