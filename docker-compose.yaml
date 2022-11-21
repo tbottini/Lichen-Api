@@ -17,16 +17,26 @@ services:
     ports:
       - 8081:8081
 
-  reverse-proxy: 
-    image: 938875074697.dkr.ecr.eu-west-3.amazonaws.com/lichen-reverse-proxy
-    container_name: reverse-proxy
-    restart: unless-stopped
-    ports: 
+  webserver:
+    image: nginx:latest
+    ports:
       - 80:80
       - 443:443
+    restart: always
     depends_on:
       - api
       - web
+    volumes:
+      - ./nginx/conf/:/etc/nginx/conf.d/:ro
+      - ./certbot/www:/var/www/certbot/:ro
+      - ./certbot/conf/:/etc/nginx/ssl/:ro
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot/www/:/var/www/certbot/:rw
+      - ./certbot/conf/:/etc/letsencrypt/:rw
+
   db:
     container_name: postgres
     image: postgres
