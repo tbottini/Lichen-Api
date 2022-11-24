@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 const { Router } = require('express')
-const jwt = require('../modules/jwt')
+import * as jwt from '../modules/jwt'
 const DateAttr = require('../attr/date')
 const EnumAttr = require('../attr/enum')
 const IndexAttr = require('../attr/index')

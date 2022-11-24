@@ -3,7 +3,7 @@ import { UserService } from '../modules/Users/users.service'
 const prisma = new PrismaClient()
 const { Router } = require('express')
 const regex = require('../modules/regexUtils')
-const jwt = require('../modules/jwt')
+import * as jwt from '../modules/jwt'
 const EnumAttr = require('../attr/enum'),
   EmailAttr = require('../attr/email'),
   { BoolAttr } = require('../attr/boolean'),
@@ -59,7 +59,7 @@ const scope = {
   private: privateScope,
 }
 
-var router = new Router()
+const router = new Router()
 
 const userService = new UserService()
 
@@ -114,7 +114,7 @@ router
 
     const passwordHash = await passwordUtils.hash(password)
 
-    var mediumAttr = new EnumAttr(mediumDict, medium)
+    const mediumAttr = new EnumAttr(mediumDict, medium)
     if (mediumAttr.error)
       return res.status(400).json({ error: 'bad format for enum attr' })
 
@@ -173,7 +173,7 @@ router
       return res.status(404).json({ error: 'user not found' })
     // we arbitrarily take the first one
     const user = users[0]
-    var passwordIdem = await passwordUtils.compare(password, user.password)
+    const passwordIdem = await passwordUtils.compare(password, user.password)
 
     logger.debug(passwordIdem)
 
@@ -256,17 +256,18 @@ router
    * @returns {object} 200 - An array of users search depending on there names
    */
   .get('/', parserQuery(querySearch), async (req, res) => {
-    var { name } = req.query
+    const { name } = req.query
 
-    var whereSection = {}
+    const whereSection = {}
     console.log('test log')
     logger.debug('hello world')
     logger.debug({ ceci: "n'est pas un exercie" })
     logger.debug('houla', 'houla')
     logger.debug(JSON.stringify({ ceci: 'cela' }))
     logger.debug('', name)
+    let multiFiltername
     if (name != undefined && name != '') {
-      var multiFiltername = name
+      multiFiltername = name
         .split(' ')
         .filter(a => a)
         .map(filter => [
@@ -281,7 +282,7 @@ router
 
     logger.debug(multiFiltername)
 
-    var results = await prisma.user.findMany({
+    let results = await prisma.user.findMany({
       where: whereSection,
       select: {
         ...scope.public,
@@ -448,15 +449,13 @@ router
       geoReferenced,
     } = req.body
 
-    if (req.file) {
-      var src = req.file.filename
-    }
+    const src = req.file ? req.file.filename : null
 
-    var mediumAttr = new EnumAttr(mediumDict, medium)
+    const mediumAttr = new EnumAttr(mediumDict, medium)
     if (mediumAttr.error)
       return res.status(400).json({ error: 'bad format for enum attr' })
 
-    var emailWrapper = new EmailAttr()
+    const emailWrapper = new EmailAttr()
     await emailWrapper.check(email)
     if (emailWrapper.error)
       return res.status(400).json({ error: emailWrapper.errorMsg })
@@ -465,17 +464,17 @@ router
     if (passwordWrapper.error)
       return res.status(400).json({ error: passwordWrapper.errorMsg })
 
-    var passwordValue = await passwordWrapper.getValue()
+    const passwordValue = await passwordWrapper.getValue()
     logger.debug('password', passwordValue, password)
 
-    var geoReferencedWrapper = new BoolAttr(geoReferenced)
+    const geoReferencedWrapper = new BoolAttr(geoReferenced)
     if (geoReferencedWrapper.error)
       return res
         .status(400)
         .json({ error: 'geoReferenced : ' + geoReferenced.error })
 
     try {
-      var result = await prisma.user.update({
+      const result = await prisma.user.update({
         where: {
           id: req.user.id,
         },

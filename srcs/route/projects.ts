@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 const { Router } = require('express')
-const jwt = require('../modules/jwt')
+import * as jwt from '../modules/jwt'
 const DateAttr = require('../attr/date')
 const { parserMiddleware } = require('../modules/middleware-parser')
 const fileMiddleware = require('../modules/middleware-file')

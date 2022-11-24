@@ -1,11 +1,9 @@
-import { Medium, PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 const { Router } = require('express')
-const jwt = require('../modules/jwt')
+import * as jwt from '../modules/jwt'
 const {
-  parserMiddleware,
   QueryEnum,
-  QueryString,
   QueryDate,
   QueryInt,
   parserQuery,
