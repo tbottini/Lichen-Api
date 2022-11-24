@@ -23,7 +23,19 @@ if (process.env.DATABASE_URL == null) {
   process.exit(1)
 }
 
-if (process.env.NODE_ENV != 'production') app.use(cors())
+console.log(process.env.NODE_ENV)
+
+app.use(
+  cors({
+    origin:
+      process.env.NODE_ENV == 'production'
+        ? 'https://app.reseau-lichen.fr'
+        : 'http://localhost:8081',
+    methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS', 'HEAD', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  })
+)
 
 app
   .use(middlewareLogger)

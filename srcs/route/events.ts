@@ -1,8 +1,8 @@
 import { Prisma, PrismaClient } from '@prisma/client'
 const _ = require('lodash')
+import * as jwt from '../modules/jwt'
 const prisma = new PrismaClient(),
   { Router } = require('express'),
-  jwt = require('../modules/jwt'),
   DateAttr = require('../attr/date'),
   {
     parserMiddleware,

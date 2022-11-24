@@ -13,11 +13,11 @@ export function checkInstall(): string {
   return 'npm install .'
 }
 
-export function sudo(cmd) {
+export function sudo(cmd: string): string {
   return 'sudo ' + cmd
 }
 
-export function sh(cmd) {
+export function sh(cmd: string): string {
   console.log(cmd)
   return execShPromise(cmd)
 }
