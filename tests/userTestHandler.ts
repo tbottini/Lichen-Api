@@ -1,10 +1,7 @@
-import { User } from '@prisma/client'
 import { addUser, createUserList } from './helpers/user.test.helper'
-
 const request = require('supertest')
 import { app } from '../srcs/index'
-const { PrismaClient } = require('@prisma/client')
-const prisma = new PrismaClient()
+import { clearDatabase } from './helpers/clearDatabase.helper'
 
 export class UserTestHandler {
   static async addUser(
@@ -129,15 +126,8 @@ export class UserTestHandler {
     )
   }
 
-  static async clearDatabase() {
-    await prisma.artwork.deleteMany()
-    await prisma.project.deleteMany()
-    await prisma.event.deleteMany()
-    await prisma.artworkLikes.deleteMany()
-    await prisma.eventFollow.deleteMany()
-    await prisma.gallery.deleteMany()
-    await prisma.userFollow.deleteMany()
-    await prisma.user.deleteMany()
+  static async clearDatabase(): Promise<void> {
+    await clearDatabase()
   }
 }
 
