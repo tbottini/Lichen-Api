@@ -1,5 +1,5 @@
-const app = require('../srcs/index')
 const request = require('supertest')
+import { app } from '../srcs'
 import { UserTestHandler } from './userTestHandler'
 
 describe('Search', () => {

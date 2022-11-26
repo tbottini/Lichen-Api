@@ -18,8 +18,8 @@ const artworks = require('./route/artworks.router.ts')
 const news = require('./route/news')
 import { swipeRouter } from './swipe/Swipe.router'
 
-const expressSwagger = require('express-swagger-generator')(expressApp)
-expressSwagger(require('./swagger.options.js'))
+// const expressSwagger = require('express-swagger-generator')(expressApp)
+// expressSwagger(require('./swagger.options.js'))
 
 if (process.env.DATABASE_URL == null) {
   logger.error('env DATABASE_URL isnt defined')
@@ -79,7 +79,7 @@ if (process.env.NODE_ENV != 'test') {
       /api-docs for documentation`)
   })
 }
-export const app = process.env.NODE_ENV == 'test' ? expressApp.listen() : null
+export const app = expressApp
 
 function getEnvFile(): string {
   switch (process.env.NODE_ENV) {
