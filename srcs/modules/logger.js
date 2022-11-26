@@ -65,21 +65,18 @@ const logger = winston.createLogger({
   transports,
 })
 
-let date = new Date().toISOString()
 const logFormat = printf(function (info) {
   return `${
     info.level
   }: ${typeof info.message == 'string' ? info.message : '\n' + JSON.stringify(info.message, null, 4)}`
 })
 
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(
-    new Console({
-      level: 'http',
-      format: combine(colorize(), logFormat),
-    })
-  )
-}
+logger.add(
+  new Console({
+    level: 'http',
+    format: combine(colorize(), logFormat),
+  })
+)
 
 logger.stream = {
   write: function (message, encoding) {
