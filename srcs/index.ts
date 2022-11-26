@@ -26,7 +26,7 @@ if (process.env.DATABASE_URL == null) {
   process.exit(1)
 }
 
-console.log(process.env.NODE_ENV)
+console.log('NODE_ENV', process.env.NODE_ENV)
 
 expressApp.use(
   cors({
