@@ -32,11 +32,7 @@ describe('Likes', () => {
 
     const body = res.body
 
-    console.log('create event', body)
-
     res = await request(app).get('/events/' + body.id)
-
-    console.log('get event', res.body)
 
     expect(res.body).toMatchObject({
       id: body.id,
@@ -52,8 +48,6 @@ describe('Likes', () => {
   })
 
   it('should create an event with image', async () => {
-    console.log('EVENT', Date.UTC(2002, 3, 12, 22, 0, 0))
-
     const event = await request(app)
       .post('/events')
       .attach('file', './tests/img_test.jpg')
@@ -62,7 +56,6 @@ describe('Likes', () => {
       .field('dateStart', Date.UTC(2002, 3, 12, 22, 0, 0))
       .field('dateEnd', Date.UTC(2002, 3, 12, 24, 0, 0))
 
-    console.log('RESULT TEST', event.body)
     expect(event.body).toMatchObject({
       name: 'event#2',
     })
@@ -79,8 +72,6 @@ describe('Likes', () => {
       .set('Authorization', 'bearer ' + token)
       .field('name', 'event#2')
       .field('dateStart', '2019-10-11 08:52:09.181716')
-
-    console.log('DATE RESULT', event.body)
 
     expect(event.body).toMatchObject({
       name: 'event#2',
@@ -99,13 +90,10 @@ describe('Likes', () => {
       .field('name', 'event#2')
       .field('dateStart', datenumber)
 
-    console.log('DATE RESULT', event.body)
-
     expect(event.body).toMatchObject({
       name: 'event#2',
     })
     const dateReceived = new Date(event.body.dateStart)
-    console.log('COMPARE', dateReceived.getTime(), datenumber)
     expect(dateReceived.getTime() == datenumber).toBe(true)
     expect(event.body).toHaveProperty('src')
     expect(event.status).toBe(200)
@@ -131,19 +119,13 @@ describe('Likes', () => {
       ],
     })
 
-    console.log(user)
-
     const eventRef = user.events[0]
-    console.log(eventRef)
 
     const e = await request(app).get('/events')
-    console.log(e.body[1].organisator)
 
     const eventsGet = await request(app).get(
       '/events?longitude=45.0&latitude=45.0&radius=30&medium=PAINTING'
     )
-
-    console.log(eventsGet.body)
 
     expect(eventsGet.statusCode).toBe(200)
     expect(eventsGet.body.length).toBe(1)
@@ -151,8 +133,6 @@ describe('Likes', () => {
     var eventsGetMultipleFilter = await request(app).get(
       '/events?longitude=45.0&latitude=45.0&radius=30&medium=PAINTING,SCULPTURE'
     )
-
-    console.log(eventsGetMultipleFilter.body)
 
     expect(eventsGetMultipleFilter.statusCode).toBe(200)
     expect(eventsGetMultipleFilter.body.length).toBe(1)
@@ -168,20 +148,17 @@ describe('Likes', () => {
     let self = await request(app)
       .get('/users/self')
       .set('Authorization', 'bearer ' + token)
-    console.log('before follow ', self.body)
 
     const follow = await request(app)
       .post('/events/' + ref.event.id.toString() + '/follow')
       .set('Authorization', 'bearer ' + token)
 
     expect(follow.status).toBe(200)
-    console.log('EVENT FOLLOW')
 
     self = await request(app)
       .get('/users/self')
       .set('Authorization', 'bearer ' + token)
 
-    console.log('test', self.body)
     expect(self.body.eventFollow.length).toBe(1)
   })
 
@@ -211,8 +188,6 @@ describe('Likes', () => {
         dateEnd: Date.UTC(2001, 1, 3, 12, 30, 10),
       })
 
-    console.log('EVENT CREATED', event.body)
-
     const resEvent = await request(app)
       .put('/events/' + event.body.id)
       .set('Authorization', 'bearer ' + token)
@@ -221,9 +196,7 @@ describe('Likes', () => {
         latitude: 10,
       })
 
-    console.log('EVENT UPDATE', resEvent.body)
     expect(resEvent.status).toBe(200)
-    console.log(resEvent.body, 'TESTT', resEvent.body.latitute)
     expect(resEvent.body.latitude).toBe(10)
     expect(resEvent.body.longitude).toBe(10)
   })

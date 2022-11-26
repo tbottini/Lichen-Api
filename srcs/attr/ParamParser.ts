@@ -13,18 +13,19 @@ abstract class AttributeParser {
     this.parsedDict = {}
   }
 
-  async parseAll(body: any): Promise<boolean> {
-    console.log(body)
-    var parseResult = this.attributes.every(async (attribute: Attribute) => {
-      console.log('test')
+  async parseAll(body: Record<string, string>): Promise<boolean> {
+    const parseResult = this.attributes.every(async (attribute: Attribute) => {
       const name = attribute.name
-      var value = body[name]
-      if (value == undefined) return true
-      console.log(value)
+      const value = body[name]
+      if (value == undefined) {
+        return true
+      }
+
       try {
         const correct = await attribute.parse(value)
-        console.log('errro', correct)
-        if (correct) this.parsedDict[attribute.name] = attribute.value
+        if (correct) {
+          this.parsedDict[attribute.name] = attribute.value
+        }
         return correct
       } catch (e) {
         return false

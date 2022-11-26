@@ -98,8 +98,6 @@ router
       include: zone == undefined ? undefined : includeAuthorGallery,
     })
 
-    console.log('getted artwork', results, zone)
-
     if (zone != null) {
       results = filterArtworksOnZoneSquareToCircle(zone, results)
 
