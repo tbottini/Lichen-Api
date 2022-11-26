@@ -16,6 +16,7 @@ export class SwipeService {
     return this.artworkRepository.getArtworkFeed({
       zoneFilter: dto.zone,
       userId: dto.userId,
+      medium: dto.medium,
     })
   }
 }
