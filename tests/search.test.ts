@@ -1,26 +1,12 @@
-import { PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
-const request = require('supertest')
 const app = require('../srcs/index')
-const { UserTestHandler } = require('./userTestHandler')
-
-class PrismaControllerTest {
-  static async deleteAll() {
-    var t = ['user', 'artwork', 'gallery', 'event', 'project', 'eventFollow']
-    for (const table of t) {
-      await prisma[table].deleteMany()
-    }
-  }
-}
+const request = require('supertest')
+import { UserTestHandler } from './userTestHandler'
 
 describe('Search', () => {
-  var users = null
+  let users: any[]
 
   beforeAll(async () => {
     await UserTestHandler.clearDatabase()
-    // tout doit être clear todo
-
-    // await PrismaControllerTest.deleteAll();
 
     users = await UserTestHandler.createUserList([
       {
@@ -74,40 +60,13 @@ describe('Search', () => {
       radius: 100,
     })
 
-    const result = await prisma.artwork.findMany({
-      where: {},
-      include: {
-        project: {
-          include: {
-            author: {
-              include: {
-                gallery: true,
-              },
-            },
-          },
-        },
-      },
-    })
-
     // l'artiste n'est pas géoréférencé
     // todo ajouter un argument dans la fixture pour dire si il est georéférencé ou non
-    console.log(
-      'RESULT',
-      result.map(artwork => artwork.project.author)
-    )
 
     expect(res.body.map(artwork => artwork.title)).toEqual([
       'artwork#1',
       'artwork#2',
     ])
-
-    res.body.forEach(artwork =>
-      console.log(
-        artwork.title,
-        artwork.project.author.firstname,
-        artwork.project.author.gallery
-      )
-    )
   })
 
   // it("should search by firstname / lastname", async() =>

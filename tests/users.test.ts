@@ -1,6 +1,6 @@
 const request = require('supertest')
-const app = require('../srcs/index')
-const { UserTestHandler } = require('./userTestHandler')
+import { app } from '../srcs/index'
+import { UserTestHandler } from './userTestHandler'
 
 describe('Users Routes Test', () => {
   var user

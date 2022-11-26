@@ -1,10 +1,11 @@
-const { UserTestHandler } = require('./userTestHandler')
+import { UserTestHandler } from './userTestHandler'
 const request = require('supertest')
-const app = require('../srcs/index')
-const { PrismaClient } = require('@prisma/client')
+import { app } from '../srcs/index'
+
+console.log(app)
 
 describe('News Routes Test', () => {
-  const ref = {}
+  const ref: any = {}
 
   beforeAll(async () => {
     ref.user = await UserTestHandler.addUser({
@@ -60,27 +61,10 @@ describe('News Routes Test', () => {
       events: [{ name: 'e1' }],
     })
 
-    var now = new Date(Date.now())
-    console.log('EVENT HOUR', now)
-    now = now.getHours()
-    var artworkHour = new Date(newUser.projects[0].artworks[0].insertion)
-    artworkHour = artworkHour.getHours()
-    var eventHour = new Date(newUser.events[0].insertion)
-    console.log('EVENT HOUR', eventHour)
+    const currentHours = new Date().getHours()
+    const eventHour = new Date(newUser.events[0].insertion).getHours()
 
-    eventHour = eventHour.getHours()
-
-    console.log('EVENT HOUR', eventHour, now)
-
-    expect(eventHour).toBe(now)
-
-    console.log(now.getHour)
-
-    // var res = await request(app).post("/users/" + newUser.id.toString() + "/follow")
-    // .set("Authorization", "bearer " + ref.user)
-
-    // var res = await request(app).get("/news/");
-    // console.log("NEWS", res.body);
+    expect(eventHour).toBe(currentHours)
   })
 
   afterAll(async () => {

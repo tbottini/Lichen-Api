@@ -10,14 +10,14 @@ const {
   QueryEnum,
   QueryString,
   QueryDate,
-  QueryInt,
   parserQuery,
 } = require('../modules/middleware-parser')
 const fileMiddleware = require('../modules/middleware-file')
-const artworkController = require('../controller/artworks')
 const { researchSort } = require('../modules/research')
 const userScope = require('./users')
-import { ZoneAttribute, Position } from '../attr/zone'
+import { ZoneAttribute } from '../attr/zone'
+import { Position } from '../commons/class/Position.class'
+
 const { mediumDict } = require('../controller/mediumEnum')
 const logger = require('../modules/logger')
 
@@ -29,11 +29,11 @@ const querySearch = {
 }
 const { MiddlewareIntParser } = require('../attr/int')
 
-var dimensionParse = new MiddlewareIntParser({
+const dimensionParse = new MiddlewareIntParser({
   attr: ['width', 'length', 'height'],
 })
 
-var router = new Router()
+const router = new Router()
 
 router
   /**
@@ -58,7 +58,7 @@ router
     const { dateStart, dateEnd, title, medium, latitude, longitude, radius } =
       req.query
 
-    var zone = ZoneAttribute.parse(latitude, longitude, radius)
+    const zone = ZoneAttribute.parse(latitude, longitude, radius)
 
     const getGeoFilter = (zone: ZoneAttribute | undefined) =>
       !zone
@@ -82,7 +82,7 @@ router
       },
     }
 
-    var results = await prisma.artwork.findMany({
+    let results = await prisma.artwork.findMany({
       where: {
         start: {
           lte: dateEnd,
@@ -114,60 +114,6 @@ router
     return res.json(results)
   })
 
-  /**
-   * @route GET /artworks/random
-   * @group Artworks
-   * @param {integer} limit.query
-   * @param {float} longitude.query
-   * @param {float} latitude.query
-   * @param {radius} radius.query
-   * @returns 200 - Array of random artworks depending to the given filter
-   */
-  .get(
-    '/random',
-    [
-      jwt.middleware,
-      parserQuery({ limit: new QueryInt({ max: 100, min: 0 }) }),
-    ],
-    async (req, res) => {
-      //todo add type of artwork research and place
-      var { limit, longitude, latitude, radius } = req.query
-
-      var zone = ZoneAttribute.parse(latitude, longitude, radius)
-
-      if (!limit) limit = 10
-
-      var artworksFeed = await artworkController.getRandomArtwork(
-        req.user.id,
-        limit,
-        zone
-      )
-
-      if (zone != null) {
-        artworksFeed = filterArtworksRandomToCircleZone(zone, artworksFeed)
-      }
-
-      return res.json(artworksFeed)
-    }
-  )
-
-  /**
-   * Update your artwork according to his ID
-   * @route PUT /artworks/
-   * @group Artworks
-   * @consumes multipart/form-data
-   * @param {integer} id.path.required
-   * @param {string} title.query - firstname of user
-   * @param {string} description.query
-   * @param {date} start.query
-   * @param {integer} index.query
-   * @param {enum} medium.query
-   * @param {integer} height.query
-   * @param {integer} length.query
-   * @param {integer} width.query
-   * @returns {object} 200 - The user profile
-   * @security JWT
-   */
   .put(
     '/:id',
     [
@@ -282,12 +228,6 @@ router
     }
   )
 
-  /**
-   * @route GET /:id
-   * @group Artworks
-   * @param {integer} id.path.required
-   * @returns - 200 artworks according to his id
-   */
   .get('/:id', parserMiddleware({ id: 'int' }), async (req, res) => {
     var result = await prisma.artwork.findUnique({
       where: {
@@ -346,14 +286,7 @@ router
       return res.json(result)
     }
   )
-  /**
-   * Add an artwork to your list of artwork likes
-   * @route POST /artworks/:id/like
-   * @group Artworks
-   * @param {integer} id.path.required - artwork's id
-   * @returns {object} 200 - The user profile
-   * @security JWT
-   */
+
   .get('/:id/like', parserMiddleware({ id: 'int' }), async (req, res) => {
     var result = await prisma.artwork.findUnique({
       where: {
@@ -370,14 +303,7 @@ router
 
     return res.json(result)
   })
-  /**
-   * Remove an artwork to your list of artwork likes
-   * @route DELETE /artworks/:id/like
-   * @group Artworks
-   * @param {integer} id.path.required - the removed artwork's id
-   * @returns {object} 200 - The user profile
-   * @security JWT
-   */
+
   .delete(
     '/:id/like/',
     [jwt.middleware, parserMiddleware({ id: 'int' })],
@@ -426,14 +352,57 @@ function filterArtworksOnZoneSquareToCircle(zone: ZoneAttribute, artworks) {
   })
 }
 
-/**
- * will filter a list of artworks, these artworks having different artist between each other
- */
-function filterArtworksRandomToCircleZone(zone: ZoneAttribute, artworks) {
-  return artworks.filter(artwork => {
-    var p: Position = new Position(artwork.latitude, artwork.longitude)
-    return zone.isUnderCircleZone(p)
-  })
-}
-
 module.exports = { router, dimensionParse }
+
+/**
+ * Update your artwork according to his ID
+ * @route PUT /artworks/
+ * @group Artworks
+ * @consumes multipart/form-data
+ * @param {integer} id.path.required
+ * @param {string} title.query - firstname of user
+ * @param {string} description.query
+ * @param {date} start.query
+ * @param {integer} index.query
+ * @param {enum} medium.query
+ * @param {integer} height.query
+ * @param {integer} length.query
+ * @param {integer} width.query
+ * @returns {object} 200 - The user profile
+ * @security JWT
+ */
+
+/**
+ * @route GET /artworks/random
+ * @group Artworks
+ * @param {integer} limit.query
+ * @param {float} longitude.query
+ * @param {float} latitude.query
+ * @param {radius} radius.query
+ * @returns 200 - Array of random artworks depending to the given filter
+ */
+
+/**
+ * @route GET /:id
+ * @group Artworks
+ * @param {integer} id.path.required
+ * @returns - 200 artworks according to his id
+ */
+
+/**
+ * Add an artwork to your list of artwork likes
+ * @route POST /artworks/:id/like
+ * @group Artworks
+ * @param {integer} id.path.required - artwork's id
+ * @returns {object} 200 - The user profile
+ * @security JWT
+ */
+
+/**
+ * Remove an artwork to your list of artwork likes
+ * @route DELETE /artworks/:id/like
+ * @group Artworks
+ * @param {integer} id.path.required - the removed artwork's id
+ * @returns {object} 200 - The user profile
+ * @security JWT
+ */

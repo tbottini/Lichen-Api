@@ -1,11 +1,10 @@
-const { UserTestHandler } = require('./userTestHandler')
+import { UserTestHandler } from './userTestHandler'
 const request = require('supertest')
-const app = require('../srcs/index')
-const { PrismaClient } = require('@prisma/client')
-const prisma = new PrismaClient()
+import { app } from '../srcs/index'
+// const app = require('../srcs/index')
 
 describe('Projects Routes Test', () => {
-  ref = {}
+  const ref: any = {}
 
   beforeAll(async () => {
     await UserTestHandler.clearDatabase()

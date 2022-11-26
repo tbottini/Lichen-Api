@@ -1,88 +1,20 @@
+import { User } from '@prisma/client'
+import { addUser, createUserList } from './helpers/user.test.helper'
+
 const request = require('supertest')
-const app = require('../srcs/index')
+import { app } from '../srcs/index'
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 
-class UserTestHandler {
-  static async addUser({
-    email,
-    firstname,
-    lastname,
-    password,
-    projects,
-    latitude,
-    longitude,
-    events,
-    medium,
-    geoReferenced,
-  }) {
-    const DEFAULT_PASSWORD = 'PasswordTest1234@,'
-
-    var dataRequest = {
-      email,
-      firstname,
-      lastname,
-      password: DEFAULT_PASSWORD,
-      medium,
-    }
-
-    var res = await request(app).post('/users/register').send(dataRequest)
-
-    console.log(res.body)
-
-    res = await request(app).post('/users/login').send({
-      email: email,
-      password: DEFAULT_PASSWORD,
-    })
-    console.log(res.body)
-
-    expect(res.body).toHaveProperty('token')
-    var token = res.body.token
-    console.log(token)
-
-    console.log(longitude, latitude)
-    if (longitude && latitude) {
-      var gallery = await this.updateGallery(token, { longitude, latitude })
-      dataRequest = {
-        ...dataRequest,
-        ...gallery,
-      }
-      console.log('POSITION', res.body)
-    }
-
-    var user = {
-      token: token,
-      ...dataRequest,
-    }
-
-    user.projects = []
-
-    if (projects && !Array.isArray(projects))
-      throw 'UserTestHandler Projects attribute must be n array'
-    for (var i = 0; projects && i < projects.length; i++) {
-      var project = await this.createProject(token, projects[i])
-      user.projects.push(project)
-    }
-
-    if (events != null && Array.isArray(events)) {
-      user.events = await this.createListEvent(token, events)
-    }
-
-    if (geoReferenced == true) {
-      await request(app)
-        .put('/users/')
-        .set('Authorization', 'bearer ' + token)
-        .send({
-          geoReferenced: true,
-        })
-      user.geoReferenced = true
-    }
-
-    return user
+export class UserTestHandler {
+  static async addUser(
+    userCreationTestDto: UserFixtureCreationDto
+  ): Promise<any> {
+    return addUser(userCreationTestDto)
   }
 
   static async updateUser(token, { firstname, lastname, style, medium }) {
-    var res = await request(app)
+    const res = await request(app)
       .put('/users')
       .send({
         firstname,
@@ -97,12 +29,10 @@ class UserTestHandler {
   }
 
   static async updateGallery(token, { latitude, longitude }) {
-    var res = await request(app)
+    const res = await request(app)
       .put('/users/self/gallery')
       .send({ longitude, latitude })
       .set('Authorization', 'bearer ' + token)
-
-    console.log('GALLERY', res.body.gallery)
 
     return {
       latitude: res.body.gallery.latitude,
@@ -111,11 +41,10 @@ class UserTestHandler {
   }
 
   static async self(token) {
-    var r = await request(app)
+    const r = await request(app)
       .get('/users/self')
       .set('Authorization', 'bearer ' + token)
 
-    console.log(r.body)
     return r.body
   }
 
@@ -126,11 +55,8 @@ class UserTestHandler {
       .set('Authorization', 'bearer ' + token)
       .field('title', title || 'null')
 
-    console.log('TOKEN PROJECT', projectResult.body)
-
     const project = projectResult.body
     project.artworks = []
-    console.log(title, artworks)
 
     for (let i = 0; i < artworks.length; i++) {
       const artwork = artworks[i]
@@ -141,26 +67,13 @@ class UserTestHandler {
         .field('title', artwork.title || 'null')
         .field('medium', artwork.medium || 'null')
 
-      console.log('ARTWORK NEW', result.body)
-
       project.artworks.push(result.body)
     }
     return project
   }
 
-  static async createUserList(listData) {
-    // var users = await Promise.all(listData.map(async (data) => await this.addUser(data)));
-
-    let u
-    const uArray = []
-
-    for (let i = 0; i < listData.length; i++) {
-      console.log('DATA####')
-      u = await this.addUser(listData[i])
-      console.log(u)
-      uArray.push(u)
-    }
-    return uArray
+  static async createUserList(listData: UserFixtureCreationDto[]) {
+    return createUserList(listData)
   }
 
   async searchUsers({ firstname, lastname, zone, style, medium }) {
@@ -228,6 +141,14 @@ class UserTestHandler {
   }
 }
 
-module.exports = {
-  UserTestHandler,
+export interface UserFixtureCreationDto {
+  email?: string
+  firstname?: string
+  lastname?: string
+  latitude?: number
+  longitude?: number
+  geoReferenced?: boolean
+  events?
+  medium?
+  projects?
 }
