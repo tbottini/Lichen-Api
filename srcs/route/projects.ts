@@ -1,13 +1,13 @@
 import { PrismaClient } from '@prisma/client'
+import { parserMiddleware } from '../commons/parsers/QueryParser'
+import { mediumDict } from '../medium/mediumEnum'
 const prisma = new PrismaClient()
 const { Router } = require('express')
 import * as jwt from '../modules/jwt'
 const DateAttr = require('../attr/date')
-const { parserMiddleware } = require('../modules/middleware-parser')
 const fileMiddleware = require('../modules/middleware-file')
 const IndexAttr = require('../attr/index')
 const { MiddlewareIntParser } = require('../attr/int')
-const { mediumDict } = require('../controller/mediumEnum')
 const EnumAttr = require('../attr/enum')
 const logger = require('../modules/logger')
 
@@ -18,22 +18,7 @@ var yearProjectParse = new MiddlewareIntParser({
   attr: ['yearStart', 'yearEnd'],
 })
 
-var router = new Router()
-
-router
-  /**
-   * @route POST /projects/
-   * @group Projects - Opération about project and artworks that they handle
-   * @consumes multipart/form-data
-   * @param {string} title.query
-   * @param {string} description.query
-   * @param {enum} medium.query
-   * @param {integer} yearStart.query
-   * @param {integer} yearEnd.query
-   * @param {file} file.query
-   * @security jwt
-   * @returns 200 - New projects
-   */
+const router = new Router()
   .post(
     '/',
     [jwt.middleware, fileMiddleware(), yearProjectParse.getParser()],
@@ -82,27 +67,9 @@ router
       return res.json(result)
     }
   )
-  /**
-   * @route GET /projects/
-   * @group Projects - Opération about project and artworks that they handle
-   * @returns 200 - Array of projects
-   */
   .get('/', async (req, res) => {
     return res.json(await prisma.project.findMany({}))
   })
-  /**
-   * @route POST /projects/:id
-   * @group Projects - Opération about project and artworks that they handle
-   * @param {integer} id.path.required
-   * @param {string} title.query
-   * @param {string} description.query
-   * @param {integer} index.query
-   * @param {enum} medium.query
-   * @param {integer} yearStart.query
-   * @param {integer} yearEnd.query
-   * @security jwt
-   * @returns 200 - New projects
-   */
   .put(
     '/:id',
     [
@@ -170,15 +137,6 @@ router
       return res.json(result)
     }
   )
-  /**
-   * @route PUT /projects/:id_project/index/:id_artwork - set the id of artworks
-   * @group Projects - Opération about project and artworks that they handle
-   * @param {integer} id_project.path.required
-   * @param {integer} id_artwork.path.required
-   * @param {strin g} index.query.required
-   * @security jwt
-   * @returns 200 - Project with new order
-   */
   .put(
     '/:id_project/index/:id_artwork',
     [
@@ -236,13 +194,6 @@ router
       )
     }
   )
-  /**
-   * @route DELETE /projects/:id
-   * @group Projects - Opération about project and artworks that they handle
-   * @param {integer} id.path.required
-   * @security jwt
-   * @returns 200 - artwork deleted
-   */
   .delete(
     '/:id',
     [jwt.middleware, parserMiddleware({ id: 'int' })],
@@ -270,13 +221,6 @@ router
       return res.json(result)
     }
   )
-  /**
-   * @route GET /projects/:id
-   * @group Projects - Opération about project and artworks that they handle
-   * @param {integer} id.path.required
-   * @security jwt
-   * @returns 200 - projects according to the id
-   */
   .get('/:id', parserMiddleware({ id: 'int' }), async (req, res) => {
     var result = await prisma.project.findUnique({
       where: {
@@ -296,12 +240,6 @@ router
       return res.status(404).json({ error: 'no ressources found' })
     return res.json(result)
   })
-  /**
-   * @route GET /projects/:id/artworks
-   * @group Projects
-   * @param {integer} id.path.required
-   * @returns 200 - return list of project-s artworks according to the project's id
-   */
   .get('/:id/artworks', parserMiddleware({ id: 'int' }), async (req, res) => {
     //check if the project is own by the user
     //check params
@@ -327,23 +265,6 @@ router
       return res.status(404).json({ error: 'no ressources found' })
     return res.json(result)
   })
-
-  /**
-   * adding element
-   * for editing or deleting
-   * @route POST /projects/:id/artworks
-   * @group Projects
-   * @param {string} title.query
-   * @param {string} description.query
-   * @param {date} start.query
-   * @param {enum} medium.query
-   * @param {integer} id.path.required
-   * @param {integer} height.query
-   * @param {integer} width.query
-   * @param {integer} length.query
-   * @security jwt
-   * @returns 200 - return list of project-s artworks according to the project's id
-   */
   .post(
     '/:id/artworks',
     [

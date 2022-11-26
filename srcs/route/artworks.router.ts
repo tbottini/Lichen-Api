@@ -5,20 +5,21 @@ import * as jwt from '../modules/jwt'
 const DateAttr = require('../attr/date')
 const EnumAttr = require('../attr/enum')
 const IndexAttr = require('../attr/index')
-const {
-  parserMiddleware,
-  QueryEnum,
-  QueryString,
-  QueryDate,
-  parserQuery,
-} = require('../modules/middleware-parser')
+
 const fileMiddleware = require('../modules/middleware-file')
 const { researchSort } = require('../modules/research')
 const userScope = require('./users')
 import { ZoneAttribute } from '../attr/zone'
 import { Position } from '../commons/class/Position.class'
+import {
+  parserMiddleware,
+  parserQuery,
+  QueryDate,
+  QueryEnum,
+  QueryString,
+} from '../commons/parsers/QueryParser'
+import { mediumDict } from '../medium/mediumEnum'
 
-const { mediumDict } = require('../controller/mediumEnum')
 const logger = require('../modules/logger')
 
 const querySearch = {
@@ -351,56 +352,3 @@ function filterArtworksOnZoneSquareToCircle(zone: ZoneAttribute, artworks) {
 }
 
 module.exports = { router, dimensionParse }
-
-/**
- * Update your artwork according to his ID
- * @route PUT /artworks/
- * @group Artworks
- * @consumes multipart/form-data
- * @param {integer} id.path.required
- * @param {string} title.query - firstname of user
- * @param {string} description.query
- * @param {date} start.query
- * @param {integer} index.query
- * @param {enum} medium.query
- * @param {integer} height.query
- * @param {integer} length.query
- * @param {integer} width.query
- * @returns {object} 200 - The user profile
- * @security JWT
- */
-
-/**
- * @route GET /artworks/random
- * @group Artworks
- * @param {integer} limit.query
- * @param {float} longitude.query
- * @param {float} latitude.query
- * @param {radius} radius.query
- * @returns 200 - Array of random artworks depending to the given filter
- */
-
-/**
- * @route GET /:id
- * @group Artworks
- * @param {integer} id.path.required
- * @returns - 200 artworks according to his id
- */
-
-/**
- * Add an artwork to your list of artwork likes
- * @route POST /artworks/:id/like
- * @group Artworks
- * @param {integer} id.path.required - artwork's id
- * @returns {object} 200 - The user profile
- * @security JWT
- */
-
-/**
- * Remove an artwork to your list of artwork likes
- * @route DELETE /artworks/:id/like
- * @group Artworks
- * @param {integer} id.path.required - the removed artwork's id
- * @returns {object} 200 - The user profile
- * @security JWT
- */

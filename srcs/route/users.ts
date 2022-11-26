@@ -4,21 +4,22 @@ const prisma = new PrismaClient()
 const { Router } = require('express')
 const regex = require('../modules/regexUtils')
 import * as jwt from '../modules/jwt'
+import {
+  parserMiddleware,
+  QueryString,
+  QueryInt,
+  QueryEnum,
+  parserQuery,
+} from '../commons/parsers/QueryParser'
+import { mediumDict } from '../medium/mediumEnum'
 const EnumAttr = require('../attr/enum'),
   EmailAttr = require('../attr/email'),
   { BoolAttr } = require('../attr/boolean'),
   PasswordAttr = require('../attr/password')
 const passwordUtils = require('../modules/password')
 const fileMiddleware = require('../modules/middleware-file')
-const {
-  parserMiddleware,
-  QueryString,
-  QueryInt,
-  QueryEnum,
-  parserQuery,
-} = require('../modules/middleware-parser')
+
 const { researchSort } = require('../modules/research')
-const { mediumDict } = require('../controller/mediumEnum')
 const logger = require('../modules/logger')
 
 const querySearch = {
@@ -64,21 +65,6 @@ const router = new Router()
 const userService = new UserService()
 
 router
-
-  /**
-   * @route POST /users/register
-   * @group Users - Opérations about users
-   * @consumes application/x-www-form-urlencoded
-   * @param {string} email.query
-   * @param {string} firstname.query
-   * @param {string} lastname.query
-   * @param {string} pseudo.query
-   * @param {string} websiteUrl.query
-   * @param {string} description.query
-   * @param {string} password.query
-   * @param {enum} medium.query
-   * @returns {object} 200 - the created user
-   */
   .post('/register', async (req, res) => {
     const {
       email,
@@ -137,14 +123,6 @@ router
 
     res.json({ token })
   })
-
-  /**
-   * @route POST /users/login
-   * @group Users
-   * @param {string} name.query.required - emails names who'll be search
-   * @param {string} name.query.required - password names who'll be search
-   * @returns {object} 200 - The user profile
-   */
   .post('/login', async (req, res) => {
     const { email, password } = req.body
     logger.debug('login', req.body)
@@ -182,12 +160,6 @@ router
 
     return res.json({ token: jwt.create(user) })
   })
-
-  /**
-   * @route GET /users/self
-   * @group Users
-   * @returns {object} 200 - An Object corresponding to the user profile of  the client
-   */
   .get('/self', jwt.middleware, async (req, res) => {
     logger.debug(req.user)
 
@@ -249,22 +221,11 @@ router
       })
   })
 
-  /**
-   * @route GET /users/
-   * @group Users
-   * @param {string} name.query.required - users names who'll be search according to the firstname and the lastname of users
-   * @returns {object} 200 - An array of users search depending on there names
-   */
   .get('/', parserQuery(querySearch), async (req, res) => {
     const { name } = req.query
 
     const whereSection = {}
-    console.log('test log')
-    logger.debug('hello world')
-    logger.debug({ ceci: "n'est pas un exercie" })
-    logger.debug('houla', 'houla')
-    logger.debug(JSON.stringify({ ceci: 'cela' }))
-    logger.debug('', name)
+
     let multiFiltername
     if (name != undefined && name != '') {
       multiFiltername = name
@@ -300,19 +261,6 @@ router
 
     return res.json(results)
   })
-
-  /**
-   * Select Profiles depending to there positions
-   * this path is dedicated to the use of google map or other mapping solution using a rectangular area
-   * @route GET /users/gallery
-   * @group Users
-   * @param {float} lagMin.query - minimal lagitude
-   * @param {float} lagMax.query - maximal lagitude
-   * @param {float} longMin.query - minimal longitude
-   * @param {float} longMax.query - maximal longitude
-   * @param {enum} medium.query - user's medium
-   * @returns {object} 200 - The user profile with his gallery information
-   */
   .get('/gallery', parserQuery(querySearchGallery), async (req, res) => {
     //! todo add a security if they are an inconsistent parameter
     // ex : longitude / lagitude / radius
@@ -347,15 +295,6 @@ router
 
     return res.json(result)
   })
-
-  /**
-   * Search for a profile according to his id
-   * @route GET /users/:id
-   * @group Users
-   * @param {integer} id.path.required the user's id
-   * @security JWT
-   * @returns {object} 200 - The user profile
-   */
   .get('/:id', parserMiddleware({ id: 'int' }), async (req, res) => {
     prisma.user
       .findUnique({
@@ -397,14 +336,6 @@ router
         return res.status(400).json({ error: 'No user found with this token' })
       })
   })
-
-  /**
-   * Delete your self profile
-   * @route DELETE /users/self
-   * @group Users
-   * @returns {object} 200 - The user profile
-   * @security JWT
-   */
   .delete('/self', jwt.middleware, async (req, res) => {
     logger.debug('delete users ' + req.user.id + '...')
     var result = await prisma.user.delete({
@@ -415,26 +346,6 @@ router
     })
     return res.json(result)
   })
-
-  /**
-   * Update your  profile
-   * @route PUT /users/
-   * @group Users
-   * @consumes application/x-www-form-urlencoded application/json
-   * @param {string} email.query
-   * @param {string} password.query
-   * @param {string} firstname.query - firstname of user
-   * @param {string} lastname.query
-   * @param {string} bio.query
-   * @param {string} pseudo.query
-   * @param {string} description.query
-   * @param {string} websiteUrl.query
-   * @param {file} file.query
-   * @param {enum} medium.query
-   * @param {boolean} geoReferenced.query
-   * @returns {object} 200 - The user profile
-   * @security JWT
-   */
   .put('/', [jwt.middleware, fileMiddleware()], async (req, res) => {
     const {
       firstname,
@@ -498,15 +409,6 @@ router
       return res.status(400).json({ error: "this token isn't valid" })
     }
   })
-
-  // --- Users follow part ---
-  /**
-   * @route POST /users/:id/follow
-   * @group Users
-   * @param {integer} id.path.required - user's to follow
-   * @security jwt
-   * @returns {object} 200 - the user's follow
-   */
   .post(
     '/:id/follow',
     [jwt.middleware, parserMiddleware({ id: 'int' })],
@@ -541,13 +443,6 @@ router
     }
   )
 
-  /**
-   * @route DELETE /users/:id/follow
-   * @group Users
-   * @param {integer} id.path.required - user's to unfollow
-   * @security jwt
-   * @returns {object} 200 - the user's unfollow
-   */
   //! you must precise the id of user and not the id of relation
   .delete(
     '/:id/follow',
@@ -562,16 +457,6 @@ router
       return res.json(result)
     }
   )
-
-  /**
-   * Will delete your own gallery
-   * @route PUT /users/self/gallery
-   * @group Users
-   * @security jwt
-   * @param {float} longitude.query
-   * @param {float} latitute.query
-   * @returns {object} 200 - the user's unfollow
-   */
   .put('/self/gallery', [jwt.middleware], async (req, res) => {
     //change the location of the gallery of user
     var { longitude, latitude } = req.body
@@ -614,14 +499,6 @@ router
 
     return res.json(result)
   })
-
-  /**
-   * will delete your own gallery
-   * @route DELETE /users/self/gallery
-   * @group Users
-   * @security jwt
-   * @returns {object} 200 - the user's unfollow
-   */
   .delete('/self/gallery', [jwt.middleware], async (req, res) => {
     //delete the gallery of users
 
@@ -635,13 +512,6 @@ router
 
     return res.json(result)
   })
-
-  /**
-   * @route POST /users/password-forgot
-   * @group Users
-   * @param {string} email.query.required
-   * @returns {object} 200 confirmation of password changed
-   */
   .post('/password-forgot', async (req, res) => {
     // we send an email with the token
     const { email } = req.body

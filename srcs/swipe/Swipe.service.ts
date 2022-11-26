@@ -1,6 +1,7 @@
-import { Medium } from '@prisma/client'
 import { ZoneAttribute } from '../attr/zone'
 import { ArtworkRepository } from './repositories/Artwork.repository'
+import { MediumValues } from '../medium/mediumEnum'
+import { Artwork } from '../interfaces/Artwork.type'
 
 export class SwipeService {
   private readonly artworkRepository: ArtworkRepository
@@ -16,12 +17,12 @@ export class SwipeService {
   }
 
   private async getRandomArtwork(
-    idUser: number,
+    userId: number,
     zone: ZoneAttribute | undefined
   ): Promise<ArtworkUnitFeed[]> {
     return this.artworkRepository.getArtworkFeed({
       zoneFilter: zone,
-      userId: idUser,
+      userId,
     })
   }
 }
@@ -30,21 +31,7 @@ export interface GetSwipeArtworkFeed {
   userId: number
   limit: number
   zone: ZoneAttribute | undefined
-}
-
-export interface Artwork {
-  title?: string
-  id: number
-  description: string
-  src: 'http://test'
-  start: Date
-  index: number
-  projectId: number
-  medium: Medium
-  insertion: Date
-  width: number
-  length: number
-  height: number
+  medium?: MediumValues[]
 }
 
 export interface ArtworkUnitFeed extends Artwork {
