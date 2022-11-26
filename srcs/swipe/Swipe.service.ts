@@ -13,16 +13,9 @@ export class SwipeService {
   async getSwipeArtworkFeed(
     dto: GetSwipeArtworkFeed
   ): Promise<ArtworkUnitFeed[]> {
-    return this.getRandomArtwork(dto.userId, dto.zone)
-  }
-
-  private async getRandomArtwork(
-    userId: number,
-    zone: ZoneAttribute | undefined
-  ): Promise<ArtworkUnitFeed[]> {
     return this.artworkRepository.getArtworkFeed({
-      zoneFilter: zone,
-      userId,
+      zoneFilter: dto.zone,
+      userId: dto.userId,
     })
   }
 }

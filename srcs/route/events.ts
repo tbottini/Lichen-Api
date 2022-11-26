@@ -21,13 +21,13 @@ import {
   QueryEnum,
   QueryString,
 } from '../commons/parsers/QueryParser'
-import { mediumDict } from '../medium/mediumEnum'
+import { mediumEnum } from '../medium/mediumEnum'
 
 const querySearch = {
   dateStart: new QueryDate(),
   dateEnd: new QueryDate(),
   title: new QueryString(),
-  medium: new QueryEnum(mediumDict, { isList: true }),
+  medium: new QueryEnum(mediumEnum, { isList: true }),
 }
 
 const positionParser = new ParamParser([
@@ -57,7 +57,7 @@ const router = new Router()
         var src = req.file.filename
       }
 
-      var mediumAttr = new EnumAttr(mediumDict, medium)
+      var mediumAttr = new EnumAttr(mediumEnum, medium)
       if (mediumAttr.error)
         return res.status(400).json({ error: 'bad format for enum attr' })
 
@@ -190,7 +190,7 @@ const router = new Router()
         await indexAttr.queryUpdateIndex(req.params.id, index)
       }
 
-      var mediumAttr = new EnumAttr(mediumDict, medium)
+      var mediumAttr = new EnumAttr(mediumEnum, medium)
       if (mediumAttr.error)
         return res.status(400).json({ error: 'bad format for enum attr' })
 

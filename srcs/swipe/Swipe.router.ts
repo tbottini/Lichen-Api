@@ -8,7 +8,7 @@ import {
   QueryInt,
   parserQuery,
 } from '../commons/parsers/QueryParser'
-import { mediumDict, MediumValues } from '../medium/mediumEnum'
+import { mediumEnum, MediumValues } from '../medium/mediumEnum'
 import { RequestWithUser } from '../commons/interfaces/Request.types'
 
 const swipeService = new SwipeService()
@@ -20,7 +20,7 @@ swipeRouter.get(
     ...jwt.middleware,
     parserQuery({
       limit: new QueryInt({ max: 100, min: 0 }),
-      medium: new QueryEnum(mediumDict, { isList: true }),
+      medium: new QueryEnum(mediumEnum, { isList: true }),
     }),
   ],
   async (req: RequestWithUser<GetSwipeArtworkDto>, res) => {

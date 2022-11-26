@@ -1,3 +1,4 @@
+import { MediumValues } from '../medium/mediumEnum'
 import {
   PrismaClient,
   Prisma,
@@ -54,13 +55,18 @@ export async function createGalleryForUser(
 }
 
 export function configureArtworkCreation(projectId: number) {
-  return (title: string) =>
+  return (title: string, options?: { medium: MediumValues }) =>
     createArtwork({
       title,
       src: 'test-src',
       projectId,
+      medium: options?.medium,
     })
 }
+export type CreateArworkFunction = (
+  title: string,
+  options?: { medium: MediumValues }
+) => Promise<Artwork>
 
 export function createLikeArtwork({
   likeBy,

@@ -12,6 +12,7 @@ import {
   createUser,
   configureArtworkCreation,
   createGalleryForUser,
+  CreateArworkFunction,
 } from '../Artwork.fixture'
 import { ArtworkRepository } from './Artwork.repository'
 import { ZoneAttribute } from '../../attr/zone'
@@ -37,7 +38,7 @@ describe('Artwork Repository and ArtworkFeedQuery', () => {
     let user: User
     let project: Project
 
-    let createArtworkForAnotherArtist: (title: string) => Promise<Artwork>
+    let createArtworkForAnotherArtist: CreateArworkFunction
     let otherUser: User
     let otherProject: Project
 
@@ -129,6 +130,26 @@ describe('Artwork Repository and ArtworkFeedQuery', () => {
       const artworks = await artworkRepository.getArtworkFeed({
         zoneFilter: new ZoneAttribute(20, 10, 100),
         userId: user.id,
+      })
+
+      expect(artworks).toHaveLength(2)
+    })
+
+    it('should return artworks for a specific medium', async () => {
+      await createArtworkForAnotherArtist('title-1', {
+        medium: 'DRAWING',
+      })
+      await createArtworkForAnotherArtist('title-2', {
+        medium: 'INSTALLATION',
+      })
+      await createArtworkForAnotherArtist('title-2', {
+        medium: 'EDITING',
+      })
+
+      const artworks = await artworkRepository.getArtworkFeed({
+        zoneFilter: undefined,
+        userId: user.id,
+        medium: ['DRAWING', 'INSTALLATION'],
       })
 
       expect(artworks).toHaveLength(2)
