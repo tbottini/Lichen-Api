@@ -2,14 +2,16 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 const { Router } = require('express')
 import * as jwt from '../modules/jwt'
-const {
-  QueryEnum,
-  QueryDate,
-  QueryInt,
-  parserQuery,
-} = require('../modules/middleware-parser')
+
 const { ZoneAttribute, Position } = require('../attr/zone')
 const logger = require('../modules/logger')
+
+import {
+  parserQuery,
+  QueryDate,
+  QueryEnum,
+  QueryInt,
+} from '../commons/parsers/QueryParser'
 
 const mediumSearch = {
   artwork: 'artwork', //toutes les notif sur les nouveaux artwork
@@ -66,7 +68,7 @@ router.get(
 
     logger.debug('test')
 
-    var promises: Array<Promise<Array<Object>>> = []
+    var promises: Array<Promise<Array<any>>> = []
     //recherche des derniers artworks posté par les follow
     promises.push(
       prisma.artwork.findMany({

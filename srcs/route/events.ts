@@ -4,13 +4,6 @@ import * as jwt from '../modules/jwt'
 const prisma = new PrismaClient(),
   { Router } = require('express'),
   DateAttr = require('../attr/date'),
-  {
-    parserMiddleware,
-    parserQuery,
-    QueryDate,
-    QueryString,
-    QueryEnum,
-  } = require('../modules/middleware-parser'),
   { FloatAttribute } = require('../attr/Attribute'),
   { ParamParser } = require('../attr/ParamParser'),
   fileMiddleware = require('../modules/middleware-file'),
@@ -18,9 +11,18 @@ const prisma = new PrismaClient(),
   { researchSort } = require('../modules/research'),
   userScope = require('./users').scope,
   { ZoneAttribute, Position } = require('../attr/zone'),
-  { mediumDict } = require('../controller/mediumEnum'),
   EnumAttr = require('../attr/enum'),
   logger = require('../modules/logger')
+
+import {
+  parserMiddleware,
+  parserQuery,
+  QueryDate,
+  QueryEnum,
+  QueryString,
+} from '../commons/parsers/QueryParser'
+import { mediumDict } from '../medium/mediumEnum'
+
 const querySearch = {
   dateStart: new QueryDate(),
   dateEnd: new QueryDate(),
@@ -38,23 +40,7 @@ const includeField = {
   followedBy: true,
 }
 
-var router = new Router()
-
-router
-  /**
-   * @route POST /events/
-   * @group Events
-   * @consumes application/x-www-form-urlencoded
-   * @param {string} name.query - firstname of user
-   * @param {string} description.query
-   * @param {date} dateStart.query
-   * @param {date} dateEnd.query
-   * @param {enum} medium.query
-   * @param {float} longitude.query
-   * @param {float} latitude.query
-   * @returns {object} 200 - the edited event
-   * @security jwt
-   */
+const router = new Router()
   .post(
     '/',
     [jwt.middleware, fileMiddleware(), positionParser.middleware],
@@ -118,20 +104,6 @@ router
       return res.json(result)
     }
   )
-
-  /**
-   * Will search events accordings to filters
-   * @route GET /events/
-   * @group Events
-   * @param {date} dateStart.query
-   * @param {date} dateEnd.query
-   * @param {string} name.query
-   * @param {float} latitude.query
-   * @param {float} longitude.query
-   * @param {float} radius.query
-   * @param {enum} medium.query - filter about the medium of organisator
-   * @returns {object} 200 - List of events
-   */
   .get('/', parserQuery(querySearch), async (req, res) => {
     /*
      * pour les dates on met une date de départ et une date de fin
@@ -183,23 +155,6 @@ router
 
     return res.json(results)
   })
-
-  /**
-   * Will edit an events
-   * @route PUT /events/:id
-   * @group Events
-   * @param {integer} id.path.required
-   * @param {string} name.query
-   * @param {string} description.query
-   * @param {integer} index.query - the event's occurence index
-   * @param {date} dateStart.query
-   * @param {date} dateEnd.query
-   * @param {enum} medium.query
-   * @param {float} longitude.query
-   * @param {float} latitude.query
-   * @security jwt
-   * @returns {object} 200 - List of events
-   */
   .put(
     '/:id',
     [
@@ -276,15 +231,6 @@ router
       return res.json(result)
     }
   )
-
-  /**
-   * Delete an event
-   * @route DELETE /events/:id
-   * @group Events
-   * @param {integer} id.path.required
-   * @security jwt
-   * @returns {object} 200 - the deleted event
-   */
   .delete(
     '/:id',
     [parserMiddleware({ id: 'int' }), jwt.middleware],
@@ -306,13 +252,6 @@ router
     }
   )
 
-  /**
-   * retrieve a specific event
-   * @route GET /events/:id
-   * @group Events
-   * @param {integer} id.params.required
-   * @returns {object} 200 - the precise event
-   */
   .get('/:id', parserMiddleware({ id: 'int' }), async (req, res) => {
     var result = await prisma.event.findUnique({
       where: {
@@ -336,27 +275,10 @@ router
     return res.json(reinjectEventFollow(result))
   })
 
-  /**
-   * Follow a specific event
-   * @route POST /events/:id/follow
-   * @group Events
-   * @param {integer} id.path.required - the id of followed event
-   * @security jwt
-   * @returns {object} 200 - return the followed event
-   */
   .post(
     '/:id/follow',
     [parserMiddleware({ id: 'int' }), jwt.middleware],
     async (req, res) => {
-      // var result = await prisma.eventFollow.findFirst({
-      // 	where: {
-      // 		userId: req.user.id,
-      // 		eventId: req.params.id
-      // 	}
-      // });
-      // if (result)
-      // 	return res.json({ msg: "you already follow this event" });
-
       try {
         var result = await prisma.eventFollow.create({
           data: {
@@ -380,14 +302,6 @@ router
     }
   )
 
-  /**
-   * Unfollow a specific event
-   * @route DELETE /:id/follow
-   * @group Events
-   * @param {integer} id.path.required - the id of unfollowed event
-   * @security jwt
-   * @returns {object} 200 - return the unfollowed event
-   */
   .delete(
     '/:id/follow',
     [parserMiddleware({ id: 'int' }), jwt.middleware],
