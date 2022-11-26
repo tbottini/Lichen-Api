@@ -6,16 +6,19 @@ const logger = require('./modules/logger')
 const bodyParser = require('body-parser')
 const express = require('express')
 import { Application } from 'express'
-const app: Application = express()
+const expressApp: Application = express()
+
 const { createIPX, createIPXMiddleware } = require('ipx')
 const ipx = createIPX()
 const middlewareLogger = require('./modules/middleware-logger')
 
-const projects = require('./route/projects'),
-  events = require('./route/events'),
-  artworks = require('./route/artworks'),
-  news = require('./route/news')
-const expressSwagger = require('express-swagger-generator')(app)
+const projects = require('./route/projects')
+const events = require('./route/events')
+const artworks = require('./route/artworks.router.ts')
+const news = require('./route/news')
+import { swipeRouter } from './swipe/Swipe.router'
+
+const expressSwagger = require('express-swagger-generator')(expressApp)
 expressSwagger(require('./swagger.options.js'))
 
 if (process.env.DATABASE_URL == null) {
@@ -25,7 +28,7 @@ if (process.env.DATABASE_URL == null) {
 
 console.log(process.env.NODE_ENV)
 
-app.use(
+expressApp.use(
   cors({
     origin:
       process.env.NODE_ENV == 'production'
@@ -37,7 +40,7 @@ app.use(
   })
 )
 
-app
+expressApp
   .use(middlewareLogger)
   .use(express.json())
   .use('/_ipx', createIPXMiddleware(ipx))
@@ -46,17 +49,18 @@ app
   .use(express.static('public'))
 
 // define a route handler for the default home page
-app.get('/', (req, res) => {
+expressApp.get('/', (req, res) => {
   logger.info('hello world')
   res.send('Hello world!')
 })
 
-app
+expressApp
   .use('/users/', users.router)
   .use('/projects/', projects.router)
   .use('/events/', events.router)
   .use('/artworks/', artworks.router)
   .use('/news', news.router)
+  .use('/swipe/', swipeRouter)
 
 logger.info('NODE_ENV ' + process.env.NODE_ENV)
 
@@ -70,11 +74,12 @@ if (!PORT) {
 
 if (process.env.NODE_ENV != 'test') {
   console.log('will listen on port ' + PORT)
-  app.listen(PORT, () => {
+  expressApp.listen(PORT, () => {
     console.log(`Server will start at http://localhost:${PORT}...
       /api-docs for documentation`)
   })
 }
+export const app = process.env.NODE_ENV == 'test' ? expressApp.listen() : null
 
 function getEnvFile(): string {
   switch (process.env.NODE_ENV) {
@@ -90,5 +95,3 @@ function getEnvFile(): string {
       )
   }
 }
-
-module.exports = app
