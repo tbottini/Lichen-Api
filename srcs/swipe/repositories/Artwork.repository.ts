@@ -3,13 +3,14 @@ import { ArtworkUnitFeed } from '../Swipe.service'
 import { RepositoryZoneFilter } from './RepositoryZoneFilter.class'
 import { Position } from '../../commons/class/Position.class'
 import { ZoneAttribute } from '../../attr/zone'
+import { MediumValues } from '../../medium/mediumEnum'
 const prisma = new PrismaClient()
 
 export class ArtworkRepository {
   public async getArtworkFeed(feedOptions: ArtworkFeedOptions) {
-    const artworks = await prisma.$queryRawUnsafe<ArtworkUnitFeed[]>(
-      this.feedSql(feedOptions)
-    )
+    const sql = this.feedSql(feedOptions)
+
+    const artworks = await prisma.$queryRawUnsafe<ArtworkUnitFeed[]>(sql)
 
     if (feedOptions.zoneFilter) {
       const circularZoneFilter = new RepositoryZoneFilter(
@@ -78,6 +79,14 @@ export class ArtworkRepository {
       `
     }
 
+    if (feedOptions.medium != null && feedOptions.medium.length > 0) {
+      where += `
+        and artwork.medium in (${feedOptions.medium
+          .map(m => `'${m}'`)
+          .join(', ')})
+      `
+    }
+
     return `${select} ${from} ${where} order by random() limit 100`
   }
 
@@ -96,4 +105,5 @@ export class ArtworkRepository {
 interface ArtworkFeedOptions {
   zoneFilter: ZoneAttribute | undefined
   userId: number
+  medium?: MediumValues[]
 }

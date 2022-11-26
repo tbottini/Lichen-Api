@@ -18,7 +18,7 @@ import {
   QueryEnum,
   QueryString,
 } from '../commons/parsers/QueryParser'
-import { mediumDict } from '../medium/mediumEnum'
+import { mediumEnum } from '../medium/mediumEnum'
 
 const logger = require('../modules/logger')
 
@@ -26,7 +26,7 @@ const querySearch = {
   dateStart: new QueryDate(),
   dateEnd: new QueryDate(),
   title: new QueryString(),
-  medium: new QueryEnum(mediumDict),
+  medium: new QueryEnum(mediumEnum),
 }
 const { MiddlewareIntParser } = require('../attr/int')
 
@@ -153,7 +153,7 @@ router
       if (startAttr.error)
         return res.status(400).json({ error: 'bad format for start attr' })
 
-      var mediumAttr = new EnumAttr(mediumDict, medium)
+      var mediumAttr = new EnumAttr(mediumEnum, medium)
       if (mediumAttr.error)
         return res.status(400).json({ error: 'bad format for enum attr' })
 

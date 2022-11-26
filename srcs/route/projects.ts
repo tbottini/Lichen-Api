@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { parserMiddleware } from '../commons/parsers/QueryParser'
-import { mediumDict } from '../medium/mediumEnum'
+import { mediumEnum } from '../medium/mediumEnum'
 const prisma = new PrismaClient()
 const { Router } = require('express')
 import * as jwt from '../modules/jwt'
@@ -41,7 +41,7 @@ const router = new Router()
       })
       logger.debug(sizeOfArray)
 
-      var mediumWrapper = new EnumAttr(mediumDict, medium)
+      var mediumWrapper = new EnumAttr(mediumEnum, medium)
       if (mediumWrapper.error)
         return res.status(400).json({ error: 'bad format for enum attr' })
 
@@ -111,7 +111,7 @@ const router = new Router()
           .status(404)
           .json({ error: 'no project exist at this id for you' })
 
-      var mediumWrapper = new EnumAttr(mediumDict, medium)
+      var mediumWrapper = new EnumAttr(mediumEnum, medium)
       if (mediumWrapper.error)
         return res.status(400).json({ error: 'bad format for enum attr' })
 
@@ -285,7 +285,7 @@ const router = new Router()
       const src = req.file.filename
 
       if (medium != null) {
-        var catAttr = mediumDict[medium]
+        var catAttr = mediumEnum[medium]
 
         if (!catAttr == null)
           return res.json(400).json({ error: 'bad format for medium attr' })

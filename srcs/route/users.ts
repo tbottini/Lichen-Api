@@ -11,7 +11,7 @@ import {
   QueryEnum,
   parserQuery,
 } from '../commons/parsers/QueryParser'
-import { mediumDict } from '../medium/mediumEnum'
+import { mediumEnum } from '../medium/mediumEnum'
 const EnumAttr = require('../attr/enum'),
   EmailAttr = require('../attr/email'),
   { BoolAttr } = require('../attr/boolean'),
@@ -30,7 +30,7 @@ const querySearchGallery = {
   longMax: new QueryInt({}),
   lagMin: new QueryInt({}),
   lagMax: new QueryInt({}),
-  medium: new QueryEnum(mediumDict, { isList: true }),
+  medium: new QueryEnum(mediumEnum, { isList: true }),
 }
 
 const publicScope = {
@@ -100,7 +100,7 @@ router
 
     const passwordHash = await passwordUtils.hash(password)
 
-    const mediumAttr = new EnumAttr(mediumDict, medium)
+    const mediumAttr = new EnumAttr(mediumEnum, medium)
     if (mediumAttr.error)
       return res.status(400).json({ error: 'bad format for enum attr' })
 
@@ -362,7 +362,7 @@ router
 
     const src = req.file ? req.file.filename : null
 
-    const mediumAttr = new EnumAttr(mediumDict, medium)
+    const mediumAttr = new EnumAttr(mediumEnum, medium)
     if (mediumAttr.error)
       return res.status(400).json({ error: 'bad format for enum attr' })
 

@@ -1,7 +1,7 @@
 import { Medium } from '@prisma/client'
 
 //todo rename on MEDIUM
-export const mediumDict = {
+export const mediumEnum = {
   LIVING_ARTS: Medium.LIVING_ARTS,
   DRAWING: Medium.DRAWING,
   EDITING: Medium.EDITING,
@@ -15,4 +15,4 @@ export const mediumDict = {
   AUDIOVISUAL: Medium.AUDIOVISUAL,
 } as const
 
-export type MediumValues = typeof mediumDict[keyof typeof mediumDict]
+export type MediumValues = typeof mediumEnum[keyof typeof mediumEnum]
