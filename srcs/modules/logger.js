@@ -71,13 +71,14 @@ const logFormat = printf(function (info) {
   }: ${typeof info.message == 'string' ? info.message : '\n' + JSON.stringify(info.message, null, 4)}`
 })
 
-logger.add(
-  new Console({
-    level: 'http',
-    format: combine(colorize(), logFormat),
-  })
-)
-
+if (process.env.NODE_ENV != 'test') {
+  logger.add(
+    new Console({
+      level: 'http',
+      format: combine(colorize(), logFormat),
+    })
+  )
+}
 logger.stream = {
   write: function (message, encoding) {
     logger.http(message)

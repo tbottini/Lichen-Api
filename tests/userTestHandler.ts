@@ -2,6 +2,14 @@ import { addUser, createUserList } from './helpers/user.test.helper'
 const request = require('supertest')
 import { app } from '../srcs/index'
 import { clearDatabase } from './helpers/clearDatabase.helper'
+import {
+  Artwork,
+  ArtworkLikes,
+  Event,
+  Medium,
+  Project,
+  User,
+} from '@prisma/client'
 
 export class UserTestHandler {
   static async addUser(
@@ -37,7 +45,11 @@ export class UserTestHandler {
     }
   }
 
-  static async self(token) {
+  static async self(
+    token
+  ): Promise<
+    User & { likes: ArtworkLikes[]; projects: ProjectWithArtworks[] }
+  > {
     const r = await request(app)
       .get('/users/self')
       .set('Authorization', 'bearer ' + token)
@@ -45,7 +57,10 @@ export class UserTestHandler {
     return r.body
   }
 
-  static async createProject(token, { title, artworks }) {
+  static async createProject(
+    token: string,
+    { title, artworks }: ProjectCreateInput
+  ): Promise<ProjectWithArtworks> {
     const projectResult = await request(app)
       .post('/projects')
       .attach('file', './tests/img_test.jpg')
@@ -97,9 +112,16 @@ export class UserTestHandler {
   // event part
 
   static async createEvent(
-    token,
-    { name, description, dateStart, medium, longitude, latitude }
-  ) {
+    token: string,
+    {
+      name,
+      description,
+      dateStart,
+      medium,
+      longitude,
+      latitude,
+    }: EventCreateInput
+  ): Promise<Event> {
     const res = await request(app)
       .post('/events')
       .attach('file', './tests/img_test.jpg')
@@ -117,12 +139,18 @@ export class UserTestHandler {
       description: description,
     })
     expect(res.body).toHaveProperty('src')
+    return res.data
   }
 
-  static async createListEvent(token, listData) {
-    if (!listData) return undefined
+  static async createListEvent(
+    token: string,
+    eventsToCreate: EventCreateInput[]
+  ): Promise<Event[] | undefined> {
+    if (!eventsToCreate) {
+      return undefined
+    }
     return await Promise.all(
-      listData.map(async data => await this.createEvent(token, data))
+      eventsToCreate.map(async data => await this.createEvent(token, data))
     )
   }
 
@@ -138,7 +166,26 @@ export interface UserFixtureCreationDto {
   latitude?: number
   longitude?: number
   geoReferenced?: boolean
-  events?
-  medium?
-  projects?
+  events?: EventCreateInput[]
+  medium?: Medium
+  projects?: ProjectCreateInput[]
 }
+
+export type ProjectWithArtworks = Project & { artworks: Artwork[] }
+export type ProjectCreateInput = {
+  title: string | null
+  artworks: ArtworkCreateInput[]
+}
+export type ArtworkCreateInput = {
+  title: string | null
+  medium?: Medium | null
+}
+
+export type EventCreateInput = Partial<{
+  name: string
+  description: string
+  dateStart: Date
+  medium: Medium
+  longitude: number
+  latitude: number
+}>

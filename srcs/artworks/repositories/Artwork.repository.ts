@@ -1,9 +1,10 @@
 import { PrismaClient } from '@prisma/client'
-import { ArtworkUnitFeed } from '../Swipe.service'
-import { RepositoryZoneFilter } from './RepositoryZoneFilter.class'
+import { ArtworkUnitFeed } from '../../swipe/Swipe.service'
 import { Position } from '../../commons/class/Position.class'
 import { ZoneAttribute } from '../../attr/zone'
 import { MediumValues } from '../../medium/mediumEnum'
+import { RepositoryZoneFilter } from '../../swipe/repositories/RepositoryZoneFilter.class'
+import { GetNewsForUser } from '../../news/News.service'
 const prisma = new PrismaClient()
 
 export class ArtworkRepository {
@@ -99,6 +100,40 @@ export class ArtworkRepository {
           inner join "User" as u on u.id = artwork_likes."userId" 
           where 
               u.id = ${idUser}`
+  }
+
+  public getArtworksWithProjects(dto: GetNewsForUser) {
+    return prisma.artwork.findMany({
+      where: {
+        insertion: {
+          gte: dto.period.begin,
+          lte: dto.period.end,
+        },
+        project: {
+          author: {
+            followed: {
+              some: {
+                userFollowingId: dto.userId,
+              },
+            },
+            gallery:
+              dto.zone == undefined ? undefined : dto.zone!.getZoneFilter(),
+          },
+        },
+      },
+      include: {
+        project: {
+          include: {
+            author: {
+              include: {
+                gallery: true,
+              },
+            },
+            artworks: true,
+          },
+        },
+      },
+    })
   }
 }
 

@@ -2,6 +2,10 @@ import { app } from '../index'
 import { clearDatabase } from '../../tests/helpers/clearDatabase.helper'
 import { addUser } from '../../tests/helpers/user.test.helper'
 import { mediumEnum } from '../medium/mediumEnum'
+import {
+  configureAddToken,
+  createUserWithProjects,
+} from '../../tests/helpers/request.helper'
 const request = require('supertest')
 
 describe('Swipe integration spec', () => {
@@ -37,28 +41,3 @@ describe('Swipe integration spec', () => {
     expect(res.body).toHaveLength(1)
   })
 })
-
-const configureAddToken = token => app =>
-  app.set('Authorization', 'bearer ' + token)
-
-function createUserWithProjects() {
-  return addUser({
-    email: 'test@test.com',
-    firstname: 'test',
-    lastname: 'test2',
-    projects: [
-      {
-        titre: 'project1',
-        artworks: [
-          {
-            title: 'artwork1',
-            medium: mediumEnum.DRAWING,
-          },
-          {
-            title: 'artwork2',
-          },
-        ],
-      },
-    ],
-  })
-}

@@ -1,5 +1,4 @@
-import { Project } from '@prisma/client'
-import { Artwork } from '../srcs/swipe/Swipe.service'
+import { Artwork, Project } from '@prisma/client'
 
 import { UserTestHandler } from './userTestHandler'
 const request = require('supertest')

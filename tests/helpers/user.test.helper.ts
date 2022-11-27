@@ -1,6 +1,13 @@
 // import { app } from '../../srcs'
+import { Event, Gallery, User } from '@prisma/client'
 import { app } from '../../srcs'
-import { UserFixtureCreationDto, UserTestHandler } from '../userTestHandler'
+import {
+  UserFixtureCreationDto,
+  UserTestHandler,
+  ProjectWithArtworks,
+  ProjectCreateInput,
+  EventCreateInput,
+} from '../userTestHandler'
 const request = require('supertest')
 
 export async function createUserList(listData: UserFixtureCreationDto[]) {
@@ -26,7 +33,7 @@ export async function addUser({
   events,
   medium,
   geoReferenced,
-}: UserFixtureCreationDto): Promise<any> {
+}: UserFixtureCreationDto): Promise<any & UserFixture> {
   const DEFAULT_PASSWORD = 'PasswordTest1234@,'
 
   let dataRequest = {
@@ -61,26 +68,13 @@ export async function addUser({
   const user = {
     token: token,
     ...dataRequest,
-    projects: [] as any[],
-    events: [] as any[],
-    geoReferenced: undefined as boolean | undefined,
+    projects: [] as ProjectWithArtworks[],
+    events: [] as Event[] | undefined,
+    geoReferenced: false,
   }
 
-  user.projects = []
-
-  if (projects && !Array.isArray(projects))
-    throw 'UserTestHandler Projects attribute must be n array'
-  for (let i = 0; projects && i < projects.length; i++) {
-    const project = await UserTestHandler.createProject(token, projects[i])
-    user.projects.push(project)
-  }
-
-  if (events != null && Array.isArray(events)) {
-    user.events = (await UserTestHandler.createListEvent(
-      token,
-      events
-    )) as any[]
-  }
+  user.projects = await createProjects(token, projects)
+  user.events = await createEvents(token, events)
 
   if (geoReferenced == true) {
     await request(app)
@@ -94,3 +88,41 @@ export async function addUser({
 
   return user
 }
+
+async function createEvents(
+  token: string,
+  events: EventCreateInput[] | undefined
+): Promise<Event[] | undefined> {
+  if (events != null && Array.isArray(events)) {
+    return await UserTestHandler.createListEvent(token, events)
+  }
+}
+
+async function createProjects(
+  token: string,
+  projectsInput?: ProjectCreateInput[]
+) {
+  const projectsCreated: ProjectWithArtworks[] = []
+
+  if (projectsInput && !Array.isArray(projectsInput))
+    throw 'UserTestHandler Projects attribute must be n array'
+  for (let i = 0; projectsInput && i < projectsInput.length; i++) {
+    const project = await UserTestHandler.createProject(token, {
+      title: projectsInput[i].title,
+      artworks: projectsInput[i].artworks.map(a => ({
+        title: a.title,
+        medium: a.medium,
+      })),
+    })
+    projectsCreated.push(project)
+  }
+  return projectsCreated
+}
+
+type UserFixture = Partial<Gallery> &
+  User & {
+    token: string
+    projects: ProjectWithArtworks[]
+    events: Event[] | undefined
+    geoReferenced: boolean | undefined
+  }

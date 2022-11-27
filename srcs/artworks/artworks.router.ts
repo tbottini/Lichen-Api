@@ -8,7 +8,7 @@ const IndexAttr = require('../attr/index')
 
 const fileMiddleware = require('../modules/middleware-file')
 const { researchSort } = require('../modules/research')
-const userScope = require('./users')
+const userScope = require('../route/users.router')
 import { ZoneAttribute } from '../attr/zone'
 import { Position } from '../commons/class/Position.class'
 import {
@@ -30,25 +30,11 @@ const querySearch = {
 }
 const { MiddlewareIntParser } = require('../attr/int')
 
-const dimensionParse = new MiddlewareIntParser({
+export const dimensionParse = new MiddlewareIntParser({
   attr: ['width', 'length', 'height'],
 })
 
-const router = new Router()
-
-router
-  /**
-   * @route GET /artworks/
-   * @group Artworks
-   * @param {date} dateStart.query
-   * @param {date} dateEnd.query
-   * @param {string} title.query
-   * @param {enum} medium.query
-   * @param {float} latitude.query
-   * @param {float} longitude.query
-   * @param {float} radius.query
-   * @returns {list} 200 - list of artworks
-   */
+export const artworksRouter = new Router()
   .get('/', parserQuery(querySearch), async (req, res) => {
     /*
      * pour les dates on met une date de départ et une date de fin
@@ -246,16 +232,6 @@ router
     return res.json(result)
   })
 
-  // Routes for Artworks Likes
-  // in prisma this routes is for LikeBy
-  /**
-   * Add an artwork to your list of artwork likes
-   * @route POST /artworks/:id/like
-   * @group Artworks
-   * @param {integer} id.path.required - artwork's id to like
-   * @returns {object} 200 - The user profile
-   * @security JWT
-   */
   .post(
     '/:id/like/',
     [jwt.middleware, parserMiddleware({ id: 'int' })],
@@ -350,5 +326,3 @@ function filterArtworksOnZoneSquareToCircle(zone: ZoneAttribute, artworks) {
     return zone.isUnderCircleZone(p)
   })
 }
-
-module.exports = { router, dimensionParse }
