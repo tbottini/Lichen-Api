@@ -13,10 +13,10 @@ import {
   configureArtworkCreation,
   createGalleryForUser,
   CreateArworkFunction,
-} from '../Artwork.fixture'
+} from '../../swipe/Artwork.fixture'
 import { ArtworkRepository } from './Artwork.repository'
 import { ZoneAttribute } from '../../attr/zone'
-import { createLikeArtwork } from '../Artwork.fixture'
+import { createLikeArtwork } from '../../swipe/Artwork.fixture'
 const prisma = new PrismaClient()
 
 describe('Artwork Repository and ArtworkFeedQuery', () => {

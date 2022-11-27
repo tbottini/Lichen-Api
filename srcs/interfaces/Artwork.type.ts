@@ -4,7 +4,7 @@ export interface Artwork {
   title?: string
   id: number
   description: string
-  src: 'http://test'
+  src: string
   start: Date
   index: number
   projectId: number

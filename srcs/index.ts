@@ -1,21 +1,22 @@
 require('dotenv').config({ path: getEnvFile() })
 const config = require('config')
 const cors = require('cors')
-const users = require('./route/users')
+const users = require('./route/users.router.ts')
 const logger = require('./modules/logger')
 const bodyParser = require('body-parser')
 const express = require('express')
 import { Application } from 'express'
+import { artworksRouter } from './artworks/artworks.router'
+import { newsRouter } from './news/news.router'
 const expressApp: Application = express()
 
 const { createIPX, createIPXMiddleware } = require('ipx')
 const ipx = createIPX()
 const middlewareLogger = require('./modules/middleware-logger')
 
-const projects = require('./route/projects')
-const events = require('./route/events')
-const artworks = require('./route/artworks.router.ts')
-const news = require('./route/news')
+const projects = require('./route/projects.router.ts')
+const events = require('./route/events.router.ts')
+
 import { swipeRouter } from './swipe/Swipe.router'
 
 // const expressSwagger = require('express-swagger-generator')(expressApp)
@@ -58,8 +59,8 @@ expressApp
   .use('/users/', users.router)
   .use('/projects/', projects.router)
   .use('/events/', events.router)
-  .use('/artworks/', artworks.router)
-  .use('/news', news.router)
+  .use('/artworks/', artworksRouter)
+  .use('/news', newsRouter)
   .use('/swipe/', swipeRouter)
 
 logger.info('NODE_ENV ' + process.env.NODE_ENV)

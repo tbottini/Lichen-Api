@@ -64,8 +64,8 @@ describe('Search', () => {
     // todo ajouter un argument dans la fixture pour dire si il est georéférencé ou non
 
     expect(res.body.map(artwork => artwork.title)).toEqual([
-      'artwork#1',
       'artwork#2',
+      'artwork#1',
     ])
   })
 

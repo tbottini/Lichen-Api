@@ -1,7 +1,7 @@
 import { ZoneAttribute } from '../attr/zone'
-import { ArtworkRepository } from './repositories/Artwork.repository'
 import { MediumValues } from '../medium/mediumEnum'
 import { Artwork } from '../interfaces/Artwork.type'
+import { ArtworkRepository } from '../artworks/repositories/Artwork.repository'
 
 export class SwipeService {
   private readonly artworkRepository: ArtworkRepository
