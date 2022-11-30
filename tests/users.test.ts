@@ -17,12 +17,12 @@ describe('Users Routes Test', () => {
       medium: 'STAMP',
     })
 
-    var u = await UserTestHandler.self(user.token)
+    const u = await UserTestHandler.self(user.token)
     console.log('!USER', u)
     user.id = u.id
   })
 
-  var userCreated1
+  let userCreated1
 
   it('should create an account', async () => {
     const res = await request(app).post('/users/register').send({
@@ -33,14 +33,11 @@ describe('Users Routes Test', () => {
       websiteUrl: 'test@hotmail.com',
     })
 
-    console.log(res.body)
     userCreated1 = res.body
 
     expect(res.statusCode).toEqual(200)
     expect(res.body).toHaveProperty('token')
     const token = res.body.token
-
-    console.log(token)
 
     userCreated1.token = token
   })
@@ -50,8 +47,6 @@ describe('Users Routes Test', () => {
       email: 'george.orwell@bigbrother.com',
       password: 'notEffiscientPassword@1234,',
     })
-
-    console.log(res.body)
 
     expect(res.body).toHaveProperty('token')
     expect(res.statusCode).toBe(200)
@@ -69,14 +64,14 @@ describe('Users Routes Test', () => {
       },
     })
 
-    var userRef = res.body
+    const userRef = res.body
 
     // test if we find the profile who'snt referenced
     res = await request(app).get(
       '/users/gallery?longMin=60&longMax=100&lagMin=60&lagMax=100'
     )
     res = res.body
-    var usersFinded = res.find(user => user.id == userRef.id)
+    let usersFinded = res.find(user => user.id == userRef.id)
     expect(usersFinded).toBe(undefined)
 
     res = await request(app)

@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import { UserService } from '../modules/Users/users.service'
+import { UserService } from './services/users.service'
 const prisma = new PrismaClient()
 const { Router } = require('express')
 const regex = require('../modules/regexUtils')
@@ -7,15 +7,17 @@ import * as jwt from '../modules/jwt'
 import {
   parserMiddleware,
   QueryString,
-  QueryInt,
   QueryEnum,
   parserQuery,
 } from '../commons/parsers/QueryParser'
 import { mediumEnum } from '../medium/mediumEnum'
-const EnumAttr = require('../attr/enum'),
-  EmailAttr = require('../attr/email'),
-  { BoolAttr } = require('../attr/boolean'),
-  PasswordAttr = require('../attr/password')
+import { GalleryService } from './services/Gallery.service'
+import { privateScope, publicScope } from './repositories/Users.repository'
+import { QueryFloat } from '../commons/parsers/QueryParser/QueryFloat.parser'
+const EnumAttr = require('../attr/enum')
+const EmailAttr = require('../attr/email')
+const { BoolAttr } = require('../attr/boolean')
+const PasswordAttr = require('../attr/password')
 const passwordUtils = require('../modules/password')
 const fileMiddleware = require('../modules/middleware-file')
 
@@ -25,46 +27,16 @@ const logger = require('../modules/logger')
 const querySearch = {
   name: new QueryString(),
 }
-const querySearchGallery = {
-  longMin: new QueryInt({}),
-  longMax: new QueryInt({}),
-  lagMin: new QueryInt({}),
-  lagMax: new QueryInt({}),
-  medium: new QueryEnum(mediumEnum, { isList: true }),
-}
 
-const publicScope = {
-  email: false,
-  password: false,
-  firstname: true,
-  pseudo: true,
-  lastname: true,
-  id: true,
-  websiteUrl: true,
-  description: true,
-  src: true,
-  role: true,
-  medium: true,
-  gallery: true,
-  bio: true,
-  geoReferenced: true,
-}
-
-const privateScope = {
-  ...publicScope,
-  email: true,
-}
-
-const scope = {
+export const userScope = {
   public: publicScope,
   private: privateScope,
 }
 
-const router = new Router()
-
 const userService = new UserService()
+const galleryService = new GalleryService()
 
-router
+export const userRouter = new Router()
   .post('/register', async (req, res) => {
     const {
       email,
@@ -173,14 +145,14 @@ router
           followed: {
             select: {
               userFollowing: {
-                select: scope.public,
+                select: userScope.public,
               },
             },
           },
           following: {
             select: {
               userFollowed: {
-                select: scope.public,
+                select: userScope.public,
               },
             },
           },
@@ -246,7 +218,7 @@ router
     let results = await prisma.user.findMany({
       where: whereSection,
       select: {
-        ...scope.public,
+        ...userScope.public,
       },
     })
 
@@ -261,40 +233,32 @@ router
 
     return res.json(results)
   })
-  .get('/gallery', parserQuery(querySearchGallery), async (req, res) => {
-    //! todo add a security if they are an inconsistent parameter
-    // ex : longitude / lagitude / radius
-    const { lagMin, lagMax, longMin, longMax, medium } = req.query
+  .get(
+    '/gallery',
+    parserQuery({
+      longMin: new QueryFloat({}),
+      longMax: new QueryFloat({}),
+      lagMin: new QueryFloat({}),
+      lagMax: new QueryFloat({}),
+      medium: new QueryEnum(mediumEnum, { isList: true }),
+    }),
+    async (req, res) => {
+      //! todo add a security if they are an inconsistent parameter
+      const { lagMin, lagMax, longMin, longMax, medium } = req.query
 
-    logger.debug('MEDIUM', medium)
-
-    var result = await prisma.user.findMany({
-      where: {
-        geoReferenced: true,
-        gallery: {
-          longitude: {
-            lte: longMax,
-            gte: longMin,
-          },
-          latitude: {
-            lte: lagMax,
-            gte: lagMin,
-          },
+      const result = await galleryService.getGalleries(
+        {
+          latitudeMax: lagMax,
+          latitudeMin: lagMin,
+          longitudeMax: longMax,
+          longitudeMin: longMin,
         },
-        medium:
-          medium == undefined || medium == ''
-            ? undefined
-            : {
-                in: medium,
-              },
-      },
-      select: {
-        ...scope.public,
-      },
-    })
+        medium == undefined || medium == '' ? undefined : medium
+      )
 
-    return res.json(result)
-  })
+      return res.json(result)
+    }
+  )
   .get('/:id', parserMiddleware({ id: 'int' }), async (req, res) => {
     prisma.user
       .findUnique({
@@ -302,7 +266,7 @@ router
           id: req.params.id,
         },
         select: {
-          ...scope.public,
+          ...userScope.public,
 
           projects: {
             orderBy: { index: 'asc' },
@@ -313,12 +277,12 @@ router
           events: { orderBy: { index: 'asc' } },
           followed: {
             select: {
-              userFollowing: { select: scope.public },
+              userFollowing: { select: userScope.public },
             },
           },
           following: {
             select: {
-              userFollowed: { select: scope.public },
+              userFollowed: { select: userScope.public },
             },
           },
           likes: {
@@ -342,7 +306,7 @@ router
       where: {
         id: req.user.id,
       },
-      select: scope.private,
+      select: userScope.private,
     })
     return res.json(result)
   })
@@ -389,7 +353,7 @@ router
         where: {
           id: req.user.id,
         },
-        select: scope.public,
+        select: userScope.public,
         data: {
           firstname,
           lastname,
@@ -435,8 +399,8 @@ router
           },
         },
         include: {
-          userFollowed: { select: scope.public },
-          userFollowing: { select: scope.public },
+          userFollowed: { select: userScope.public },
+          userFollowing: { select: userScope.public },
         },
       })
       return res.json(result)
@@ -459,7 +423,7 @@ router
   )
   .put('/self/gallery', [jwt.middleware], async (req, res) => {
     //change the location of the gallery of user
-    var { longitude, latitude } = req.body
+    let { longitude, latitude } = req.body
 
     logger.debug(req.body)
 
@@ -493,15 +457,13 @@ router
         },
       },
       select: {
-        ...scope.public,
+        ...userScope.public,
       },
     })
 
     return res.json(result)
   })
   .delete('/self/gallery', [jwt.middleware], async (req, res) => {
-    //delete the gallery of users
-
     const result = await prisma.gallery.deleteMany({
       where: {
         user: {
@@ -557,4 +519,3 @@ function reinjectUserFollow(user) {
     .filter(eventFollow => eventFollow != null)
   return user
 }
-module.exports = { router, scope }

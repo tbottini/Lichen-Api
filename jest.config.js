@@ -1,16 +1,10 @@
 module.exports = {
-  // "reporters": [
-  // 	"default",
-  // 	[
-  // 		"jest-html-reporters",
-  // 		{
-  // 			"publicPath": "./log/",
-  // 			"filename": "report.html",
-  // 			"expand": true
-  // 		}
-  // 	]
-  // ],
   testEnvironment: 'node',
   preset: 'ts-jest',
-  coveragePathIgnorePatterns: ['/node_modules/'],
+  verbose: true,
+  coveragePathIgnorePatterns: [
+    '/node_modules/',
+    'tests/helpers',
+    'tests/fixture',
+  ],
 }
