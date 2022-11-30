@@ -1,5 +1,5 @@
 import { MjmlMailTemplate } from './MjmlMailTemplate'
-import { MailjetMailSender } from './MailjetMailSenderProvider'
+import { MailjetMailSender, MailAttachments } from './MailjetMailSenderProvider'
 const logger = require('../logger')
 
 const DEFAULT_MAIL = 'no-reply@reseau-lichen.fr'
@@ -23,7 +23,13 @@ export class MailSender {
     )
   }
 
-  async send(subject, to, content, attachments, from = DEFAULT_MAIL) {
+  async send(
+    subject: string,
+    to: string,
+    content: string,
+    attachments: MailAttachments[],
+    from: string = DEFAULT_MAIL
+  ) {
     if (!to || !from || !subject) {
       throw new Error('Mail data missing')
     }

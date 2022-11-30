@@ -1,7 +1,6 @@
-require('dotenv').config({ path: getEnvFile() })
+require('./commons/env')
 const config = require('config')
 const cors = require('cors')
-const users = require('./route/users.router.ts')
 const logger = require('./modules/logger')
 const bodyParser = require('body-parser')
 const express = require('express')
@@ -18,6 +17,7 @@ const projects = require('./route/projects.router.ts')
 const events = require('./route/events.router.ts')
 
 import { swipeRouter } from './swipe/Swipe.router'
+import { userRouter } from './users/users.router'
 
 // const expressSwagger = require('express-swagger-generator')(expressApp)
 // expressSwagger(require('./swagger.options.js'))
@@ -56,7 +56,7 @@ expressApp.get('/', (req, res) => {
 })
 
 expressApp
-  .use('/users/', users.router)
+  .use('/users/', userRouter)
   .use('/projects/', projects.router)
   .use('/events/', events.router)
   .use('/artworks/', artworksRouter)
@@ -81,18 +81,3 @@ if (process.env.NODE_ENV != 'test') {
   })
 }
 export const app = expressApp
-
-function getEnvFile(): string {
-  switch (process.env.NODE_ENV) {
-    case 'production':
-      return '.env'
-    case 'test':
-      return '.env.test'
-    case 'development':
-      return '.env.dev'
-    default:
-      throw new Error(
-        "env variable NODE_ENV isn't not valid value : production / dev / test"
-      )
-  }
-}

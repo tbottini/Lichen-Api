@@ -15,12 +15,7 @@ export class MailjetMailSender {
     from: string,
     subject: string,
     message: string,
-    attachments: {
-      contentType: string
-      filename: string
-      cid: string
-      path: string
-    }[]
+    attachments: MailAttachments[]
   ) {
     if (!this.sender) {
       return
@@ -62,4 +57,11 @@ export class MailjetMailSender {
 
     return result
   }
+}
+
+export interface MailAttachments {
+  contentType: string
+  filename: string
+  cid: string
+  path: string
 }

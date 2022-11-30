@@ -7,28 +7,26 @@ import {
   Project,
   User,
 } from '@prisma/client'
+const prisma = new PrismaClient()
 import {
   createProject,
-  createUser,
   configureArtworkCreation,
-  createGalleryForUser,
   CreateArworkFunction,
 } from '../../swipe/Artwork.fixture'
 import { ArtworkRepository } from './Artwork.repository'
 import { ZoneAttribute } from '../../attr/zone'
-import { createLikeArtwork } from '../../swipe/Artwork.fixture'
-const prisma = new PrismaClient()
+import { createUser } from '../../../tests/fixture/user.fixture'
+import { createLikeArtwork } from '../../../tests/fixture/like.fixture'
+import { createGalleryForUser } from '../../../tests/fixture/gallery.fixture'
+import { clearDatabase } from '../../../tests/helpers/clearDatabase.helper'
 
 describe('Artwork Repository and ArtworkFeedQuery', () => {
-  afterEach(async () => {
-    await prisma.artwork.deleteMany()
-    await prisma.gallery.deleteMany()
-    await prisma.artworkLikes.deleteMany()
+  beforeAll(async () => {
+    await clearDatabase()
   })
 
   afterAll(async () => {
-    await prisma.project.deleteMany()
-    await prisma.user.deleteMany()
+    await clearDatabase()
   })
 
   describe('Artwork feed', () => {
@@ -62,6 +60,10 @@ describe('Artwork Repository and ArtworkFeedQuery', () => {
       createArtworkForAnotherArtist = configureArtworkCreation(otherProject.id)
 
       artworkRepository = new ArtworkRepository()
+    })
+
+    afterEach(async () => {
+      await prisma.artwork.deleteMany({})
     })
 
     it('should returns artwork of an other artist', async () => {

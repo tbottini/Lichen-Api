@@ -1,14 +1,15 @@
 const request = require('supertest')
 import { app } from '../srcs'
-import { UserTestHandler } from './userTestHandler'
+import { clearDatabase } from './helpers/clearDatabase.helper'
+import { createUserList } from './helpers/user.test.helper'
 
 describe('Search', () => {
   let users: any[]
 
   beforeAll(async () => {
-    await UserTestHandler.clearDatabase()
+    await clearDatabase()
 
-    users = await UserTestHandler.createUserList([
+    users = await createUserList([
       {
         email: 'Jo@joul.com',
         firstname: 'Jo',
@@ -53,7 +54,7 @@ describe('Search', () => {
     ])
   })
 
-  it('should search artworks by location zone', async () => {
+  it('should search tworks by location zone', async () => {
     const res = await request(app).get('/artworks').query({
       latitude: 31,
       longitude: 32,
@@ -63,9 +64,9 @@ describe('Search', () => {
     // l'artiste n'est pas géoréférencé
     // todo ajouter un argument dans la fixture pour dire si il est georéférencé ou non
 
-    expect(res.body.map(artwork => artwork.title)).toEqual([
-      'artwork#2',
+    expect(res.body.map(artwork => artwork.title).sort()).toEqual([
       'artwork#1',
+      'artwork#2',
     ])
   })
 

@@ -1,5 +1,5 @@
-import { MailSender } from '../email/MailSender'
-import { MjmlTemplateRepository } from '../email/MjmlTemplateRepository'
+import { MailSender } from '../../modules/email/MailSender'
+import { MjmlTemplateRepository } from '../../modules/email/MjmlTemplateRepository'
 
 const ASSET_FOLDER = './assets/email/'
 

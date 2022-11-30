@@ -1,7 +1,7 @@
 import { Query } from './Query.interface'
 import logger from '../../../modules/logger'
 
-export class QueryInt extends Query {
+export class QueryFloat extends Query {
   max?: number
   min?: number
   default?: number
@@ -17,7 +17,9 @@ export class QueryInt extends Query {
     super('int')
     if (max) this.max = max!
     if (min) this.min = min!
-    if (defaultValue) this.default = defaultValue!
+    if (defaultValue) {
+      this.default = defaultValue!
+    }
   }
 
   parse(value: string): boolean {
@@ -26,7 +28,7 @@ export class QueryInt extends Query {
       return true
     }
 
-    this.value = parseInt(value) // todo to parseFloat
+    this.value = parseFloat(value)
 
     logger.debug(value)
 
@@ -36,7 +38,9 @@ export class QueryInt extends Query {
     }
 
     if (this.max && this.value > this.max) return false
-    else if (this.min && this.value < this.min) return false
+    else if (this.min && this.value < this.min) {
+      return false
+    }
 
     return true
   }

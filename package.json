@@ -6,8 +6,9 @@
     "migrate:test": "NODE_ENV=test ts-node scripts/migrate",
     "format": "yarn prettier --write .",
     "reset:test": "DATABASE_URL=postgresql://postgres:psql@postgres:5432/lichen_test?schema=public yarn prisma migrate reset --force",
-    "test": "jest --runInBand ",
-    "test:all": "yarn test tests/*.test.js --runInBand",
+    "test": "NODE_ENV=test jest --runInBand ",
+    "coverage": "NODE_ENV=test jest --runInBand --coverage",
+    "test:all": "yarn test tests/*.test.js",
     "build": "tsc"
   },
   "dependencies": {

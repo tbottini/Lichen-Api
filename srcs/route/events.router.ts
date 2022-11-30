@@ -9,8 +9,7 @@ const prisma = new PrismaClient(),
   fileMiddleware = require('../modules/middleware-file'),
   IndexAttr = require('../attr/index'),
   { researchSort } = require('../modules/research'),
-  userScope = require('./users.router').scope,
-  { ZoneAttribute, Position } = require('../attr/zone'),
+  { ZoneAttribute } = require('../attr/zone'),
   EnumAttr = require('../attr/enum'),
   logger = require('../modules/logger')
 
@@ -22,6 +21,7 @@ import {
   QueryString,
 } from '../commons/parsers/QueryParser'
 import { mediumEnum } from '../medium/mediumEnum'
+import { userScope } from '../users/users.router'
 
 const querySearch = {
   dateStart: new QueryDate(),
@@ -57,7 +57,7 @@ const router = new Router()
         var src = req.file.filename
       }
 
-      var mediumAttr = new EnumAttr(mediumEnum, medium)
+      const mediumAttr = new EnumAttr(mediumEnum, medium)
       if (mediumAttr.error)
         return res.status(400).json({ error: 'bad format for enum attr' })
 
@@ -71,14 +71,14 @@ const router = new Router()
       if (dateEndAttr.error)
         return res.status(400).json({ error: 'bad format for date end attr' })
 
-      var sizeOfArray = await prisma.event.count({
+      const sizeOfArray = await prisma.event.count({
         where: {
           organisatorId: req.user.id,
         },
       })
       logger.debug(sizeOfArray)
 
-      var result = await prisma.event.create({
+      const result = await prisma.event.create({
         data: {
           name: name,
           description: description,
@@ -116,9 +116,9 @@ const router = new Router()
 
     logger.debug('MEDIUM EVENT', medium)
 
-    var zone = ZoneAttribute.parse(latitude, longitude, radius)
+    const zone = ZoneAttribute.parse(latitude, longitude, radius)
 
-    var whereClause: Prisma.EventWhereInput = {
+    let whereClause: Prisma.EventWhereInput = {
       dateStart: {
         lte: dateEnd,
         gte: dateStart,
@@ -139,7 +139,7 @@ const router = new Router()
 
     console.log(whereClause)
 
-    var results = await prisma.event.findMany({
+    let results = await prisma.event.findMany({
       where: whereClause,
       include: {
         organisator: {
@@ -165,12 +165,12 @@ const router = new Router()
     ],
     async (req, res) => {
       const { name, description, dateStart, dateEnd, index, medium } = req.body
-      var { longitude, latitude } = req.body.parsed
+      const { longitude, latitude } = req.body.parsed
 
       logger.debug(req.body)
 
       // we check if the event belongs to the user
-      var isOwn = await prisma.event.findFirst({
+      const isOwn = await prisma.event.findFirst({
         where: {
           id: parseInt(req.params.id),
           organisator: {
@@ -186,11 +186,11 @@ const router = new Router()
 
       if (index) {
         //on update l'index selon sa position dans le user
-        var indexAttr = new IndexAttr('organisatorId', req.user.id, 'Event')
+        const indexAttr = new IndexAttr('organisatorId', req.user.id, 'Event')
         await indexAttr.queryUpdateIndex(req.params.id, index)
       }
 
-      var mediumAttr = new EnumAttr(mediumEnum, medium)
+      const mediumAttr = new EnumAttr(mediumEnum, medium)
       if (mediumAttr.error)
         return res.status(400).json({ error: 'bad format for enum attr' })
 
@@ -208,7 +208,7 @@ const router = new Router()
       if (dateEndAttr.error)
         return res.status(400).json({ error: 'bad format for start attr' })
 
-      var result = await prisma.event.update({
+      const result = await prisma.event.update({
         where: {
           id: req.params.id,
         },
@@ -236,7 +236,7 @@ const router = new Router()
     [parserMiddleware({ id: 'int' }), jwt.middleware],
     async (req, res) => {
       //on update l'index selon sa position dans le user
-      var indexAttr = new IndexAttr('organisatorId', req.user.id, 'Event')
+      const indexAttr = new IndexAttr('organisatorId', req.user.id, 'Event')
       await indexAttr.uncrementOver(req.params.id)
 
       return res.json(
@@ -253,7 +253,7 @@ const router = new Router()
   )
 
   .get('/:id', parserMiddleware({ id: 'int' }), async (req, res) => {
-    var result = await prisma.event.findUnique({
+    const result = await prisma.event.findUnique({
       where: {
         id: req.params.id,
       },
@@ -280,7 +280,7 @@ const router = new Router()
     [parserMiddleware({ id: 'int' }), jwt.middleware],
     async (req, res) => {
       try {
-        var result = await prisma.eventFollow.create({
+        const result = await prisma.eventFollow.create({
           data: {
             event: {
               connect: {
@@ -294,11 +294,11 @@ const router = new Router()
             },
           },
         })
+        return res.json(result)
       } catch (e) {
         logger.debug(e)
         return res.status(400).json({ error: 'error' })
       }
-      return res.json(result)
     }
   )
 
@@ -308,7 +308,7 @@ const router = new Router()
     async (req, res) => {
       logger.debug('event', req.params.id)
       try {
-        var result = await prisma.eventFollow.deleteMany({
+        const result = await prisma.eventFollow.deleteMany({
           where: {
             user: {
               id: req.user.id,
@@ -318,11 +318,11 @@ const router = new Router()
             },
           },
         })
+        return res.json(result)
       } catch (e) {
         logger.debug(e)
         return res.status(400).json({ error: 'error' })
       }
-      return res.json(result)
     }
   )
 
