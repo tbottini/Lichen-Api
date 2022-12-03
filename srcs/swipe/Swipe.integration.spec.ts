@@ -40,4 +40,9 @@ describe('Swipe integration spec', () => {
 
     expect(res.body).toHaveLength(1)
   })
+
+  it('should acept query without token and provide all artworks if no filter was provided', async () => {
+    const res = await request(app).get('/swipe/random').query({})
+    expect(res.body).toHaveLength(2)
+  })
 })

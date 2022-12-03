@@ -8,6 +8,7 @@ import {
   createUserWithProjects,
 } from '../../tests/helpers/request.helper'
 import { followUser } from '../../tests/helpers/follow.helper'
+import { clearDatabase } from '../../tests/helpers/clearDatabase.helper'
 
 console.log(app)
 
@@ -18,6 +19,7 @@ describe('News Routes Test', () => {
   let createdUser: User
 
   beforeAll(async () => {
+    await clearDatabase()
     const { token: createToken } = await addUser({
       email: 'customer@test.com',
       firstname: 'customer',

@@ -47,12 +47,15 @@ export class ArtworkRepository {
     on
       users.id = project."authorId"
     `
-    let where = `
-    where users.id != ${feedOptions.userId}
+
+    const whereQueries: string[] = []
+
+    if (feedOptions.userId) {
+      whereQueries.push(`users.id != ${feedOptions.userId}
       and artwork.id not in (${this.getArtworkAlreadyLikedSql(
         feedOptions.userId
-      )})
-    `
+      )})`)
+    }
 
     if (feedOptions.zoneFilter) {
       select += ', gallery.longitude, gallery.latitude '
@@ -72,23 +75,30 @@ export class ArtworkRepository {
         throw new Error('Generated zone filter for Prisma is undefined')
       }
 
-      where += `
-      and gallery.latitude >= ${squareZoneBounded.minLatitude}
+      whereQueries.push(`
+      gallery.latitude >= ${squareZoneBounded.minLatitude}
       and gallery.latitude <= ${squareZoneBounded.maxLatitude}
       and gallery.longitude >= ${squareZoneBounded.minLongitude}
       and gallery.longitude <= ${squareZoneBounded.maxLongitude}
-      `
+      `)
     }
 
     if (feedOptions.medium != null && feedOptions.medium.length > 0) {
-      where += `
-        and artwork.medium in (${feedOptions.medium
-          .map(m => `'${m}'`)
-          .join(', ')})
-      `
+      whereQueries.push(`
+        artwork.medium in (${feedOptions.medium.map(m => `'${m}'`).join(', ')})
+      `)
     }
 
-    return `${select} ${from} ${where} order by random() limit 100`
+    return `${select} ${from} ${this.buildWhereSql(
+      whereQueries
+    )} order by random() limit 100`
+  }
+
+  private buildWhereSql(whereQueries: string[]): string {
+    if (!whereQueries.length) {
+      return ''
+    }
+    return ` where ${whereQueries.join(' and ')} `
   }
 
   private getArtworkAlreadyLikedSql(idUser: number) {
@@ -139,6 +149,6 @@ export class ArtworkRepository {
 
 interface ArtworkFeedOptions {
   zoneFilter: ZoneAttribute | undefined
-  userId: number
+  userId?: number
   medium?: MediumValues[]
 }

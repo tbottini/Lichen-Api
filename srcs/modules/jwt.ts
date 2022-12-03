@@ -6,6 +6,7 @@ if (process.env.JWT_SECRET == null) {
 }
 
 const SECRET = process.env.JWT_SECRET
+
 export function create(user) {
   delete user.password
 
@@ -22,5 +23,14 @@ export function verify(jwt) {
 }
 
 export const middleware = [
-  jwtExpress({ secret: SECRET, algorithms: ['HS256'] }),
+  jwtExpress({
+    secret: SECRET,
+    algorithms: ['HS256'],
+  }),
 ]
+
+export const unrequiredJwt = jwtExpress({
+  secret: SECRET,
+  algorithms: ['HS256'],
+  credentialsRequired: false,
+})

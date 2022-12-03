@@ -1,6 +1,5 @@
 import { Router } from 'express'
 import { SwipeService } from '../swipe/Swipe.service'
-import * as jwt from '../modules/jwt'
 import { parseRawZone } from '../commons/parsers/CircularZone.parser'
 import { ZoneAttribute } from '../attr/zone'
 import {
@@ -9,7 +8,8 @@ import {
   parserQuery,
 } from '../commons/parsers/QueryParser'
 import { mediumEnum, MediumValues } from '../medium/mediumEnum'
-import { RequestWithUser } from '../commons/interfaces/Request.types'
+import { RequestMaybeWithUser } from '../commons/interfaces/Request.types'
+import { unrequiredJwt } from '../modules/jwt'
 
 const swipeService = new SwipeService()
 export const swipeRouter = Router()
@@ -17,13 +17,13 @@ export const swipeRouter = Router()
 swipeRouter.get(
   '/random',
   [
-    ...jwt.middleware,
+    unrequiredJwt,
     parserQuery({
       limit: new QueryInt({ max: 100, min: 0 }),
       medium: new QueryEnum(mediumEnum, { isList: true }),
     }),
   ],
-  async (req: RequestWithUser<GetSwipeArtworkDto>, res) => {
+  async (req: RequestMaybeWithUser<GetSwipeArtworkDto>, res) => {
     const { limit, longitude, latitude, radius, medium } = req.query
 
     let zone: ZoneAttribute | undefined
@@ -38,7 +38,7 @@ swipeRouter.get(
     const parsedLimit = limit ?? 10
 
     const artworksFeed = await swipeService.getSwipeArtworkFeed({
-      userId: req.user.id,
+      userId: req?.user?.id,
       limit: parsedLimit,
       zone: zone,
       medium,

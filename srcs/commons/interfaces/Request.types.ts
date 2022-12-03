@@ -7,3 +7,9 @@ export interface RequestWithUser<Query> extends Request<Query> {
     id: number
   }
 }
+
+export interface RequestMaybeWithUser<Query> extends Request<Query> {
+  user?: {
+    id: number
+  }
+}

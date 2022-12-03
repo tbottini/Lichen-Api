@@ -22,7 +22,7 @@ export class SwipeService {
 }
 
 export interface GetSwipeArtworkFeed {
-  userId: number
+  userId?: number
   limit: number
   zone: ZoneAttribute | undefined
   medium?: MediumValues[]
