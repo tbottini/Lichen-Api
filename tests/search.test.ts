@@ -2,6 +2,7 @@ const request = require('supertest')
 import { app } from '../srcs'
 import { clearDatabase } from './helpers/clearDatabase.helper'
 import { createUserList } from './helpers/user.test.helper'
+import { UserTestHandler } from './userTestHandler'
 
 describe('Search', () => {
   let users: any[]
