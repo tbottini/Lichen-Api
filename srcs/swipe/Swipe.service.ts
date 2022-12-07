@@ -1,4 +1,4 @@
-import { ZoneAttribute } from '../attr/zone'
+import { CircularZone } from '../attr/CircularZone'
 import { MediumValues } from '../medium/mediumEnum'
 import { Artwork } from '../interfaces/Artwork.type'
 import { ArtworkRepository } from '../artworks/repositories/Artwork.repository'
@@ -24,7 +24,7 @@ export class SwipeService {
 export interface GetSwipeArtworkFeed {
   userId?: number
   limit: number
-  zone: ZoneAttribute | undefined
+  zone: CircularZone | undefined
   medium?: MediumValues[]
 }
 

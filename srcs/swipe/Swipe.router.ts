@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { SwipeService } from '../swipe/Swipe.service'
 import { parseRawZone } from '../commons/parsers/CircularZone.parser'
-import { ZoneAttribute } from '../attr/zone'
+import { CircularZone } from '../attr/CircularZone'
 import {
   QueryEnum,
   QueryInt,
@@ -26,7 +26,7 @@ swipeRouter.get(
   async (req: RequestMaybeWithUser<GetSwipeArtworkDto>, res) => {
     const { limit, longitude, latitude, radius, medium } = req.query
 
-    let zone: ZoneAttribute | undefined
+    let zone: CircularZone | undefined
     if (isAllDefined(latitude, longitude, radius)) {
       try {
         zone = parseRawZone(latitude!, longitude!, radius!)
@@ -41,7 +41,7 @@ swipeRouter.get(
       userId: req?.user?.id,
       limit: parsedLimit,
       zone: zone,
-      medium,
+      medium: medium as MediumValues[] | undefined,
     })
 
     return res.json(artworksFeed)

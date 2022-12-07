@@ -1,9 +1,9 @@
 import { PrismaClient } from '@prisma/client'
 const regex = require('../modules/regexUtils')
 const prisma = new PrismaClient()
-import logger from '../modules/logger'
+import { logger } from '../modules/logger'
 
-class EmailAttr {
+export class EmailAttr {
   _value
   error = false
   _checkCalled = false
@@ -16,8 +16,6 @@ class EmailAttr {
       )
     return this._value
   }
-
-  constructor() {}
 
   /**
    * unlike other attribute email must called
@@ -54,5 +52,3 @@ class EmailAttr {
     return true
   }
 }
-
-module.exports = EmailAttr

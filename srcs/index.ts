@@ -1,11 +1,11 @@
 require('./commons/env')
 const config = require('config')
 const cors = require('cors')
-const logger = require('./modules/logger')
 const bodyParser = require('body-parser')
 const express = require('express')
 import { Application } from 'express'
 import { artworksRouter } from './artworks/artworks.router'
+import { logger } from './modules/logger'
 import { newsRouter } from './news/news.router'
 const expressApp: Application = express()
 

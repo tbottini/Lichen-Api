@@ -1,7 +1,7 @@
 import { Position } from '../commons/class/Position.class'
 import { RepositoryZoneFilter } from '../swipe/repositories/RepositoryZoneFilter.class'
 
-export class ZoneAttribute {
+export class CircularZone {
   constructor(
     public readonly latitude: number,
     public readonly longitude: number,
@@ -12,12 +12,12 @@ export class ZoneAttribute {
     latitude: string,
     longitude: string,
     radius: string
-  ): ZoneAttribute | undefined {
+  ): CircularZone | undefined {
     if (latitude == null || longitude == null || radius == null) {
       return undefined
     }
 
-    return new ZoneAttribute(
+    return new CircularZone(
       parseFloat(latitude),
       parseFloat(longitude),
       parseFloat(radius)

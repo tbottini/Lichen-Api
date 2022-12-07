@@ -1,9 +1,8 @@
-import { ZoneAttribute } from '../attr/zone'
+import { CircularZone } from '../attr/CircularZone'
 import { PrismaClient } from '@prisma/client'
 import { ArtworkRepository } from '../artworks/repositories/Artwork.repository'
+import { logger } from '../modules/logger'
 const prisma = new PrismaClient()
-
-const logger = require('../modules/logger')
 
 const artworkRepository = new ArtworkRepository()
 
@@ -86,7 +85,7 @@ export class NewsService {
 }
 
 export interface GetNewsForUser {
-  zone: ZoneAttribute
+  zone?: CircularZone
   period: Period
   userId: number
 }

@@ -1,7 +1,15 @@
 import { PrismaClient } from '@prisma/client'
+import { Position } from '../../commons/class/Position.class'
 const prisma = new PrismaClient()
 import { AccountMailer } from './AccountMail.service'
+import { UsersRepository } from '../repositories/Users.repository'
+import {
+  UserPublicDto,
+  UserRepositoryPublic,
+} from '../repositories/Users.scope'
 const jwt = require('../../modules/jwt')
+
+const userRepository = new UsersRepository()
 
 export class UserService {
   accountMailer: AccountMailer
@@ -37,4 +45,19 @@ export class UserService {
       token: jwt.create(user),
     })
   }
+
+  async updateUserPosition(
+    updatePosition: UpdateDefaultFilterPosition
+  ): Promise<UserPublicDto> {
+    const updatedUser = await userRepository.update(updatePosition.userId, {
+      userPosition: updatePosition.newPosition,
+    })
+
+    return updatedUser
+  }
+}
+
+interface UpdateDefaultFilterPosition {
+  userId: number
+  newPosition: Position
 }

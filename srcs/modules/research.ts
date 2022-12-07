@@ -1,19 +1,12 @@
-/**
- *
- * @param researchElements : list of elements
- * @param token : base entry for research
- * @param researchAttrName : the name of the attribute that was used as search criteria
- * @returns sort elements
- */
-function researchSort(
+export function researchSort(
   researchElements,
   token: string,
   getSearchKey,
   keepResearchValue = false
 ) {
-  var elements = researchElements
+  const elements = researchElements
     .map(researchItem => {
-      var searchableEntry = getSearchKey(researchItem)
+      const searchableEntry = getSearchKey(researchItem)
 
       if (!searchableEntry.length) return null
       const correspondingValue = highChain(token, searchableEntry)
@@ -38,13 +31,13 @@ function researchSort(
 }
 
 function highChain(token: string, search: string) {
-  var correspondingValue = 0
+  let correspondingValue = 0
 
   //sup is a variable who'll allow to count if the first letter is the same
-  var correspondingValueBonus = 0
+  let correspondingValueBonus = 0
 
   if (search[0] == token[0]) correspondingValueBonus += 3
-  var j = 0,
+  let j = 0,
     i = 0
   while (search[j] && correspondingValue < search.length - i) {
     while (token[i] == search[j] && token[i] && search[j]) {
@@ -59,5 +52,3 @@ function highChain(token: string, search: string) {
   }
   return correspondingValue + correspondingValueBonus
 }
-
-module.exports = { researchSort }

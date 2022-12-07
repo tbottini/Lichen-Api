@@ -14,6 +14,10 @@ export class RepositoryZoneFilter {
     this.zone = this.createZoneBoundary(this.radius, this.center)
   }
 
+  getZoneBoundary(): ZoneBoundary {
+    return this.zone as ZoneBoundary
+  }
+
   createZoneBoundary(radiusKm: number, position: Position): ZoneBoundary {
     const radiusMeter = radiusKm * 1000
 

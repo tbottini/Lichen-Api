@@ -5,12 +5,8 @@ import * as jwt from '../modules/jwt'
 const DateAttr = require('../attr/date')
 const EnumAttr = require('../attr/enum')
 const IndexAttr = require('../attr/index')
-
 const fileMiddleware = require('../modules/middleware-file')
-const { researchSort } = require('../modules/research')
-
-import { ZoneAttribute } from '../attr/zone'
-import { Position } from '../commons/class/Position.class'
+import { CircularZone } from '../attr/CircularZone'
 import {
   parserMiddleware,
   parserQuery,
@@ -20,8 +16,8 @@ import {
 } from '../commons/parsers/QueryParser'
 import { mediumEnum } from '../medium/mediumEnum'
 import { userScope } from '../users/users.router'
-
-const logger = require('../modules/logger')
+import { ArtworkService } from './services/Artwork.service'
+import { logger } from '../modules/logger'
 
 const querySearch = {
   dateStart: new QueryDate(),
@@ -35,6 +31,8 @@ export const dimensionParse = new MiddlewareIntParser({
   attr: ['width', 'length', 'height'],
 })
 
+const artworkService = new ArtworkService()
+
 export const artworksRouter = new Router()
   .get('/', parserQuery(querySearch), async (req, res) => {
     /*
@@ -46,58 +44,17 @@ export const artworksRouter = new Router()
     const { dateStart, dateEnd, title, medium, latitude, longitude, radius } =
       req.query
 
-    const zone = ZoneAttribute.parse(latitude, longitude, radius)
+    const zone = CircularZone.parse(latitude, longitude, radius)
 
-    const getGeoFilter = (zone: ZoneAttribute | undefined) =>
-      !zone
-        ? undefined
-        : {
-            author: {
-              geoReferenced: !zone ? undefined : true,
-              gallery: zone.getZoneFilter(),
-            },
-          }
-
-    const includeAuthorGallery = {
-      project: {
-        include: {
-          author: {
-            include: {
-              gallery: true,
-            },
-          },
-        },
-      },
-    }
-
-    let results = await prisma.artwork.findMany({
-      where: {
-        start: {
-          lte: dateEnd,
-          gte: dateStart,
-        },
-        title: {
-          mode: 'insensitive',
-          contains: title,
-        },
-        medium: medium,
-        project: getGeoFilter(zone),
-      },
-      include: zone == undefined ? undefined : includeAuthorGallery,
+    const foundArtworks = await artworkService.getAllTasks({
+      zone,
+      dateStart,
+      dateEnd,
+      title,
+      medium,
     })
 
-    if (zone != null) {
-      results = filterArtworksOnZoneSquareToCircle(zone, results)
-
-      logger.debug(results)
-    }
-
-    if (title) {
-      results = researchSort(results, title, item => item.title)
-      logger.debug(results)
-    }
-
-    return res.json(results)
+    return res.json(foundArtworks)
   })
 
   .put(
@@ -179,14 +136,6 @@ export const artworksRouter = new Router()
     }
   )
 
-  /**
-   * Delete your artwork
-   * @route DELETE /artworks/
-   * @group Artworks
-   * @param {integer} firstname.path.required - firstname of user
-   * @returns {object} 200 - The user profile
-   * @security JWT
-   */
   .delete(
     '/:id',
     [jwt.middleware, parserMiddleware({ id: 'int' })],
@@ -315,28 +264,3 @@ export const artworksRouter = new Router()
       }
     }
   )
-
-function reinjectArtworkLikeBy(artwork) {
-  logger.debug(artwork)
-
-  artwork.likes = artwork.likes.map(like => {
-    like.artwork.likeAt = like.creation
-    return like.user
-  })
-
-  return artwork
-}
-
-/**
- * will take points filtered by a square zone (because
- * it's the only way to pre-filter with prisma)
- * and will filter again but with a circle zone this time
- * param points arrays of points that who we want to sort
- */
-function filterArtworksOnZoneSquareToCircle(zone: ZoneAttribute, artworks) {
-  return artworks.filter(artwork => {
-    var g = artwork['project'].author.gallery
-    var p: Position = new Position(g.latitude, g.longitude)
-    return zone.isUnderCircleZone(p)
-  })
-}

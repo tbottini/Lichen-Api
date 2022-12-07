@@ -1,47 +1,105 @@
-import { Gallery, Role } from '@prisma/client'
-import { MediumValues } from '../../medium/mediumEnum'
+import { Position } from '../../interfaces/Position.type'
+import { Gallery, PrismaClient } from '@prisma/client'
+import { UserRepositoryPublic } from './Users.scope'
+import {
+  GalleryDto,
+  UserPublicDto,
+  publicScope,
+  UserUpdatbleAttributes,
+} from './Users.scope'
+const prisma = new PrismaClient()
 
-export const publicScope = {
-  email: false,
-  password: false,
-  firstname: true,
-  pseudo: true,
-  lastname: true,
-  id: true,
-  websiteUrl: true,
-  description: true,
-  src: true,
-  role: true,
-  medium: true,
-  gallery: true,
+export class UsersRepository {
+  async update(userId: number, updateData: UpdateUser): Promise<UserPublicDto> {
+    const user = await prisma.user.update({
+      where: {
+        id: userId,
+      },
+      include: {
+        gallery: true,
+      },
+      data: {
+        positionLatitude: updateData.userPosition?.latitude,
+        positionLongitude: updateData.userPosition?.longitude,
+      },
+    })
 
-  bio: true,
-  geoReferenced: true,
-} as const
+    return this.toUser(user)
+  }
 
-export const privateScope = {
-  ...publicScope,
-  email: true,
-} as const
+  toUsers(users: UserRepositoryPublic[]): UserPublicDto[] {
+    return users.map(this.toUser)
+  }
 
-export type UserPublic = {
-  id: number
-  firstname: string | null
-  lastname: string | null
-  pseudo: string | null
-  src: string | null
-  description: string | null
-  bio: string | null
-  websiteUrl: string | null
-  creation: Date
-  role: Role
-  geoReferenced: boolean | null
-  medium: MediumValues | null
+  toUser(user: UserRepositoryPublic): UserPublicDto {
+    return {
+      id: user.id,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      pseudo: user.pseudo,
+      src: user.src,
+      description: user.description,
+      bio: user.bio,
+      websiteUrl: user.websiteUrl,
+      creation: user.creation,
+      role: user.role,
+      geoReferenced: user.geoReferenced,
+      medium: user.medium,
+      defaultPosition:
+        user.positionLatitude && user.positionLongitude
+          ? {
+              longitude: user.positionLongitude,
+              latitude: user.positionLatitude,
+            }
+          : null,
+      gallery: user.gallery ? this.toGallery(user.gallery) : null,
+    }
+  }
 
-  gallery: Gallery
+  toGallery(gallery: Gallery): GalleryDto {
+    return gallery
+  }
+
+  async updateRaw(
+    userId: number,
+    {
+      firstname,
+      lastname,
+      pseudo,
+      description,
+      src,
+      websiteUrl,
+      bio,
+      medium,
+      email,
+      password,
+      geoReferenced,
+    }: UserUpdatbleAttributes
+  ): Promise<UserPublicDto> {
+    const result = await prisma.user.update({
+      where: {
+        id: userId,
+      },
+      select: publicScope,
+      data: {
+        firstname,
+        lastname,
+        pseudo,
+        description,
+        src,
+        websiteUrl,
+        bio,
+        medium,
+        email,
+        password,
+        geoReferenced,
+      },
+    })
+
+    return this.toUser(result)
+  }
 }
 
-export type UserPrivate = UserPublic & {
-  email: string
-  password: string
+interface UpdateUser {
+  userPosition?: Position
 }

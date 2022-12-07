@@ -1,9 +1,15 @@
 const request = require('supertest')
-import { app } from '../srcs/index'
-import { UserTestHandler } from './userTestHandler'
+import { app } from '../index'
+import { UserTestHandler } from '../../tests/userTestHandler'
+import {
+  apiCreateUser,
+  apiSelf,
+  apiUpdateDefaultPosition,
+  expectDefaultPositionIsDefined,
+} from '../../tests/helpers/user.test.helper'
 
 describe('Users Routes Test', () => {
-  var user
+  let user
 
   beforeAll(async () => {
     await UserTestHandler.clearDatabase()
@@ -18,7 +24,6 @@ describe('Users Routes Test', () => {
     })
 
     const u = await UserTestHandler.self(user.token)
-    console.log('!USER', u)
     user.id = u.id
   })
 
@@ -102,7 +107,7 @@ describe('Users Routes Test', () => {
   })
 
   it('should find gallery according to medium', async () => {
-    var userMedium = await UserTestHandler.addUser({
+    const userMedium = await UserTestHandler.addUser({
       email: 'Jean@journaux.com',
       firstname: 'jean',
       lastname: 'dumont',
@@ -112,7 +117,7 @@ describe('Users Routes Test', () => {
       geoReferenced: true,
     })
 
-    var res = await request(app)
+    let res = await request(app)
       .get('/users/self')
       .set('Authorization', 'bearer ' + userMedium.token)
 
@@ -125,31 +130,31 @@ describe('Users Routes Test', () => {
       },
     })
 
-    var userId = res.body.id
+    const userId = res.body.id
 
     res = await request(app).get('/users/gallery?medium=STAMP')
     console.log('MEDIUM : ', res.body)
-    var usersFinded = res.body.find(user => user.id == userId)
-    expect(usersFinded).toMatchObject({
+    let usersFound = res.body.find(user => user.id == userId)
+    expect(usersFound).toMatchObject({
       medium: 'STAMP',
     })
 
     res = await request(app).get('/users/gallery?medium=STAMP,SCULPTURE')
-    var usersFindedMultipleFilter = res.body.find(user => user.id == userId)
+    const usersFindedMultipleFilter = res.body.find(user => user.id == userId)
     expect(usersFindedMultipleFilter).toMatchObject({
       medium: 'STAMP',
     })
 
     res = await request(app).get('/users/gallery?medium=')
-    usersFinded = res.body.find(user => user.id == userId)
+    usersFound = res.body.find(user => user.id == userId)
     expect(usersFindedMultipleFilter).toMatchObject({
       medium: 'STAMP',
     })
 
     res = await request(app).get('/users/gallery?medium=SCULPTURE')
     console.log('MEDIUM : ', res.body)
-    usersFinded = res.body.find(user => user.id == userId)
-    expect(usersFinded).toBe(undefined)
+    usersFound = res.body.find(user => user.id == userId)
+    expect(usersFound).toBe(undefined)
 
     res = await request(app).get('/users/gallery?medium=mlkjlmkj')
     expect(res.status).toBe(400)
@@ -160,13 +165,13 @@ describe('Users Routes Test', () => {
   it('should follow an user', async () => {
     console.log('SHOULD ', user)
 
-    var follow = await request(app)
+    const follow = await request(app)
       .post('/users/' + user.id.toString() + '/follow')
       .set('Authorization', 'bearer ' + userCreated1.token)
 
     expect(follow.status).toBe(200)
 
-    var self = await request(app)
+    const self = await request(app)
       .get('/users/self')
       .set('Authorization', 'bearer ' + userCreated1.token)
 
@@ -174,7 +179,7 @@ describe('Users Routes Test', () => {
   })
 
   it('should unfollow an user', async () => {
-    var unfollow = await request(app)
+    const unfollow = await request(app)
       .delete('/users/' + user.id.toString() + '/follow')
       .set('Authorization', 'bearer ' + userCreated1.token)
 
@@ -182,7 +187,7 @@ describe('Users Routes Test', () => {
       count: 1,
     })
 
-    var self = await request(app)
+    const self = await request(app)
       .get('/users/self')
       .set('Authorization', 'bearer ' + userCreated1.token)
 
@@ -190,7 +195,7 @@ describe('Users Routes Test', () => {
   })
 
   it('should delete an account', async () => {
-    var userFinded = await request(app)
+    let userFinded = await request(app)
       .delete('/users/self')
       .set('Authorization', 'bearer ' + userCreated1.token)
     userFinded = userFinded.body
@@ -202,14 +207,14 @@ describe('Users Routes Test', () => {
       websiteUrl: 'test@hotmail.com',
     })
 
-    var res = await request(app).get('/users/' + userFinded.id)
+    const res = await request(app).get('/users/' + userFinded.id)
 
     expect(res.body).toHaveProperty('error')
     expect(res.statusCode).toBe(400)
   })
 
   it('should update the medium of user', async () => {
-    var res = await request(app)
+    const res = await request(app)
       .put('/users/')
       .set('Authorization', 'bearer ' + user.token)
       .send({
@@ -233,7 +238,7 @@ describe('Users Routes Test', () => {
     })
 
     // we are creating an account with the same adress with maj for throwing a exception
-    var userCopy = await request(app).post('/users/register').send({
+    const userCopy = await request(app).post('/users/register').send({
       email: 'Dumont@journaux.com',
       password: 'notEffiscientPassword@1234,',
     })
@@ -242,7 +247,7 @@ describe('Users Routes Test', () => {
   })
 
   it('should success when login with the same adresse with upper case', async () => {
-    var userCreated = await UserTestHandler.addUser({
+    const userCreated = await UserTestHandler.addUser({
       email: 'petitpoulet@journaux.com',
       firstname: 'jean',
       lastname: 'dumont',
@@ -251,7 +256,7 @@ describe('Users Routes Test', () => {
     expect(userCreated.email).toBe('petitpoulet@journaux.com')
 
     // we are creating an account with the same adress with maj for throwing a exception
-    var res = await request(app).post('/users/login').send({
+    const res = await request(app).post('/users/login').send({
       email: userCreated.email.toUpperCase(),
       password: userCreated.password,
     })
@@ -259,6 +264,42 @@ describe('Users Routes Test', () => {
     expect(res.body).toHaveProperty('token')
     expect(res.statusCode).toBe(200)
     expect(res.body).not.toHaveProperty('error')
+  })
+
+  describe('update default location', () => {
+    it('should update default location of user', async () => {
+      const token = await apiCreateUser({
+        firstname: 'george',
+        lastname: 'orwell',
+        email: 'george.orwell@bigbrother.com',
+        medium: 'STAMP',
+      })
+
+      const updated = await apiUpdateDefaultPosition(token, {
+        longitude: '10',
+        latitude: '10',
+      })
+
+      expectDefaultPositionIsDefined(updated)
+    })
+
+    it('should update default location of user and self route should return defaultPosition', async () => {
+      const token = await apiCreateUser({
+        firstname: 'george',
+        lastname: 'orwell',
+        email: 'george.orwell2@bigbrother.com',
+        medium: 'STAMP',
+      })
+
+      await apiUpdateDefaultPosition(token, {
+        longitude: '10',
+        latitude: '10',
+      })
+
+      const self = await apiSelf(token)
+
+      expectDefaultPositionIsDefined(self)
+    })
   })
 
   afterAll(async () => {

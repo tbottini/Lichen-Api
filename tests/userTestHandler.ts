@@ -10,6 +10,7 @@ import {
   Project,
   User,
 } from '@prisma/client'
+import { UserFixture } from './fixture/user.fixture'
 
 export class UserTestHandler {
   static async addUser(

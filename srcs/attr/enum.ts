@@ -1,4 +1,3 @@
-import logger from '../modules/logger'
 class EnumAttr {
   value
   error = false
