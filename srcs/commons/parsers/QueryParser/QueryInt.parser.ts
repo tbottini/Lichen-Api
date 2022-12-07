@@ -1,5 +1,5 @@
+import { logger } from '../../../modules/logger'
 import { Query } from './Query.interface'
-import logger from '../../../modules/logger'
 
 export class QueryInt extends Query {
   max?: number

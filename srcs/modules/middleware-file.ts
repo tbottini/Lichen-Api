@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require('uuid')
-import logger from './logger'
+import { logger } from './logger'
 const multer = require('multer')
 
 /**

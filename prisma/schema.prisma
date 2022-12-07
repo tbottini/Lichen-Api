@@ -42,6 +42,8 @@ model User {
   gallery Gallery?
   medium Medium?
 
+  positionLongitude   Float?
+  positionLatitude    Float?
 }
 
 model Gallery {

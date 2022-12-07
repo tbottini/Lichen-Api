@@ -1,6 +1,6 @@
 import { MjmlMailTemplate } from './MjmlMailTemplate'
 import { MailjetMailSender, MailAttachments } from './MailjetMailSenderProvider'
-const logger = require('../logger')
+import { logger } from '../logger'
 
 const DEFAULT_MAIL = 'no-reply@reseau-lichen.fr'
 

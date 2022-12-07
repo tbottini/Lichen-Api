@@ -8,10 +8,7 @@ const prisma = new PrismaClient(),
   { ParamParser } = require('../attr/ParamParser'),
   fileMiddleware = require('../modules/middleware-file'),
   IndexAttr = require('../attr/index'),
-  { researchSort } = require('../modules/research'),
-  { ZoneAttribute } = require('../attr/zone'),
-  EnumAttr = require('../attr/enum'),
-  logger = require('../modules/logger')
+  EnumAttr = require('../attr/enum')
 
 import {
   parserMiddleware,
@@ -22,6 +19,9 @@ import {
 } from '../commons/parsers/QueryParser'
 import { mediumEnum } from '../medium/mediumEnum'
 import { userScope } from '../users/users.router'
+import { CircularZone } from '../attr/CircularZone'
+import { researchSort } from '../modules/research'
+import { logger } from '../modules/logger'
 
 const querySearch = {
   dateStart: new QueryDate(),
@@ -116,7 +116,7 @@ const router = new Router()
 
     logger.debug('MEDIUM EVENT', medium)
 
-    const zone = ZoneAttribute.parse(latitude, longitude, radius)
+    const zone = CircularZone.parse(latitude, longitude, radius)
 
     let whereClause: Prisma.EventWhereInput = {
       dateStart: {

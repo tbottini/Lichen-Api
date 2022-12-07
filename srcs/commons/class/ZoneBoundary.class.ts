@@ -21,3 +21,17 @@ export class ZoneBoundary {
     )
   }
 }
+
+export function getLatitudeFilterForBoundary(boundary: ZoneBoundary) {
+  return {
+    lte: boundary.maxLatitude,
+    gte: boundary.minLatitude,
+  }
+}
+
+export function getLongitudeFilterForBoundary(boundary: ZoneBoundary) {
+  return {
+    lte: boundary.maxLongitude,
+    gte: boundary.minLongitude,
+  }
+}

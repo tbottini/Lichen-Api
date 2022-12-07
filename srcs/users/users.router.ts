@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import { UserService } from './services/users.service'
+import { UserService } from './services/Users.service'
 const prisma = new PrismaClient()
 const { Router } = require('express')
 const regex = require('../modules/regexUtils')
@@ -12,17 +12,27 @@ import {
 } from '../commons/parsers/QueryParser'
 import { mediumEnum } from '../medium/mediumEnum'
 import { GalleryService } from './services/Gallery.service'
-import { privateScope, publicScope } from './repositories/Users.repository'
+import {
+  privateScope,
+  publicScope,
+  UserFullPublicDto,
+  UserPublicDto,
+} from './repositories/Users.scope'
 import { QueryFloat } from '../commons/parsers/QueryParser/QueryFloat.parser'
+import { EmailAttr } from '../attr/Email.attribute'
+import { parsePosition } from '../commons/parsers/Position.parser'
+import { UserRequestWithBody } from '../commons/interfaces/Request.types'
+import { tryCompleteRequest } from '../commons/router/fallbackError'
+import { UsersRepository } from './repositories/Users.repository'
+import { UserRepositoryPublic, IncludesUsers } from './repositories/Users.scope'
+import { GetSelfDto } from './dto/GetSelf.dto'
+import { researchSort } from '../modules/research'
+import { logger } from '../modules/logger'
 const EnumAttr = require('../attr/enum')
-const EmailAttr = require('../attr/email')
 const { BoolAttr } = require('../attr/boolean')
 const PasswordAttr = require('../attr/password')
 const passwordUtils = require('../modules/password')
 const fileMiddleware = require('../modules/middleware-file')
-
-const { researchSort } = require('../modules/research')
-const logger = require('../modules/logger')
 
 const querySearch = {
   name: new QueryString(),
@@ -34,10 +44,16 @@ export const userScope = {
 }
 
 const userService = new UserService()
+const userRepository = new UsersRepository()
 const galleryService = new GalleryService()
 
+interface Response<T> {
+  status: (code: number) => this
+  json: (arg: T | { error: string }) => void
+}
+
 export const userRouter = new Router()
-  .post('/register', async (req, res) => {
+  .post('/register', async (req, res: Response<{ token: string }>) => {
     const {
       email,
       password,
@@ -95,7 +111,7 @@ export const userRouter = new Router()
 
     res.json({ token })
   })
-  .post('/login', async (req, res) => {
+  .post('/login', async (req, res: Response<{ token: string }>) => {
     const { email, password } = req.body
     logger.debug('login', req.body)
     if (!email || !password)
@@ -132,7 +148,7 @@ export const userRouter = new Router()
 
     return res.json({ token: jwt.create(user) })
   })
-  .get('/self', jwt.middleware, async (req, res) => {
+  .get('/self', jwt.middleware, async (req, res: Response<GetSelfDto>) => {
     logger.debug(req.user)
 
     prisma.user
@@ -185,7 +201,7 @@ export const userRouter = new Router()
       })
       .then(self => {
         logger.debug('find')
-        return res.json(reinjectUserFollow(self))
+        return res.json(reinjectUserFollow<{ email: string }>(self))
       })
       .catch(err => {
         logger.debug('err', err)
@@ -296,13 +312,13 @@ export const userRouter = new Router()
       .then(result => {
         return res.json(reinjectUserFollow(result))
       })
-      .catch(err => {
+      .catch(() => {
         return res.status(400).json({ error: 'No user found with this token' })
       })
   })
   .delete('/self', jwt.middleware, async (req, res) => {
     logger.debug('delete users ' + req.user.id + '...')
-    var result = await prisma.user.delete({
+    const result = await prisma.user.delete({
       where: {
         id: req.user.id,
       },
@@ -349,35 +365,53 @@ export const userRouter = new Router()
         .json({ error: 'geoReferenced : ' + geoReferenced.error })
 
     try {
-      const result = await prisma.user.update({
-        where: {
-          id: req.user.id,
-        },
-        select: userScope.public,
-        data: {
-          firstname,
-          lastname,
-          pseudo,
-          description,
-          src,
-          websiteUrl,
-          bio,
-          medium: mediumAttr.value,
-          email: emailWrapper.value,
-          password: passwordValue,
-          geoReferenced: geoReferencedWrapper.value,
-        },
+      const result = await userRepository.updateRaw(req.user.id, {
+        firstname,
+        lastname,
+        pseudo,
+        description,
+        src,
+        websiteUrl,
+        bio,
+        medium: mediumAttr.value,
+        email: emailWrapper.value,
+        password: passwordValue,
+        geoReferenced: geoReferencedWrapper.value,
       })
+
       return res.json(result)
     } catch (err) {
       return res.status(400).json({ error: "this token isn't valid" })
     }
   })
+  .put(
+    '/new-position',
+    [...jwt.middleware],
+    async (
+      req: UserRequestWithBody<{
+        position: { longitude: string; latitude: string }
+      }>,
+      res: Response<UserPublicDto>
+    ) => {
+      const { position } = req.body
+
+      tryCompleteRequest(res, async () => {
+        const parsedPosition = parsePosition(position)
+
+        const result = await userService.updateUserPosition({
+          userId: req.user.id,
+          newPosition: parsedPosition,
+        })
+
+        return res.status(200).json(result)
+      })
+    }
+  )
   .post(
     '/:id/follow',
     [jwt.middleware, parserMiddleware({ id: 'int' })],
     async (req, res) => {
-      var result = await prisma.userFollow.findFirst({
+      let result = await prisma.userFollow.findFirst({
         where: {
           userFollowingId: req.user.id,
           userFollowedId: req.params.id,
@@ -412,7 +446,7 @@ export const userRouter = new Router()
     '/:id/follow',
     [jwt.middleware, parserMiddleware({ id: 'int' })],
     async (req, res) => {
-      var result = await prisma.userFollow.deleteMany({
+      const result = await prisma.userFollow.deleteMany({
         where: {
           userFollowingId: req.user.id,
           userFollowedId: req.params.id,
@@ -487,7 +521,12 @@ export const userRouter = new Router()
     res.json({ msg: 'an email was sent to your email address' })
   })
 
-function reinjectUserFollow(user) {
+function reinjectUserFollow<AdditionalUserData>(
+  user: (UserRepositoryPublic & IncludesUsers & AdditionalUserData) | null
+): UserFullPublicDto & AdditionalUserData {
+  if (!user) {
+    throw new Error('')
+  }
   logger.debug(user)
   user.following = user.following.map(follow => {
     //parmis les personnes que l'on suit
@@ -517,5 +556,15 @@ function reinjectUserFollow(user) {
       return eventFollow.event
     })
     .filter(eventFollow => eventFollow != null)
-  return user
+
+  return {
+    ...user,
+    defaultPosition:
+      user.positionLatitude && user.positionLongitude
+        ? {
+            latitude: user.positionLatitude,
+            longitude: user.positionLongitude,
+          }
+        : null,
+  }
 }

@@ -3,9 +3,6 @@ const prisma = new PrismaClient()
 const { Router } = require('express')
 import * as jwt from '../modules/jwt'
 
-const { ZoneAttribute, Position } = require('../attr/zone')
-const logger = require('../modules/logger')
-
 import {
   parserQuery,
   QueryDate,
@@ -13,6 +10,8 @@ import {
   QueryInt,
 } from '../commons/parsers/QueryParser'
 import { NewsService } from './News.service'
+import { CircularZone } from '../attr/CircularZone'
+import { logger } from '../modules/logger'
 
 const mediumSearch = {
   artwork: 'artwork', //toutes les notif sur les nouveaux artwork
@@ -39,7 +38,7 @@ export const newsRouter = new Router().get(
     let { anchor, duration } = req.query
     const { longitude, latitude, radius } = req.query
 
-    const zone = ZoneAttribute.parse(latitude, longitude, radius)
+    const zone = CircularZone.parse(latitude, longitude, radius)
 
     if (!anchor) {
       anchor = new Date()

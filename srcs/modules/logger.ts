@@ -58,7 +58,7 @@ const transports = [
 ]
 
 // create a Winston logger
-const logger = winston.createLogger({
+export const logger = winston.createLogger({
   // specify the own log levels system
   levels,
   // specify the logging targets
@@ -84,6 +84,3 @@ logger.stream = {
     logger.http(message)
   },
 }
-
-// export the logger
-module.exports = logger

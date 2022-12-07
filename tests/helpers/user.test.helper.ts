@@ -1,5 +1,4 @@
-// import { app } from '../../srcs'
-import { Event, Gallery, User } from '@prisma/client'
+import { Event } from '@prisma/client'
 import { app } from '../../srcs'
 import {
   UserFixtureCreationDto,
@@ -8,6 +7,7 @@ import {
   ProjectCreateInput,
   EventCreateInput,
 } from '../userTestHandler'
+import { apiCreateUser, apiLogin } from './api.helpers'
 const request = require('supertest')
 
 export async function createUserList(listData: UserFixtureCreationDto[]) {
@@ -33,7 +33,7 @@ export async function addUser({
   events,
   medium,
   geoReferenced,
-}: UserFixtureCreationDto): Promise<any & UserFixture> {
+}: UserFixtureCreationDto): Promise<any> {
   const DEFAULT_PASSWORD = 'PasswordTest1234@,'
 
   let dataRequest = {
@@ -44,15 +44,9 @@ export async function addUser({
     medium,
   }
 
-  let res = await request(app).post('/users/register').send(dataRequest)
+  await apiCreateUser(dataRequest)
 
-  res = await request(app).post('/users/login').send({
-    email: email,
-    password: DEFAULT_PASSWORD,
-  })
-
-  expect(res.body).toHaveProperty('token')
-  const token = res.body.token
+  const token = await apiLogin({ email })
 
   if (longitude && latitude) {
     const gallery = await UserTestHandler.updateGallery(token, {
@@ -118,11 +112,3 @@ async function createProjects(
   }
   return projectsCreated
 }
-
-type UserFixture = Partial<Gallery> &
-  User & {
-    token: string
-    projects: ProjectWithArtworks[]
-    events: Event[] | undefined
-    geoReferenced: boolean | undefined
-  }

@@ -1,5 +1,5 @@
-const logger = require('../logger')
 import fs from 'fs'
+import { logger } from '../logger'
 import { MjmlMailTemplate } from './MjmlMailTemplate'
 
 export class MjmlTemplateRepository {
@@ -20,13 +20,13 @@ export class MjmlTemplateRepository {
     linkSoundcloud,
     linkTwitter,
   }: WrapperOptions): MjmlMailTemplate {
+    logger.info('MjmlFile - Basic Template was generate')
     return new MjmlMailTemplate(this.readMjml('basic'))
       .set('link-facebook', linkFacebook)
       .set('link-instagram', linkInstagram)
       .set('link-youtube', linkYoutube)
       .set('link-soundcloud', linkSoundcloud)
       .set('link-twitter', linkTwitter)
-    logger.info('MjmlFile - Basic Template was generate')
   }
 
   registerTemplate(templateName: string, templateFilename: string) {

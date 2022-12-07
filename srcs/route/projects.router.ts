@@ -4,12 +4,12 @@ import { mediumEnum } from '../medium/mediumEnum'
 const prisma = new PrismaClient()
 const { Router } = require('express')
 import * as jwt from '../modules/jwt'
+import { logger } from '../modules/logger'
 const DateAttr = require('../attr/date')
 const fileMiddleware = require('../modules/middleware-file')
 const IndexAttr = require('../attr/index')
 const { MiddlewareIntParser } = require('../attr/int')
 const EnumAttr = require('../attr/enum')
-const logger = require('../modules/logger')
 
 var dimensionParse = new MiddlewareIntParser({
   attr: ['width', 'length', 'height'],

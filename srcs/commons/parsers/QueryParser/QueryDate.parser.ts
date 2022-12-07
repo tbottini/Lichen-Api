@@ -1,5 +1,4 @@
 import { Query } from './Query.interface'
-import logger from '../../../modules/logger'
 
 export class QueryDate extends Query {
   constructor() {
@@ -8,8 +7,6 @@ export class QueryDate extends Query {
 
   parse(value): boolean {
     this.value = new Date(value)
-
-    logger.debug(value)
 
     if (isNaN(this.value.getTime())) {
       this.value = undefined

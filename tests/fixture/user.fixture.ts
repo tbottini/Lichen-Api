@@ -1,5 +1,4 @@
 import { Prisma, PrismaClient, Project, User } from '@prisma/client'
-import { UserFixtureCreationDto } from '../userTestHandler'
 const prisma = new PrismaClient()
 
 export function createUser(

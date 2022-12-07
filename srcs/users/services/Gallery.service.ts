@@ -1,13 +1,13 @@
 import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 import { MediumValues } from '../../medium/mediumEnum'
-import { publicScope, UserPublic } from '../repositories/Users.repository'
+import { publicScope, UserRepositoryPublic } from '../repositories/Users.scope'
 
 export class GalleryService {
   async getGalleries(
     filter: PolarSquareZoneFilter,
     medium?: MediumValues
-  ): Promise<UserPublic[]> {
+  ): Promise<UserRepositoryPublic[]> {
     const foundGalleries = await prisma.user.findMany({
       where: {
         geoReferenced: true,
@@ -17,7 +17,7 @@ export class GalleryService {
       select: publicScope,
     })
 
-    return foundGalleries as UserPublic[]
+    return foundGalleries
   }
 }
 

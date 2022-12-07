@@ -14,7 +14,7 @@ import {
   CreateArworkFunction,
 } from '../../swipe/Artwork.fixture'
 import { ArtworkRepository } from './Artwork.repository'
-import { ZoneAttribute } from '../../attr/zone'
+import { CircularZone } from '../../attr/CircularZone'
 import { createUser } from '../../../tests/fixture/user.fixture'
 import { createLikeArtwork } from '../../../tests/fixture/like.fixture'
 import { createGalleryForUser } from '../../../tests/fixture/gallery.fixture'
@@ -130,7 +130,7 @@ describe('Artwork Repository and ArtworkFeedQuery', () => {
       })
 
       const artworks = await artworkRepository.getArtworkFeed({
-        zoneFilter: new ZoneAttribute(20, 10, 100),
+        zoneFilter: new CircularZone(20, 10, 100),
         userId: user.id,
       })
 

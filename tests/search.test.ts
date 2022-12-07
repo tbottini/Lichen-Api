@@ -55,7 +55,7 @@ describe('Search', () => {
     ])
   })
 
-  it('should search tworks by location zone', async () => {
+  it('should search artworks by location zone', async () => {
     const res = await request(app).get('/artworks').query({
       latitude: 31,
       longitude: 32,
