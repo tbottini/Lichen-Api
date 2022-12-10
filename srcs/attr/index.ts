@@ -1,6 +1,5 @@
-import { PrismaClient } from '@prisma/client'
 import { logger } from '../modules/logger'
-const prisma = new PrismaClient()
+import { prisma } from '../commons/prisma/prisma'
 
 class IndexAttr {
   name_array: string

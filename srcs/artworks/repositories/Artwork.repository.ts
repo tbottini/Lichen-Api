@@ -1,11 +1,10 @@
-import { PrismaClient } from '@prisma/client'
 import { ArtworkUnitFeed } from '../../swipe/Swipe.service'
 import { Position } from '../../commons/class/Position.class'
 import { CircularZone } from '../../attr/CircularZone'
 import { MediumValues } from '../../medium/mediumEnum'
 import { RepositoryZoneFilter } from '../../swipe/repositories/RepositoryZoneFilter.class'
 import { GetNewsForUser } from '../../news/News.service'
-const prisma = new PrismaClient()
+import { prisma } from '../../commons/prisma/prisma'
 
 export class ArtworkRepository {
   public async getArtworkFeed(feedOptions: ArtworkFeedOptions) {

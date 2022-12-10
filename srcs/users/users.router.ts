@@ -1,6 +1,5 @@
-import { PrismaClient } from '@prisma/client'
 import { UserService } from './services/Users.service'
-const prisma = new PrismaClient()
+import { prisma } from '../commons/prisma/prisma'
 const { Router } = require('express')
 const regex = require('../modules/regexUtils')
 import * as jwt from '../modules/jwt'

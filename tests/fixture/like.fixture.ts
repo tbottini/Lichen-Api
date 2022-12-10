@@ -1,5 +1,5 @@
-import { PrismaClient, ArtworkLikes } from '@prisma/client'
-const prisma = new PrismaClient()
+import { ArtworkLikes } from '@prisma/client'
+import { prisma } from '../../srcs/commons/prisma/prisma'
 
 export function createLikeArtwork({
   likeBy,

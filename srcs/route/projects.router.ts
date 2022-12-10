@@ -1,7 +1,6 @@
-import { PrismaClient } from '@prisma/client'
 import { parserMiddleware } from '../commons/parsers/QueryParser'
 import { mediumEnum } from '../medium/mediumEnum'
-const prisma = new PrismaClient()
+import { prisma } from '../commons/prisma/prisma'
 const { Router } = require('express')
 import * as jwt from '../modules/jwt'
 import { logger } from '../modules/logger'

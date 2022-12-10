@@ -1,33 +1,31 @@
-import { Prisma, PrismaClient } from '@prisma/client'
 const _ = require('lodash')
 import * as jwt from '../modules/jwt'
-const prisma = new PrismaClient(),
-  { Router } = require('express'),
-  DateAttr = require('../attr/date'),
-  { FloatAttribute } = require('../attr/Attribute'),
-  { ParamParser } = require('../attr/ParamParser'),
-  fileMiddleware = require('../modules/middleware-file'),
-  IndexAttr = require('../attr/index'),
-  EnumAttr = require('../attr/enum')
-
+import { prisma } from '../commons/prisma/prisma'
+const { Router } = require('express')
+const DateAttr = require('../attr/date')
+const { FloatAttribute } = require('../attr/Attribute')
+const { ParamParser } = require('../attr/ParamParser')
+const fileMiddleware = require('../modules/middleware-file')
+const IndexAttr = require('../attr/index')
+const EnumAttr = require('../attr/enum')
 import {
   parserMiddleware,
   parserQuery,
   QueryDate,
-  QueryEnum,
   QueryString,
 } from '../commons/parsers/QueryParser'
 import { mediumEnum } from '../medium/mediumEnum'
 import { userScope } from '../users/users.router'
 import { CircularZone } from '../attr/CircularZone'
-import { researchSort } from '../modules/research'
 import { logger } from '../modules/logger'
+import { parseMultipleEnum } from '../commons/parsers/Enum.parser'
+import { tryCompleteRequest } from '../commons/router/fallbackError'
+import { EventService } from './services/Events.service'
 
 const querySearch = {
   dateStart: new QueryDate(),
   dateEnd: new QueryDate(),
   title: new QueryString(),
-  medium: new QueryEnum(mediumEnum, { isList: true }),
 }
 
 const positionParser = new ParamParser([
@@ -35,12 +33,9 @@ const positionParser = new ParamParser([
   new FloatAttribute('latitude'),
 ])
 
-const includeField = {
-  organisator: true,
-  followedBy: true,
-}
+const eventService = new EventService()
 
-const router = new Router()
+export const eventsRouter = new Router()
   .post(
     '/',
     [jwt.middleware, fileMiddleware(), positionParser.middleware],
@@ -48,60 +43,62 @@ const router = new Router()
       const { name, description, dateStart, dateEnd, medium } = req.body
       const { latitude, longitude } = req.body.parsed
 
-      logger.debug(req.body)
-
-      if (!name)
-        return res.status(400).json({ error: 'attribute name is empty' })
-
-      if (req.file) {
-        var src = req.file.filename
+      if (!name) {
+        return res.status(400).json({ error: 'Attribute name is empty' })
       }
 
-      const mediumAttr = new EnumAttr(mediumEnum, medium)
-      if (mediumAttr.error)
-        return res.status(400).json({ error: 'bad format for enum attr' })
+      const src = req.file ? req.file.filename : undefined
 
-      logger.debug('DATE START', dateStart)
+      const mediumQuery = new EnumAttr(mediumEnum, medium)
+      if (mediumQuery.error) {
+        return res.status(400).json({ error: 'Bad format for enum attr' })
+      }
 
-      const dateStartAttr = new DateAttr(dateStart)
-      if (dateStartAttr.error)
-        return res.status(400).json({ error: 'bad format for date start attr' })
+      const dateStartQuery = new DateAttr(dateStart)
+      if (dateStartQuery.error) {
+        return res.status(400).json({ error: 'Bad format for date start attr' })
+      }
 
       const dateEndAttr = new DateAttr(dateEnd)
-      if (dateEndAttr.error)
-        return res.status(400).json({ error: 'bad format for date end attr' })
+      if (dateEndAttr.error) {
+        return res.status(400).json({ error: 'Bad format for date end attr' })
+      }
 
       const sizeOfArray = await prisma.event.count({
         where: {
           organisatorId: req.user.id,
         },
       })
-      logger.debug(sizeOfArray)
 
-      const result = await prisma.event.create({
-        data: {
-          name: name,
-          description: description,
-          dateStart: dateStartAttr.value,
-          dateEnd: dateEndAttr.value,
-          src: src,
-          index: sizeOfArray,
-          medium: mediumAttr.value,
-          longitude,
-          latitude,
-          organisator: {
-            connect: {
-              id: req.user.id,
+      try {
+        const result = await prisma.event.create({
+          data: {
+            name: name,
+            description: description,
+            dateStart: dateStartQuery.value,
+            dateEnd: dateEndAttr.value,
+            src: src,
+            index: sizeOfArray,
+            medium: mediumQuery.value,
+            longitude,
+            latitude,
+            organisator: {
+              connect: {
+                id: req.user.id,
+              },
             },
           },
-        },
-        include: {
-          organisator: {
-            select: userScope.public,
+          include: {
+            organisator: {
+              select: userScope.public,
+            },
           },
-        },
-      })
-      return res.json(result)
+        })
+        return res.json(result)
+      } catch (e) {
+        console.log(e)
+        return res.status(500).end('Internal Error')
+      }
     }
   )
   .get('/', parserQuery(querySearch), async (req, res) => {
@@ -111,49 +108,23 @@ const router = new Router()
      * pour la string c'est une chaine qui doit être contenu par le titre
      */
 
-    const { dateStart, dateEnd, name, latitude, longitude, radius, medium } =
-      req.query
+    tryCompleteRequest(res, async () => {
+      const { dateStart, dateEnd, name, latitude, longitude, radius, medium } =
+        req.query
 
-    logger.debug('MEDIUM EVENT', medium)
+      const zone = CircularZone.parse(latitude, longitude, radius)
+      const mediums = parseMultipleEnum(medium, mediumEnum)
 
-    const zone = CircularZone.parse(latitude, longitude, radius)
-
-    let whereClause: Prisma.EventWhereInput = {
-      dateStart: {
-        lte: dateEnd,
-        gte: dateStart,
-      },
-      name: {
-        mode: 'insensitive',
-        contains: name,
-      },
-      medium:
-        medium == undefined
-          ? undefined
-          : {
-              in: medium,
-            },
-    }
-    if (zone != undefined)
-      whereClause = _.assign(whereClause, zone?.getZoneFilter())
-
-    console.log(whereClause)
-
-    let results = await prisma.event.findMany({
-      where: whereClause,
-      include: {
-        organisator: {
-          select: userScope.public,
-        },
-      },
+      res.status(200).json(
+        await eventService.getEvents({
+          name,
+          zone,
+          dateStart,
+          dateEnd,
+          mediums,
+        })
+      )
     })
-
-    if (name) {
-      results = researchSort(results, name, item => item.name)
-      logger.debug(results)
-    }
-
-    return res.json(results)
   })
   .put(
     '/:id',
@@ -336,5 +307,3 @@ function reinjectEventFollow(event) {
   })
   return event
 }
-
-module.exports = { router }

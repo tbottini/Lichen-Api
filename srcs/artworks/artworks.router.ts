@@ -1,5 +1,3 @@
-import { PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
 const { Router } = require('express')
 import * as jwt from '../modules/jwt'
 const DateAttr = require('../attr/date')
@@ -18,6 +16,7 @@ import { mediumEnum } from '../medium/mediumEnum'
 import { userScope } from '../users/users.router'
 import { ArtworkService } from './services/Artwork.service'
 import { logger } from '../modules/logger'
+import { prisma } from '../commons/prisma/prisma'
 
 const querySearch = {
   dateStart: new QueryDate(),

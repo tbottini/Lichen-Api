@@ -5,6 +5,7 @@ const bodyParser = require('body-parser')
 const express = require('express')
 import { Application } from 'express'
 import { artworksRouter } from './artworks/artworks.router'
+import { eventsRouter } from './events/events.router'
 import { logger } from './modules/logger'
 import { newsRouter } from './news/news.router'
 const expressApp: Application = express()
@@ -14,8 +15,6 @@ const ipx = createIPX()
 const middlewareLogger = require('./modules/middleware-logger')
 
 const projects = require('./route/projects.router.ts')
-const events = require('./route/events.router.ts')
-
 import { swipeRouter } from './swipe/Swipe.router'
 import { userRouter } from './users/users.router'
 
@@ -29,12 +28,14 @@ if (process.env.DATABASE_URL == null) {
 
 console.log('NODE_ENV', process.env.NODE_ENV)
 
+const FRONT_APP_URL =
+  process.env.NODE_ENV == 'production'
+    ? 'https://app.reseau-lichen.fr'
+    : 'http://localhost:8081'
+
 expressApp.use(
   cors({
-    origin:
-      process.env.NODE_ENV == 'production'
-        ? 'https://app.reseau-lichen.fr'
-        : 'http://localhost:8081',
+    origin: FRONT_APP_URL,
     methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS', 'HEAD', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
@@ -58,7 +59,7 @@ expressApp.get('/', (req, res) => {
 expressApp
   .use('/users/', userRouter)
   .use('/projects/', projects.router)
-  .use('/events/', events.router)
+  .use('/events/', eventsRouter)
   .use('/artworks/', artworksRouter)
   .use('/news', newsRouter)
   .use('/swipe/', swipeRouter)

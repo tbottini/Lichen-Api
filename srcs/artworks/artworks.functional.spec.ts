@@ -74,9 +74,9 @@ describe('Artworks Routes Test', () => {
         latitude: '20',
       })
 
-      // const newUserToken = await apiCreateUser()
-      // const newProject = await apiCreateProject(newUserToken)
-      // await apiCreateArtwork(newUserToken, newProject.id)
+      const newUserToken = await apiCreateUser()
+      const newProject = await apiCreateProject(newUserToken)
+      await apiCreateArtwork(newUserToken, newProject.id)
 
       const artworksFound = await apiRetrieveTasks({
         longitude: 20,

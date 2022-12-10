@@ -1,12 +1,8 @@
-import { PrismaClient } from '@prisma/client'
 import { Position } from '../../commons/class/Position.class'
-const prisma = new PrismaClient()
+import { prisma } from '../../commons/prisma/prisma'
 import { AccountMailer } from './AccountMail.service'
 import { UsersRepository } from '../repositories/Users.repository'
-import {
-  UserPublicDto,
-  UserRepositoryPublic,
-} from '../repositories/Users.scope'
+import { UserPublicDto } from '../repositories/Users.scope'
 const jwt = require('../../modules/jwt')
 
 const userRepository = new UsersRepository()
