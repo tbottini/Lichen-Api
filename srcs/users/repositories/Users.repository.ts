@@ -1,5 +1,5 @@
 import { Position } from '../../interfaces/Position.type'
-import { Gallery, PrismaClient } from '@prisma/client'
+import { Gallery } from '@prisma/client'
 import { UserRepositoryPublic } from './Users.scope'
 import {
   GalleryDto,
@@ -7,7 +7,7 @@ import {
   publicScope,
   UserUpdatbleAttributes,
 } from './Users.scope'
-const prisma = new PrismaClient()
+import { prisma } from '../../commons/prisma/prisma'
 
 export class UsersRepository {
   async update(userId: number, updateData: UpdateUser): Promise<UserPublicDto> {

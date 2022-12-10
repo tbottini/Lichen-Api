@@ -1,5 +1,5 @@
-import { PrismaClient, Project, User, Gallery } from '@prisma/client'
-const prisma = new PrismaClient()
+import { Project, User, Gallery } from '@prisma/client'
+import { prisma } from '../../commons/prisma/prisma'
 import { CircularZone } from '../../attr/CircularZone'
 import { Position } from '../../commons/class/Position.class'
 import { Artwork as ArtworkDto } from '../../interfaces/Artwork.type'

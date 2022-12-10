@@ -1,5 +1,4 @@
-import { PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
+import { prisma } from '../../srcs/commons/prisma/prisma'
 
 export async function clearDatabase() {
   await prisma.artwork.deleteMany()

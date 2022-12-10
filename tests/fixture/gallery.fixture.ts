@@ -1,5 +1,5 @@
-import { Gallery, Prisma, PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
+import { Gallery, Prisma } from '@prisma/client'
+import { prisma } from '../../srcs/commons/prisma/prisma'
 
 export async function createGalleryForUser(
   userId: number,

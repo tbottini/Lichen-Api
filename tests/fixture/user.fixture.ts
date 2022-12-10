@@ -1,5 +1,5 @@
-import { Prisma, PrismaClient, Project, User } from '@prisma/client'
-const prisma = new PrismaClient()
+import { Prisma, Project, User } from '@prisma/client'
+import { prisma } from '../../srcs/commons/prisma/prisma'
 
 export function createUser(
   data?: Partial<Prisma.UserUncheckedCreateInput>

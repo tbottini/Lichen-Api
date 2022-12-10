@@ -1,5 +1,4 @@
-import { PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
+import { prisma } from '../../commons/prisma/prisma'
 import { MediumValues } from '../../medium/mediumEnum'
 import { publicScope, UserRepositoryPublic } from '../repositories/Users.scope'
 

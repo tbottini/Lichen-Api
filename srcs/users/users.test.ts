@@ -4,9 +4,9 @@ import { UserTestHandler } from '../../tests/userTestHandler'
 import {
   apiCreateUser,
   apiSelf,
-  apiUpdateDefaultPosition,
+  apiUpdateUserPosition,
   expectDefaultPositionIsDefined,
-} from '../../tests/helpers/user.test.helper'
+} from '../../tests/helpers/api.helpers'
 
 describe('Users Routes Test', () => {
   let user
@@ -275,7 +275,7 @@ describe('Users Routes Test', () => {
         medium: 'STAMP',
       })
 
-      const updated = await apiUpdateDefaultPosition(token, {
+      const updated = await apiUpdateUserPosition(token, {
         longitude: '10',
         latitude: '10',
       })
@@ -291,7 +291,7 @@ describe('Users Routes Test', () => {
         medium: 'STAMP',
       })
 
-      await apiUpdateDefaultPosition(token, {
+      await apiUpdateUserPosition(token, {
         longitude: '10',
         latitude: '10',
       })

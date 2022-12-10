@@ -1,5 +1,5 @@
-import { Artwork, Prisma, PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
+import { Artwork, Prisma } from '@prisma/client'
+import { prisma } from '../../srcs/commons/prisma/prisma'
 
 export async function createArtwork(
   data: Prisma.ArtworkUncheckedCreateInput

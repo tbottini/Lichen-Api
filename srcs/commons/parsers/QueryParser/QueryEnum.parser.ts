@@ -4,9 +4,12 @@ export class QueryEnum extends Query {
   isList: boolean
   dict: Record<string, string>
 
-  constructor(enumMap, params?: { isList: boolean }) {
+  constructor(
+    enumReferences: Record<string, string>,
+    params?: { isList: boolean }
+  ) {
     super('enum')
-    this.dict = enumMap
+    this.dict = enumReferences
     this.isList = params?.isList ?? false
   }
 
@@ -16,8 +19,10 @@ export class QueryEnum extends Query {
       return true
     }
 
+    console.log(this.isList, input, this.dict)
+
     if (this.isList) {
-      this.value = input.split(',').map(mediumStr => this.dict[mediumStr])
+      this.value = input.split(',').map(mediumInput => this.dict[mediumInput])
 
       if (this.value.filter(v => !v).length > 0) {
         return false

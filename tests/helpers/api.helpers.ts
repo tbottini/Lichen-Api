@@ -1,9 +1,9 @@
-// import { app } from '../../srcs'
+import { app } from '../../srcs'
 import { UserPrivateDto } from '../../srcs/users/repositories/Users.scope'
 import { UserPublicDto } from '../../srcs/users/repositories/Users.scope'
 import { MediumValues } from '../../srcs/medium/mediumEnum'
 
-import { app } from '../../srcs'
+import { EventEntity } from '../../srcs/events/types/Event.type'
 const request = require('supertest')
 
 export async function apiCreateUser(creationData?: {
@@ -115,4 +115,39 @@ export async function apiRetrieveTasks(filter?: {
   })
 
   return resTasks.body
+}
+
+export async function apiCreateEvent(
+  token: string,
+  eventData?: Partial<EventEntity>
+) {
+  const res = await request(app)
+    .post('/events')
+    .set('Authorization', 'bearer ' + token)
+    .send({
+      name: 'event#1',
+      description: 'description#1',
+      dateStart: eventData?.dateStart ?? Date.UTC(2000, 12, 30, 12, 30, 10),
+      dateEnd: eventData?.dateEnd,
+      latitude: eventData?.latitude,
+      longitude: eventData?.longitude,
+      medium: eventData?.medium,
+    })
+
+  return res.body
+}
+
+export async function apiGetEvent(eventId: number) {
+  return (await request(app).get('/events/' + eventId)).body
+}
+
+export async function apiGetEvents() {
+  return (await request(app).get('/events/')).body
+}
+
+export async function apiFollow(token: string, eventId: number) {
+  const res = await request(app)
+    .post('/events/' + eventId + '/follow')
+    .set('Authorization', 'bearer ' + token)
+  return res.body
 }

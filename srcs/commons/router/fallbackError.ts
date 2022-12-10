@@ -4,7 +4,13 @@ export async function tryCompleteRequest(
 ) {
   try {
     await callback()
-  } catch (e) {
+  } catch (e: any) {
+    if (e.type == 'InternalError') {
+      return res
+        .status(500)
+        .json(JSON.stringify(e, Object.getOwnPropertyNames(e)))
+    }
+
     res.status(400).json(JSON.stringify(e, Object.getOwnPropertyNames(e)))
   }
 }

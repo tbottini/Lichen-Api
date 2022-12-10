@@ -1,7 +1,7 @@
 import { MediumValues } from '../medium/mediumEnum'
-import { PrismaClient, Prisma, Artwork, Project } from '@prisma/client'
+import { Prisma, Artwork, Project } from '@prisma/client'
 import { createArtwork } from '../../tests/fixture/artwork.fixture'
-const prisma = new PrismaClient()
+import { prisma } from '../commons/prisma/prisma'
 
 export function createProject(
   data: Prisma.ProjectUncheckedCreateInput

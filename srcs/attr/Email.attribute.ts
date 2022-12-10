@@ -1,6 +1,5 @@
-import { PrismaClient } from '@prisma/client'
 const regex = require('../modules/regexUtils')
-const prisma = new PrismaClient()
+import { prisma } from '../commons/prisma/prisma'
 import { logger } from '../modules/logger'
 
 export class EmailAttr {

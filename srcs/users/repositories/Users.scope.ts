@@ -18,8 +18,8 @@ export const publicScope = {
   bio: true,
   geoReferenced: true,
   creation: true,
-  defaultFilterLatitude: true,
-  defaultFilterLongitude: true,
+  positionLatitude: true,
+  positionLongitude: true,
 } as const
 
 export const privateScope = {

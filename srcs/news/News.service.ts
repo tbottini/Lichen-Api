@@ -1,8 +1,7 @@
 import { CircularZone } from '../attr/CircularZone'
-import { PrismaClient } from '@prisma/client'
 import { ArtworkRepository } from '../artworks/repositories/Artwork.repository'
 import { logger } from '../modules/logger'
-const prisma = new PrismaClient()
+import { prisma } from '../commons/prisma/prisma'
 
 const artworkRepository = new ArtworkRepository()
 

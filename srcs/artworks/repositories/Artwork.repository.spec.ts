@@ -1,13 +1,7 @@
 require('dotenv').config({ path: '.env.test' })
 
-import {
-  Artwork,
-  ArtworkLikes,
-  PrismaClient,
-  Project,
-  User,
-} from '@prisma/client'
-const prisma = new PrismaClient()
+import { Artwork, ArtworkLikes, Project, User } from '@prisma/client'
+import { prisma } from '../../commons/prisma/prisma'
 import {
   createProject,
   configureArtworkCreation,
