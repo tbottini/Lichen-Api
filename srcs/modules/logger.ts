@@ -10,8 +10,8 @@ const levels = {
   error: 1,
   warn: 2,
   info: 3,
-  debug: 5,
   http: 4,
+  debug: 5,
 }
 
 const options = {
@@ -74,7 +74,7 @@ const logFormat = printf(function (info) {
 if (process.env.NODE_ENV != 'test') {
   logger.add(
     new Console({
-      level: 'http',
+      level: 'debug',
       format: combine(colorize(), logFormat),
     })
   )

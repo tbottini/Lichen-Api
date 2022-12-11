@@ -178,7 +178,7 @@ describe('Users Routes Test', () => {
       expect(res.statusCode).toBe(200)
     })
 
-    describe('update default location', () => {
+    describe('update user position', () => {
       it('should update default location of user', async () => {
         const token = await apiCreateUser({
           firstname: 'george',

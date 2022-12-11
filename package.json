@@ -4,6 +4,7 @@
     "start:dev": "NODE_ENV=development ts-node ./srcs/index.ts",
     "migrate:update": "ts-node scripts/migrate",
     "migrate:test": "NODE_ENV=test ts-node scripts/migrate",
+    "migrate:prod": "NODE_ENV=production ts-node scripts/migrate",
     "format": "yarn prettier --write .",
     "reset:test": "DATABASE_URL=postgresql://postgres:psql@postgres:5432/lichen_test?schema=public yarn prisma migrate reset --force",
     "test": "NODE_ENV=test jest --runInBand ",
