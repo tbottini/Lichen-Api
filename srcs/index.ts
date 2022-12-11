@@ -7,12 +7,12 @@ import { Application } from 'express'
 import { artworksRouter } from './artworks/artworks.router'
 import { eventsRouter } from './events/events.router'
 import { logger } from './modules/logger'
+import { middlewareLogger } from './modules/middleware-logger'
 import { newsRouter } from './news/news.router'
 const expressApp: Application = express()
 
 const { createIPX, createIPXMiddleware } = require('ipx')
 const ipx = createIPX()
-const middlewareLogger = require('./modules/middleware-logger')
 
 const projects = require('./route/projects.router.ts')
 import { swipeRouter } from './swipe/Swipe.router'
@@ -26,7 +26,7 @@ if (process.env.DATABASE_URL == null) {
   process.exit(1)
 }
 
-console.log('NODE_ENV', process.env.NODE_ENV)
+logger.info('NODE_ENV', process.env.NODE_ENV)
 
 const FRONT_APP_URL =
   process.env.NODE_ENV == 'production'
@@ -75,9 +75,9 @@ if (!PORT) {
 }
 
 if (process.env.NODE_ENV != 'test') {
-  console.log('will listen on port ' + PORT)
+  logger.info('will listen on port ' + PORT)
   expressApp.listen(PORT, () => {
-    console.log(`Server will start at http://localhost:${PORT}...
+    logger.info(`Server will start at http://localhost:${PORT}...
       /api-docs for documentation`)
   })
 }

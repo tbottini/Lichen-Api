@@ -27,6 +27,7 @@ import { UserRepositoryPublic, IncludesUsers } from './repositories/Users.scope'
 import { GetSelfDto } from './dto/GetSelf.dto'
 import { researchSort } from '../modules/research'
 import { logger } from '../modules/logger'
+import { logBody } from '../modules/middleware-logger'
 const EnumAttr = require('../attr/enum')
 const { BoolAttr } = require('../attr/boolean')
 const PasswordAttr = require('../attr/password')
@@ -52,6 +53,7 @@ interface Response<T> {
 }
 
 export const userRouter = new Router()
+  .use(logBody)
   .post('/register', async (req, res: Response<{ token: string }>) => {
     const {
       email,
@@ -392,6 +394,7 @@ export const userRouter = new Router()
       }>,
       res: Response<UserPublicDto>
     ) => {
+      console.log(req.body)
       const { position } = req.body
 
       tryCompleteRequest(res, async () => {
