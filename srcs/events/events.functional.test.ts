@@ -13,6 +13,20 @@ import { prisma } from '../commons/prisma/prisma'
 let token: string
 const ref: any = {}
 
+const createRefEvent = (userEventCreatorToken: string) =>
+  apiCreateEvent(userEventCreatorToken, {
+    name: 'event#2',
+    dateStart: new Date(2002, 3, 12, 22, 0, 0),
+    dateEnd: new Date(2002, 3, 12, 24, 0, 0),
+  })
+
+const createRefUser = () =>
+  apiCreateUser({
+    email: 'test-events-follow@gmail.test',
+    firstname: 'george',
+    lastname: 'orwell',
+  })
+
 describe('Events', () => {
   beforeAll(async () => {
     await clearDatabase()
@@ -28,7 +42,6 @@ describe('Events', () => {
 
   describe('Creation', () => {
     it('should create an event', async () => {
-      console.log('test')
       const createdEvent = await apiCreateEvent(token, {
         name: 'event#1',
         description: 'description#1',
@@ -38,7 +51,6 @@ describe('Events', () => {
         longitude: 45,
       })
 
-      console.log('get events')
       const event = await apiGetEvent(createdEvent.id)
 
       expect(event).toMatchObject({
@@ -165,32 +177,6 @@ describe('Events', () => {
     })
   })
 
-  describe('Follow', () => {
-    it('should follow event', async () => {
-      const follow = await request(app)
-        .post('/events/' + ref.event.id.toString() + '/follow')
-        .set('Authorization', 'bearer ' + token)
-
-      expect(follow.status).toBe(200)
-
-      const self = await apiSelf(token)
-
-      expect(self.eventFollow.length).toBe(1)
-    })
-
-    it('should unfollow event', async () => {
-      await request(app)
-        .delete('/events/' + ref.event.id.toString() + '/follow')
-        .set('Authorization', 'bearer ' + token)
-
-      const self = await request(app)
-        .get('/users/self')
-        .set('Authorization', 'bearer ' + token)
-
-      expect(self.body.eventFollow.length).toBe(0)
-    })
-  })
-
   it('should modify an event', async () => {
     const event = await request(app)
       .post('/events')
@@ -214,5 +200,43 @@ describe('Events', () => {
     expect(resEvent.status).toBe(200)
     expect(resEvent.body.latitude).toBe(10)
     expect(resEvent.body.longitude).toBe(10)
+  })
+
+  // ! ce test detruit la db, les autres test ne sont pas idempotent du coup il ne faut pas passer les tests au dessus en dessous de ce bloc de tests
+  describe('Follow', () => {
+    afterEach(async () => {
+      await clearDatabase()
+    })
+    it('should follow event', async () => {
+      const tokenUser = await createRefUser()
+      const eventFollow = await createRefEvent(tokenUser)
+
+      const follow = await request(app)
+        .post('/events/' + eventFollow.id + '/follow')
+        .set('Authorization', 'bearer ' + tokenUser)
+
+      expect(follow.status).toBe(200)
+
+      const self = await apiSelf(tokenUser)
+
+      expect(self.eventFollow.length).toBe(1)
+    })
+
+    it('should unfollow event', async () => {
+      const tokenUser = await createRefUser()
+      const eventFollow = await createRefEvent(tokenUser)
+
+      await request(app)
+        .post('/events/' + eventFollow.id + '/follow')
+        .set('Authorization', 'bearer ' + tokenUser)
+
+      await request(app)
+        .delete('/events/' + eventFollow.id + '/follow')
+        .set('Authorization', 'bearer ' + tokenUser)
+
+      const self = await apiSelf(tokenUser)
+
+      expect(self.eventFollow.length).toBe(0)
+    })
   })
 })

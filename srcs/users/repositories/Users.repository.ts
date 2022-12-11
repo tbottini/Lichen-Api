@@ -45,7 +45,7 @@ export class UsersRepository {
       role: user.role,
       geoReferenced: user.geoReferenced,
       medium: user.medium,
-      defaultPosition:
+      position:
         user.positionLatitude && user.positionLongitude
           ? {
               longitude: user.positionLongitude,

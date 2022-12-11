@@ -10,10 +10,10 @@ const IndexAttr = require('../attr/index')
 const { MiddlewareIntParser } = require('../attr/int')
 const EnumAttr = require('../attr/enum')
 
-var dimensionParse = new MiddlewareIntParser({
+const dimensionParse = new MiddlewareIntParser({
   attr: ['width', 'length', 'height'],
 })
-var yearProjectParse = new MiddlewareIntParser({
+const yearProjectParse = new MiddlewareIntParser({
   attr: ['yearStart', 'yearEnd'],
 })
 
@@ -156,7 +156,7 @@ const router = new Router()
       if (!newIndex)
         return res.status(400).json({ error: 'no new index present' })
 
-      var isOwn = await prisma.artwork.findMany({
+      const isOwn = await prisma.artwork.findMany({
         where: {
           id: req.params.id_artwork,
           project: {

@@ -558,7 +558,7 @@ function reinjectUserFollow<AdditionalUserData>(
 
   return {
     ...user,
-    defaultPosition:
+    position:
       user.positionLatitude && user.positionLongitude
         ? {
             latitude: user.positionLatitude,

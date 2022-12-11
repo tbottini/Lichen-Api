@@ -11,6 +11,7 @@ export async function apiCreateUser(creationData?: {
   firstname?: string | undefined
   lastname?: string | undefined
   medium?: MediumValues | undefined
+  password?: string | undefined
 }): Promise<string> {
   const DEFAULT_PASSWORD = 'PasswordTest1234@,'
 
@@ -19,7 +20,7 @@ export async function apiCreateUser(creationData?: {
     .send({
       email: 'test@jean.com',
       ...creationData,
-      password: DEFAULT_PASSWORD,
+      password: creationData?.password ?? DEFAULT_PASSWORD,
     })
 
   return res.body.token
@@ -96,11 +97,11 @@ export async function apiCreateArtwork(
 }
 
 export function expectDefaultPositionIsDefined(user: {
-  defaultPosition: { longitude: number; latitude: number } | undefined | null
+  position: { longitude: number; latitude: number } | undefined | null
 }) {
-  expect(user.defaultPosition).toBeDefined()
-  expect(user?.defaultPosition?.longitude).toBeDefined()
-  expect(user?.defaultPosition?.latitude).toBeDefined()
+  expect(user.position).toBeDefined()
+  expect(user?.position?.longitude).toBeDefined()
+  expect(user?.position?.latitude).toBeDefined()
 }
 
 export async function apiRetrieveTasks(filter?: {

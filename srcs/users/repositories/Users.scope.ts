@@ -78,11 +78,11 @@ export type GalleryDto = {
 }
 
 export type UserPublicDto = UserBase & {
-  defaultPosition: Position | null
+  position: Position | null
 }
 
 export type UserPrivateDto = UserRepositoryPrivate & {
-  defaultPosition: Position | null
+  position: Position | null
 }
 
 export type UserUpdatbleAttributes = Partial<{
