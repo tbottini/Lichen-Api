@@ -22,3 +22,13 @@ export function tryToParse<T>(nameAttribute: string, callback: () => T): T {
     )
   }
 }
+
+export function parseIfDefined<EntryType, T>(
+  value: EntryType | undefined,
+  parser: (value: EntryType) => T
+): T | undefined {
+  if (value) {
+    return parser(value)
+  }
+  return undefined
+}

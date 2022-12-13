@@ -3,6 +3,7 @@ import { prisma } from '../../commons/prisma/prisma'
 import { IAccountMailer } from './AccountMail.service'
 import { UsersRepository } from '../repositories/Users.repository'
 import { UserPublicDto } from '../repositories/Users.scope'
+import { MediumValues } from '../../medium/mediumEnum'
 const jwt = require('../../modules/jwt')
 
 const userRepository = new UsersRepository()
@@ -51,9 +52,27 @@ export class UserService {
 
     return updatedUser
   }
+
+  async updateUser(userId: number, updateUser: UpdateUser) {
+    const result = await userRepository.updateRaw(userId, updateUser)
+    return result
+  }
 }
 
 interface UpdateDefaultFilterPosition {
   userId: number
   newPosition: Position
 }
+
+type UpdateUser = Partial<{
+  firstname: string
+  lastname: string
+  pseudo: string
+  description: string
+  src: string
+  websiteUrl: string
+  bio: string
+  medium: MediumValues
+  email: string
+  password: string
+}>

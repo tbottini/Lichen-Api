@@ -22,15 +22,15 @@ import { EmailAttr } from '../attr/Email.attribute'
 import { parsePosition } from '../commons/parsers/Position.parser'
 import { UserRequestWithBody } from '../commons/interfaces/Request.types'
 import { tryCompleteRequest } from '../commons/router/fallbackError'
-import { UsersRepository } from './repositories/Users.repository'
 import { UserRepositoryPublic, IncludesUsers } from './repositories/Users.scope'
 import { GetSelfDto } from './dto/GetSelf.dto'
 import { researchSort } from '../modules/research'
 import { logger } from '../modules/logger'
 import { logBody } from '../modules/middleware-logger'
 import { AccountMailer } from './services/AccountMail.service'
+import { parseIfDefined } from '../commons/parsers/parser.common'
+import { getFilenameFromFile } from '../commons/parsers/FileParser'
 const EnumAttr = require('../attr/enum')
-const { BoolAttr } = require('../attr/boolean')
 const PasswordAttr = require('../attr/password')
 const passwordUtils = require('../modules/password')
 const fileMiddleware = require('../modules/middleware-file')
@@ -46,7 +46,6 @@ export const userScope = {
 
 const accountMailer = new AccountMailer()
 const userService = new UserService(accountMailer)
-const userRepository = new UsersRepository()
 const galleryService = new GalleryService()
 
 interface Response<T> {
@@ -106,7 +105,6 @@ export const userRouter = new Router()
         description,
         bio,
         medium: mediumAttr.value,
-        geoReferenced: false,
       },
     })
 
@@ -340,35 +338,30 @@ export const userRouter = new Router()
       email,
       bio,
       password,
-      geoReferenced,
     } = req.body
 
-    const src = req.file ? req.file.filename : null
+    const src = parseIfDefined(req.file, getFilenameFromFile)
 
     const mediumAttr = new EnumAttr(mediumEnum, medium)
-    if (mediumAttr.error)
+    if (mediumAttr.error) {
       return res.status(400).json({ error: 'bad format for enum attr' })
+    }
 
     const emailWrapper = new EmailAttr()
     await emailWrapper.check(email)
-    if (emailWrapper.error)
+    if (emailWrapper.error) {
       return res.status(400).json({ error: emailWrapper.errorMsg })
-
+    }
     const passwordWrapper = new PasswordAttr(password)
-    if (passwordWrapper.error)
+    if (passwordWrapper.error) {
       return res.status(400).json({ error: passwordWrapper.errorMsg })
+    }
 
+    // todo -> move to user service
     const passwordValue = await passwordWrapper.getValue()
-    logger.debug('password', passwordValue, password)
-
-    const geoReferencedWrapper = new BoolAttr(geoReferenced)
-    if (geoReferencedWrapper.error)
-      return res
-        .status(400)
-        .json({ error: 'geoReferenced : ' + geoReferenced.error })
 
     try {
-      const result = await userRepository.updateRaw(req.user.id, {
+      const result = await userService.updateUser(req.user.id, {
         firstname,
         lastname,
         pseudo,
@@ -379,7 +372,6 @@ export const userRouter = new Router()
         medium: mediumAttr.value,
         email: emailWrapper.value,
         password: passwordValue,
-        geoReferenced: geoReferencedWrapper.value,
       })
 
       return res.json(result)
@@ -396,7 +388,6 @@ export const userRouter = new Router()
       }>,
       res: Response<UserPublicDto>
     ) => {
-      console.log(req.body)
       const { position } = req.body
 
       tryCompleteRequest(res, async () => {

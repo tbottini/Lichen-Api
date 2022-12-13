@@ -5,7 +5,7 @@ import {
   GalleryDto,
   UserPublicDto,
   publicScope,
-  UserUpdatbleAttributes,
+  UserUpdatbleAttributes as UserUpdatableAttributes,
 } from './Users.scope'
 import { prisma } from '../../commons/prisma/prisma'
 
@@ -43,7 +43,6 @@ export class UsersRepository {
       websiteUrl: user.websiteUrl,
       creation: user.creation,
       role: user.role,
-      geoReferenced: user.geoReferenced,
       medium: user.medium,
       position:
         user.positionLatitude && user.positionLongitude
@@ -73,8 +72,7 @@ export class UsersRepository {
       medium,
       email,
       password,
-      geoReferenced,
-    }: UserUpdatbleAttributes
+    }: UserUpdatableAttributes
   ): Promise<UserPublicDto> {
     const result = await prisma.user.update({
       where: {
@@ -92,7 +90,6 @@ export class UsersRepository {
         medium,
         email,
         password,
-        geoReferenced,
       },
     })
 

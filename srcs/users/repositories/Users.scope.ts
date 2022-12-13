@@ -16,7 +16,6 @@ export const publicScope = {
   medium: true,
   gallery: true,
   bio: true,
-  geoReferenced: true,
   creation: true,
   positionLatitude: true,
   positionLongitude: true,
@@ -38,7 +37,6 @@ export type UserBase = {
   websiteUrl: string | null
   creation: Date
   role: Role
-  geoReferenced: boolean | null
   medium: MediumValues | null
   gallery: GalleryDto | null
 }
@@ -95,6 +93,5 @@ export type UserUpdatbleAttributes = Partial<{
   description: string | null
   bio: string | null
   websiteUrl: string | null
-  geoReferenced: boolean | null
   medium: MediumValues | null
 }>
