@@ -1,6 +1,6 @@
 import { Position } from '../../commons/class/Position.class'
 import { prisma } from '../../commons/prisma/prisma'
-import { AccountMailer } from './AccountMail.service'
+import { IAccountMailer } from './AccountMail.service'
 import { UsersRepository } from '../repositories/Users.repository'
 import { UserPublicDto } from '../repositories/Users.scope'
 const jwt = require('../../modules/jwt')
@@ -8,10 +8,10 @@ const jwt = require('../../modules/jwt')
 const userRepository = new UsersRepository()
 
 export class UserService {
-  accountMailer: AccountMailer
+  accountMailer: IAccountMailer
 
-  constructor() {
-    this.accountMailer = new AccountMailer()
+  constructor(accountMailer: IAccountMailer) {
+    this.accountMailer = accountMailer
   }
 
   async forgotPassword(email: string): Promise<{ error?: string } | void> {

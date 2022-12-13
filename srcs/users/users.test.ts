@@ -1,3 +1,4 @@
+jest.mock('./services/AccountMail.service.ts')
 const request = require('supertest')
 import { app } from '../index'
 import { UserTestHandler } from '../../tests/userTestHandler'
@@ -10,8 +11,6 @@ import {
 import { clearDatabase } from '../../tests/helpers/clearDatabase.helper'
 
 describe('Users Routes Test', () => {
-  // let userReference
-
   const createUserReference = () =>
     UserTestHandler.addUser({
       email: 'Jean@journaux.com',
@@ -80,10 +79,10 @@ describe('Users Routes Test', () => {
 
       const self = await apiSelf(token)
 
-      expect(self.positionLatitude).toBe(10)
-      expect(self.positionLongitude).toBe(20)
-      expect(self.position?.latitude).toBe(10)
-      expect(self.position?.longitude).toBe(20)
+      expect(self.positionLatitude).toBe(20)
+      expect(self.positionLongitude).toBe(10)
+      expect(self.position?.latitude).toBe(20)
+      expect(self.position?.longitude).toBe(10)
     })
   })
 
@@ -106,60 +105,29 @@ describe('Users Routes Test', () => {
 
       expect(res.statusCode).toBe(200)
     })
+
+    it('should login with the same adresse with upper case', async () => {
+      const userCreated = await UserTestHandler.addUser({
+        email: 'petitpoulet@journaux.com',
+        firstname: 'jean',
+        lastname: 'dumont',
+      })
+
+      expect(userCreated.email).toBe('petitpoulet@journaux.com')
+
+      // we are creating an account with the same adress with maj for throwing a exception
+      const res = await request(app).post('/users/login').send({
+        email: userCreated.email.toUpperCase(),
+        password: userCreated.password,
+      })
+
+      expect(res.body).toHaveProperty('token')
+      expect(res.statusCode).toBe(200)
+      expect(res.body).not.toHaveProperty('error')
+    })
   })
 
   describe('Update', () => {
-    it('should set the geoReferenced on', async () => {
-      const userReference = await createUserReference()
-
-      let res = await request(app)
-        .get('/users/self')
-        .set('Authorization', 'bearer ' + userReference.token)
-      expect(res.body).toMatchObject({
-        geoReferenced: false,
-        gallery: {
-          latitude: 80,
-          longitude: 80,
-        },
-      })
-
-      const userRef = res.body
-
-      // test if we find the profile who'snt referenced
-      res = await request(app).get(
-        '/users/gallery?longMin=60&longMax=100&lagMin=60&lagMax=100'
-      )
-      res = res.body
-      let usersFinded = res.find(user => user.id == userRef.id)
-      expect(usersFinded).toBe(undefined)
-
-      res = await request(app)
-        .put('/users/')
-        .set('Authorization', 'bearer ' + userReference.token)
-        .send({
-          geoReferenced: true,
-        })
-
-      expect(res.body).toMatchObject({
-        geoReferenced: true,
-      })
-
-      // test search
-
-      res = await request(app).get(
-        '/users/gallery?longMin=60&longMax=100&lagMin=60&lagMax=100'
-      )
-      usersFinded = res.body.find(user => user.id == userRef.id)
-      expect(usersFinded).toMatchObject({
-        id: userRef.id,
-        geoReferenced: true,
-        gallery: {
-          latitude: 80,
-          longitude: 80,
-        },
-      })
-    })
-
     it('should update the medium of user', async () => {
       const userReference = await createUserReference()
 
@@ -353,26 +321,6 @@ describe('Users Routes Test', () => {
       expect(res.body).toHaveProperty('error')
       expect(res.statusCode).toBe(400)
     })
-  })
-
-  it('should success when login with the same adresse with upper case', async () => {
-    const userCreated = await UserTestHandler.addUser({
-      email: 'petitpoulet@journaux.com',
-      firstname: 'jean',
-      lastname: 'dumont',
-    })
-
-    expect(userCreated.email).toBe('petitpoulet@journaux.com')
-
-    // we are creating an account with the same adress with maj for throwing a exception
-    const res = await request(app).post('/users/login').send({
-      email: userCreated.email.toUpperCase(),
-      password: userCreated.password,
-    })
-
-    expect(res.body).toHaveProperty('token')
-    expect(res.statusCode).toBe(200)
-    expect(res.body).not.toHaveProperty('error')
   })
 
   afterAll(async () => {

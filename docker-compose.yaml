@@ -7,7 +7,7 @@ services:
     depends_on:
       - db
     volumes:
-      - ./public:/usr/lichen/public
+      - ./public/images:/usr/lichen/public/images
 
 
   web:

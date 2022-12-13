@@ -28,6 +28,7 @@ import { GetSelfDto } from './dto/GetSelf.dto'
 import { researchSort } from '../modules/research'
 import { logger } from '../modules/logger'
 import { logBody } from '../modules/middleware-logger'
+import { AccountMailer } from './services/AccountMail.service'
 const EnumAttr = require('../attr/enum')
 const { BoolAttr } = require('../attr/boolean')
 const PasswordAttr = require('../attr/password')
@@ -43,7 +44,8 @@ export const userScope = {
   private: privateScope,
 }
 
-const userService = new UserService()
+const accountMailer = new AccountMailer()
+const userService = new UserService(accountMailer)
 const userRepository = new UsersRepository()
 const galleryService = new GalleryService()
 
@@ -511,10 +513,11 @@ export const userRouter = new Router()
     return res.json(result)
   })
   .post('/password-forgot', async (req, res) => {
-    // we send an email with the token
     const { email } = req.body
 
-    if (!email) return res.status(400).json({ error: 'no email provided' })
+    if (!email) {
+      return res.status(400).json({ error: 'no email provided' })
+    }
 
     const result = await userService.forgotPassword(email)
     if (result?.error) {
