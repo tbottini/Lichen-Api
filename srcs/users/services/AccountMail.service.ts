@@ -3,7 +3,11 @@ import { MjmlTemplateRepository } from '../../modules/email/MjmlTemplateReposito
 
 const ASSET_FOLDER = './assets/email/'
 
-export class AccountMailer {
+export interface IAccountMailer {
+  resetPassword(receiverEmail: string, params: ResetPasswordParams): void
+}
+
+export class AccountMailer implements IAccountMailer {
   private readonly mailService: MailSender
   private readonly mailRepository: MjmlTemplateRepository
 
@@ -13,11 +17,7 @@ export class AccountMailer {
     this.mailRepository.registerTemplate('reinit', 'reinit')
   }
 
-  mailTest() {
-    // return new MjmlFile('testMail')
-  }
-
-  resetPassword(receiverEmail: string, params: ResetPasswordParams) {
+  resetPassword(receiverEmail: string, params: ResetPasswordParams): void {
     const resetMail = this.mailRepository
       .getTemplate('reinit')
       .set('token', params.token)
@@ -34,7 +34,7 @@ export class AccountMailer {
   }
 }
 
-interface ResetPasswordParams {
+export interface ResetPasswordParams {
   token: string
   id: number
   firstname: string | null

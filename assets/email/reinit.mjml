@@ -4,7 +4,7 @@
         <mj-text font-size="20px" color="black" line-height="27px" font-family="Livvic, Raleway, Arial" font-weight="200">Bonjour $firstname $lastname,
           <br></br>
 
-          Nous avons reçu un demande de réinitialisation de mot de passe pour votre compte Lichen associé à l'adresse mail $email. Aucun changement n'a encore été effectué sur votre compte.<br></br>
+          Nous avons reçu une demande de réinitialisation de mot de passe pour votre compte Lichen associé à l'adresse mail $email. Aucun changement n'a encore été effectué sur votre compte.<br></br>
           Voici un lien pour réinitialiser votre mot de passe :<br></br>
         </mj-text>
 

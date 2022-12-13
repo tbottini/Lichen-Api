@@ -9,8 +9,8 @@
     <mj-section>
       <mj-column>
         <mj-image
-          width="300px"
-          src="https://reseau-lichen.fr/logo.png"
+          width="150px"
+          src="https://api.reseau-lichen.fr/logo.png"
         ></mj-image>
       </mj-column>
     </mj-section>
