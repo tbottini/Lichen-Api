@@ -19,8 +19,6 @@ export class QueryEnum extends Query {
       return true
     }
 
-    console.log(this.isList, input, this.dict)
-
     if (this.isList) {
       this.value = input.split(',').map(mediumInput => this.dict[mediumInput])
 

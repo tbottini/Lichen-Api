@@ -32,7 +32,6 @@ export async function addUser({
   longitude,
   events,
   medium,
-  geoReferenced,
 }: UserFixtureCreationDto): Promise<any> {
   const DEFAULT_PASSWORD = 'PasswordTest1234@,'
 
@@ -64,21 +63,10 @@ export async function addUser({
     ...dataRequest,
     projects: [] as ProjectWithArtworks[],
     events: [] as Event[] | undefined,
-    geoReferenced: false,
   }
 
   user.projects = await createProjects(token, projects)
   user.events = await createEvents(token, events)
-
-  if (geoReferenced == true) {
-    await request(app)
-      .put('/users/')
-      .set('Authorization', 'bearer ' + token)
-      .send({
-        geoReferenced: true,
-      })
-    user.geoReferenced = true
-  }
 
   return user
 }

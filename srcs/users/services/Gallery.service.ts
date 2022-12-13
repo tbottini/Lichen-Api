@@ -9,7 +9,6 @@ export class GalleryService {
   ): Promise<UserRepositoryPublic[]> {
     const foundGalleries = await prisma.user.findMany({
       where: {
-        geoReferenced: true,
         gallery: toPrismaPolarFilter(filter),
         medium: mediumToPrismaFilter(medium),
       },

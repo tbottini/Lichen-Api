@@ -9,6 +9,7 @@ import {
   expectDefaultPositionIsDefined,
 } from '../../tests/helpers/api.helpers'
 import { clearDatabase } from '../../tests/helpers/clearDatabase.helper'
+import { addUser } from '../../tests/helpers/user.test.helper'
 
 describe('Users Routes Test', () => {
   const createUserReference = () =>
@@ -146,6 +147,34 @@ describe('Users Routes Test', () => {
       expect(res.statusCode).toBe(200)
     })
 
+    it('should update user data without remove profile image', async () => {
+      const token = await apiCreateUser({
+        firstname: 'george',
+        lastname: 'orwell',
+        email: 'george.orwell@bigbrother.com',
+        medium: 'STAMP',
+      })
+
+      await request(app)
+        .put('/users/')
+        .attach('file', './tests/img_test.jpg')
+        .set('Authorization', 'bearer ' + token)
+
+      const user = await apiSelf(token)
+      console.log(user.src)
+      expect(user.src).toBeDefined()
+      const userProfilePicture = user.src
+
+      await request(app)
+        .put('/users/')
+        .set('Authorization', 'bearer ' + token)
+        .field('firstname', 'Thomas')
+
+      const updatedUser = await apiSelf(token)
+      expect(updatedUser.src).toEqual(userProfilePicture)
+      expect(updatedUser.firstname).toEqual('Thomas')
+    })
+
     describe('update user position', () => {
       it('should update default location of user', async () => {
         const token = await apiCreateUser({
@@ -188,23 +217,22 @@ describe('Users Routes Test', () => {
       await clearDatabase()
     })
 
+    const findGallery = (medium: string) => {
+      return request(app).get('/users/gallery?medium=' + medium)
+    }
+
     it('should find gallery according to medium', async () => {
-      const userMedium = await UserTestHandler.addUser({
+      const userMedium = await addUser({
         email: 'Jean@journaux.com',
         firstname: 'jean',
         lastname: 'dumont',
         longitude: 80,
         latitude: 80,
         medium: 'STAMP',
-        geoReferenced: true,
       })
 
-      let res = await request(app)
-        .get('/users/self')
-        .set('Authorization', 'bearer ' + userMedium.token)
-
-      expect(res.body).toMatchObject({
-        geoReferenced: true,
+      const gallery = await apiSelf(userMedium.token)
+      expect(gallery).toMatchObject({
         medium: 'STAMP',
         gallery: {
           latitude: 80,
@@ -212,36 +240,53 @@ describe('Users Routes Test', () => {
         },
       })
 
-      const userId = res.body.id
-
-      res = await request(app).get('/users/gallery?medium=STAMP')
-      console.log('MEDIUM : ', res.body)
-      let usersFound = res.body.find(user => user.id == userId)
-      expect(usersFound).toMatchObject({
+      const foundStampGalleries = await findGallery('STAMP')
+      const foundStampGallery = foundStampGalleries.body.find(
+        gallery => gallery.id == gallery.id
+      )
+      expect(foundStampGallery).toMatchObject({
         medium: 'STAMP',
       })
 
-      res = await request(app).get('/users/gallery?medium=STAMP,SCULPTURE')
-      const usersFindedMultipleFilter = res.body.find(user => user.id == userId)
-      expect(usersFindedMultipleFilter).toMatchObject({
+      const foundStampOrSculptureGalleries = await findGallery(
+        'STAMP,SCULPTURE'
+      )
+      const foundInStampOrSculptureGalleries =
+        foundStampOrSculptureGalleries.body.find(
+          gallery => gallery.id == gallery.id
+        )
+      expect(foundInStampOrSculptureGalleries).toMatchObject({
         medium: 'STAMP',
       })
 
-      res = await request(app).get('/users/gallery?medium=')
-      usersFound = res.body.find(user => user.id == userId)
-      expect(usersFindedMultipleFilter).toMatchObject({
+      const allGalleries = await findGallery('')
+      const foundInAllGalleries = allGalleries.body.find(
+        gallery => gallery.id == gallery.id
+      )
+      expect(foundInAllGalleries).toMatchObject({
         medium: 'STAMP',
       })
 
-      res = await request(app).get('/users/gallery?medium=SCULPTURE')
-      console.log('MEDIUM : ', res.body)
-      usersFound = res.body.find(user => user.id == userId)
-      expect(usersFound).toBe(undefined)
+      const sculptureGalleries = await findGallery('SCULPTURE')
+      const foundSculptureGallery = sculptureGalleries.body.find(
+        gallery => gallery.id == gallery.id
+      )
+      expect(foundSculptureGallery).toBe(undefined)
 
-      res = await request(app).get('/users/gallery?medium=mlkjlmkj')
-      expect(res.status).toBe(400)
-      expect(res.body).toHaveProperty('error')
-      console.log('BAD QUERY MEDIUM', res.body)
+      const unknownMediumGalleries = await findGallery('mlkjlmkj')
+      expect(unknownMediumGalleries.status).toBe(400)
+      expect(unknownMediumGalleries.body).toHaveProperty('error')
+    })
+
+    it("should not find user as gallery if user haven't defined position", async () => {
+      await apiCreateUser({
+        email: 'test-not-gallery@protonmail.com',
+        medium: 'AUDIOVISUAL',
+      })
+
+      const res = await findGallery('')
+      expect(res.status).toBe(200)
+      expect(res.body).toHaveLength(0)
     })
   })
 

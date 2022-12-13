@@ -166,7 +166,6 @@ export interface UserFixtureCreationDto {
   lastname?: string
   latitude?: number
   longitude?: number
-  geoReferenced?: boolean
   events?: EventCreateInput[]
   medium?: Medium
   projects?: ProjectCreateInput[]

@@ -10,9 +10,7 @@ describe('Gallery service', () => {
   beforeEach(async () => {
     await clearDatabase()
 
-    const user = await createUser({
-      geoReferenced: true,
-    })
+    const user = await createUser({})
     await createGalleryForUser(user.id, {
       latitude: 10.5,
       longitude: 10.5,

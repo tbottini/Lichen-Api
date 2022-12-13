@@ -5,8 +5,6 @@ export function parsePosition(position?: {
   longitude?: string
   latitude?: string
 }): Position {
-  console.log(position)
-
   return {
     longitude: tryToParse('latitude', () =>
       toFloat(mustBeDefined(position?.longitude))
