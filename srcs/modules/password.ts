@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs'
-var regex = require('./regexUtils')
+const regex = require('./regexUtils')
 
 async function hash(pure: string) {
   return await bcrypt.hash(pure, 8)
@@ -16,8 +16,8 @@ function compare(pure: string, src: string) {
   return bcrypt.compare(pure, src)
 }
 
-module.exports = {
+export const passwordUtils = {
   hash,
-  check: check,
+  check,
   compare,
 }

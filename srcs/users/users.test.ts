@@ -65,6 +65,22 @@ describe('Users Routes Test', () => {
 
       expect(userCopy.body).toHaveProperty('error')
     })
+
+    it('should return an 400 when trying to create an user with both names and pseudo defined', async () => {
+      const createUserResponse = await request(app)
+        .post('/users/register')
+        .send({
+          firstname: 'george',
+          lastname: 'orwell',
+          pseudo: 'a writer',
+          email: 'george.orwell@bigbrother.com',
+          password: 'notEffiscientPassword@1234,',
+          websiteUrl: 'test@hotmail.com',
+        })
+
+      console.log(createUserResponse.body)
+      expect(createUserResponse.statusCode).toEqual(400)
+    })
   })
 
   describe('Self', () => {

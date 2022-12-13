@@ -1,7 +1,10 @@
 require('../../commons/env')
 import { createUser } from '../../../tests/fixture/user.fixture'
 import { clearDatabase } from '../../../tests/helpers/clearDatabase.helper'
-import { UserService } from './users.service'
+import {
+  PseudoIsDefinedWithPersonalIdentity,
+  UserService,
+} from './users.service'
 
 const accountMailerMock = {
   resetPassword: jest.fn(),
@@ -10,7 +13,7 @@ const accountMailerMock = {
 describe('Users Service', () => {
   const userService = new UserService(accountMailerMock)
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     await clearDatabase()
   })
 
@@ -35,6 +38,46 @@ describe('Users Service', () => {
           token: expect.anything(),
         }
       )
+    })
+  })
+
+  describe('UpdateUser', () => {
+    it('should throw an error when trying to set a pseudo to an user that have name setted', async () => {
+      const user = await createUser({
+        email: 'arnaudbottini@reseau-lichen.fr',
+        firstname: 'thomas',
+        lastname: 'test',
+      })
+
+      await expect(
+        userService.updateUser(user.id, {
+          pseudo: 'test',
+        })
+      ).rejects.toThrow(new PseudoIsDefinedWithPersonalIdentity(user.id))
+    })
+
+    it('should throw an error when trying to set a name to an user that have pseudo setted', async () => {
+      const user = await createUser({
+        email: 'arnaudbottini@reseau-lichen.fr',
+        pseudo: 'test',
+      })
+
+      await expect(
+        userService.updateUser(user.id, {
+          firstname: 'thomas',
+        })
+      ).rejects.toThrow(new PseudoIsDefinedWithPersonalIdentity(user.id))
+    })
+
+    it("should consider '' as equivalent to null or undefined", async () => {
+      const user = await createUser({
+        email: 'arnaudbottini@reseau-lichen.fr',
+        pseudo: '',
+      })
+
+      await userService.updateUser(user.id, {
+        firstname: 'thomas',
+      })
     })
   })
 })
