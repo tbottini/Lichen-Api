@@ -4,6 +4,7 @@ import { IAccountMailer } from './AccountMail.service'
 import { UsersRepository } from '../repositories/Users.repository'
 import { UserPublicDto } from '../repositories/Users.scope'
 import { MediumValues } from '../../medium/mediumEnum'
+import { passwordUtils } from '../../modules/password'
 const jwt = require('../../modules/jwt')
 
 const userRepository = new UsersRepository()
@@ -13,6 +14,22 @@ export class UserService {
 
   constructor(accountMailer: IAccountMailer) {
     this.accountMailer = accountMailer
+  }
+
+  async createUser(dtoCreate: CreateUser): Promise<string> {
+    const passwordHash = await passwordUtils.hash(dtoCreate.password)
+
+    if (isNameDefined(dtoCreate) && isNotEmpty(dtoCreate.pseudo)) {
+      throw new CanCreateUserWithPseudoAndNameError()
+    }
+
+    const createdUser = await prisma.user.create({
+      data: { ...dtoCreate, password: passwordHash },
+    })
+
+    const token = jwt.create(createdUser)
+
+    return token
   }
 
   async forgotPassword(email: string): Promise<{ error?: string } | void> {
@@ -53,10 +70,34 @@ export class UserService {
     return updatedUser
   }
 
-  async updateUser(userId: number, updateUser: UpdateUser) {
+  async updateUser(
+    userId: number,
+    updateUser: UpdateUser
+  ): Promise<UserPublicDto> {
+    const foundUser = await userRepository.getUserById(userId)
+
+    console.log(foundUser, updateUser, isNameDefined(foundUser))
+    if (isNameDefined(foundUser) && isNotEmpty(updateUser.pseudo)) {
+      throw new PseudoIsDefinedWithPersonalIdentity(userId)
+    } else if (isNameDefined(updateUser) && isNotEmpty(foundUser.pseudo)) {
+      throw new PseudoIsDefinedWithPersonalIdentity(userId)
+    }
+
     const result = await userRepository.updateRaw(userId, updateUser)
+
     return result
   }
+}
+
+function isNameDefined(user: {
+  firstname?: string | null
+  lastname?: string | null
+}) {
+  return isNotEmpty(user.firstname) || isNotEmpty(user.lastname)
+}
+
+function isNotEmpty(str?: string | null): boolean {
+  return str != null && str != ''
 }
 
 interface UpdateDefaultFilterPosition {
@@ -76,3 +117,29 @@ type UpdateUser = Partial<{
   email: string
   password: string
 }>
+
+type CreateUser = {
+  email: string
+  password: string
+  firstname?: string
+  lastname?: string
+  pseudo?: string
+  websiteUrl?: string
+  description?: string
+  bio?: string
+  medium?: MediumValues
+}
+
+export class PseudoIsDefinedWithPersonalIdentity extends Error {
+  constructor(userId: number) {
+    super(
+      `For user with id ${userId} you can't set pseudo with a non empty firstname or lastname`
+    )
+  }
+}
+
+export class CanCreateUserWithPseudoAndNameError extends Error {
+  constructor() {
+    super(`Trying to create user with pseudo and firstname or lastname`)
+  }
+}

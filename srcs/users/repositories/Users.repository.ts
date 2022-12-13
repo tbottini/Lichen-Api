@@ -27,36 +27,21 @@ export class UsersRepository {
     return this.toUser(user)
   }
 
-  toUsers(users: UserRepositoryPublic[]): UserPublicDto[] {
-    return users.map(this.toUser)
-  }
+  async getUserById(userId: number): Promise<UserPublicDto> {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      include: {
+        gallery: true,
+      },
+    })
 
-  toUser(user: UserRepositoryPublic): UserPublicDto {
-    return {
-      id: user.id,
-      firstname: user.firstname,
-      lastname: user.lastname,
-      pseudo: user.pseudo,
-      src: user.src,
-      description: user.description,
-      bio: user.bio,
-      websiteUrl: user.websiteUrl,
-      creation: user.creation,
-      role: user.role,
-      medium: user.medium,
-      position:
-        user.positionLatitude && user.positionLongitude
-          ? {
-              longitude: user.positionLongitude,
-              latitude: user.positionLatitude,
-            }
-          : null,
-      gallery: user.gallery ? this.toGallery(user.gallery) : null,
+    if (!user) {
+      throw new UserNotFoundError(userId)
     }
-  }
 
-  toGallery(gallery: Gallery): GalleryDto {
-    return gallery
+    return this.toUser(user)
   }
 
   async updateRaw(
@@ -95,8 +80,46 @@ export class UsersRepository {
 
     return this.toUser(result)
   }
+
+  private toUsers(users: UserRepositoryPublic[]): UserPublicDto[] {
+    return users.map(this.toUser)
+  }
+
+  private toUser(user: UserRepositoryPublic): UserPublicDto {
+    return {
+      id: user.id,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      pseudo: user.pseudo,
+      src: user.src,
+      description: user.description,
+      bio: user.bio,
+      websiteUrl: user.websiteUrl,
+      creation: user.creation,
+      role: user.role,
+      medium: user.medium,
+      position:
+        user.positionLatitude && user.positionLongitude
+          ? {
+              longitude: user.positionLongitude,
+              latitude: user.positionLatitude,
+            }
+          : null,
+      gallery: user.gallery ? this.toGallery(user.gallery) : null,
+    }
+  }
+
+  private toGallery(gallery: Gallery): GalleryDto {
+    return gallery
+  }
 }
 
 interface UpdateUser {
   userPosition?: Position
+}
+
+class UserNotFoundError extends Error {
+  constructor(userId: number) {
+    super(`User with id ${userId} was not found.`)
+  }
 }

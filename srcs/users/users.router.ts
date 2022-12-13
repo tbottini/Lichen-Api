@@ -30,9 +30,9 @@ import { logBody } from '../modules/middleware-logger'
 import { AccountMailer } from './services/AccountMail.service'
 import { parseIfDefined } from '../commons/parsers/parser.common'
 import { getFilenameFromFile } from '../commons/parsers/FileParser'
+import { passwordUtils } from '../modules/password'
 const EnumAttr = require('../attr/enum')
 const PasswordAttr = require('../attr/password')
-const passwordUtils = require('../modules/password')
 const fileMiddleware = require('../modules/middleware-file')
 
 const querySearch = {
@@ -68,8 +68,9 @@ export const userRouter = new Router()
       medium,
     } = req.body
 
-    if (!email || !password)
+    if (!email || !password) {
       return res.status(400).json({ error: 'parameters missing' })
+    }
 
     const users = await prisma.user.findMany({
       where: {
@@ -88,16 +89,14 @@ export const userRouter = new Router()
     if (!passwordCorrect || !emailCorrect)
       return res.status(400).json({ error: 'email or password bad format' })
 
-    const passwordHash = await passwordUtils.hash(password)
-
     const mediumAttr = new EnumAttr(mediumEnum, medium)
     if (mediumAttr.error)
       return res.status(400).json({ error: 'bad format for enum attr' })
 
-    const u = await prisma.user.create({
-      data: {
+    tryCompleteRequest(res, async () => {
+      const token = await userService.createUser({
         email,
-        password: passwordHash,
+        password,
         firstname,
         lastname,
         pseudo,
@@ -105,12 +104,10 @@ export const userRouter = new Router()
         description,
         bio,
         medium: mediumAttr.value,
-      },
+      })
+
+      res.json({ token })
     })
-
-    const token = jwt.create(u)
-
-    res.json({ token })
   })
   .post('/login', async (req, res: Response<{ token: string }>) => {
     const { email, password } = req.body
@@ -360,7 +357,7 @@ export const userRouter = new Router()
     // todo -> move to user service
     const passwordValue = await passwordWrapper.getValue()
 
-    try {
+    tryCompleteRequest(res, async () => {
       const result = await userService.updateUser(req.user.id, {
         firstname,
         lastname,
@@ -375,9 +372,7 @@ export const userRouter = new Router()
       })
 
       return res.json(result)
-    } catch (err) {
-      return res.status(400).json({ error: "this token isn't valid" })
-    }
+    })
   })
   .put(
     '/new-position',
