@@ -80,4 +80,47 @@ describe('Users Service', () => {
       })
     })
   })
+
+  describe('SearchUser', () => {
+    it('should find an user due to his firstname', async () => {
+      await createUser({
+        firstname: 'thomas',
+      })
+      await createUser({
+        email: 'toto@gmail.com',
+        firstname: 'bob',
+      })
+
+      const foundUsers = await userService.searchUsers('thomas')
+
+      expect(foundUsers).toHaveLength(1)
+      expect(foundUsers[0].firstname).toEqual('thomas')
+    })
+
+    it('should find an user due to his placename if its a artistic place', async () => {
+      await createUser({
+        pseudo: 'thomas-placename',
+      })
+      await createUser({
+        email: 'toto@gmail.com',
+        firstname: 'bob',
+      })
+
+      const foundUsers = await userService.searchUsers('thomas-placename')
+
+      expect(foundUsers).toHaveLength(1)
+      expect(foundUsers[0].pseudo).toEqual('thomas-placename')
+    })
+
+    it('should not find an user with his firstname if his placename is setted', async () => {
+      await createUser({
+        firstname: 'Bob',
+        pseudo: 'thomas-placename',
+      })
+
+      const foundUsers = await userService.searchUsers('Bob')
+
+      expect(foundUsers).toHaveLength(0)
+    })
+  })
 })

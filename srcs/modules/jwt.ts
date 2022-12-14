@@ -1,5 +1,5 @@
-var jwt = require('jsonwebtoken')
-var jwtExpress = require('express-jwt')
+const jwt = require('jsonwebtoken')
+const jwtExpress = require('express-jwt')
 
 if (process.env.JWT_SECRET == null) {
   throw new Error("JWT_SECRET var wasn't defined")
@@ -12,6 +12,8 @@ export function create(user) {
 
   return jwt.sign(user, SECRET, { algorithm: 'HS256' })
 }
+
+export const createJwt = create
 
 export function verify(jwt) {
   try {

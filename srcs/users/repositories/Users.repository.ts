@@ -1,5 +1,5 @@
 import { Position } from '../../interfaces/Position.type'
-import { Gallery } from '@prisma/client'
+import { Gallery, Prisma } from '@prisma/client'
 import { UserRepositoryPublic } from './Users.scope'
 import {
   GalleryDto,
@@ -42,6 +42,14 @@ export class UsersRepository {
     }
 
     return this.toUser(user)
+  }
+
+  async findMany(findOptions: Prisma.UserWhereInput): Promise<UserPublicDto[]> {
+    const foundUsers = await prisma.user.findMany({
+      where: findOptions,
+      select: publicScope,
+    })
+    return this.toUsers(foundUsers)
   }
 
   async updateRaw(
