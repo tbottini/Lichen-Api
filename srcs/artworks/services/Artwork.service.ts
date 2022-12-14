@@ -9,7 +9,7 @@ import {
   getLatitudeFilterForBoundary,
   getLongitudeFilterForBoundary,
 } from '../../commons/class/ZoneBoundary.class'
-import { researchSort } from '../../modules/research'
+import { sortSearchedElements } from '../../modules/research'
 import { logger } from '../../modules/logger'
 
 export class ArtworkService {
@@ -54,7 +54,11 @@ export class ArtworkService {
     }
 
     if (dto.title) {
-      results = researchSort(results, dto.title, item => item.title)
+      results = sortSearchedElements(
+        results,
+        dto.title,
+        item => item.title ?? ''
+      )
       logger.debug(results)
     }
 

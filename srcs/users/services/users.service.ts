@@ -5,7 +5,8 @@ import { UsersRepository } from '../repositories/Users.repository'
 import { UserPublicDto } from '../repositories/Users.scope'
 import { MediumValues } from '../../medium/mediumEnum'
 import { passwordUtils } from '../../modules/password'
-const jwt = require('../../modules/jwt')
+import { sortSearchedElements } from '../../modules/research'
+import { createJwt } from '../../modules/jwt'
 
 const userRepository = new UsersRepository()
 
@@ -27,7 +28,7 @@ export class UserService {
       data: { ...dtoCreate, password: passwordHash },
     })
 
-    const token = jwt.create(createdUser)
+    const token = createJwt(createdUser)
 
     return token
   }
@@ -56,7 +57,7 @@ export class UserService {
 
     this.accountMailer.resetPassword(email, {
       ...user,
-      token: jwt.create(user),
+      token: createJwt(user),
     })
   }
 
@@ -86,6 +87,39 @@ export class UserService {
     const result = await userRepository.updateRaw(userId, updateUser)
 
     return result
+  }
+
+  async searchUsers(name?: string): Promise<UserPublicDto[]> {
+    const whereSection = {}
+
+    let multiFiltername
+    if (name != undefined && name != '') {
+      multiFiltername = name
+        .split(' ')
+        .filter(a => a)
+        .map(filter => [
+          { firstname: { contains: filter, mode: 'insensitive' } },
+          { lastname: { contains: filter, mode: 'insensitive' } },
+          { pseudo: { contains: filter, mode: 'insensitive' } },
+        ])
+        .reduce((a, b) => a.concat(b), [])
+
+      whereSection['OR'] = multiFiltername
+    }
+
+    const foundUsers = await userRepository.findMany(whereSection)
+
+    if (!name) {
+      return foundUsers
+    }
+
+    const filteredUsers = sortSearchedElements(foundUsers, name, item =>
+      item.pseudo != null && item.pseudo != ''
+        ? item.pseudo
+        : item.firstname ?? '' + ' ' + item.lastname ?? ''
+    )
+
+    return filteredUsers
   }
 }
 

@@ -24,7 +24,6 @@ import { UserRequestWithBody } from '../commons/interfaces/Request.types'
 import { tryCompleteRequest } from '../commons/router/fallbackError'
 import { UserRepositoryPublic, IncludesUsers } from './repositories/Users.scope'
 import { GetSelfDto } from './dto/GetSelf.dto'
-import { researchSort } from '../modules/research'
 import { logger } from '../modules/logger'
 import { logBody } from '../modules/middleware-logger'
 import { AccountMailer } from './services/AccountMail.service'
@@ -210,40 +209,7 @@ export const userRouter = new Router()
   .get('/', parserQuery(querySearch), async (req, res) => {
     const { name } = req.query
 
-    const whereSection = {}
-
-    let multiFiltername
-    if (name != undefined && name != '') {
-      multiFiltername = name
-        .split(' ')
-        .filter(a => a)
-        .map(filter => [
-          { firstname: { contains: filter, mode: 'insensitive' } },
-          { lastname: { contains: filter, mode: 'insensitive' } },
-          { pseudo: { contains: filter, mode: 'insensitive' } },
-        ])
-        .reduce((a, b) => a.concat(b), [])
-
-      whereSection['OR'] = multiFiltername
-    }
-
-    logger.debug(multiFiltername)
-
-    let results = await prisma.user.findMany({
-      where: whereSection,
-      select: {
-        ...userScope.public,
-      },
-    })
-
-    if (name) {
-      results = researchSort(
-        results,
-        name,
-        item => item.firstname + ' ' + item.lastname
-      )
-      logger.debug(results)
-    }
+    const results = await userService.searchUsers(name)
 
     return res.json(results)
   })

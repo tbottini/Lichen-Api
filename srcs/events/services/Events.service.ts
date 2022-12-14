@@ -3,7 +3,7 @@ import { CircularZone } from '../../attr/CircularZone'
 import { prisma } from '../../commons/prisma/prisma'
 import { MediumValues } from '../../medium/mediumEnum'
 import { logger } from '../../modules/logger'
-import { researchSort } from '../../modules/research'
+import { sortSearchedElements } from '../../modules/research'
 import { userScope } from '../../users/users.router'
 const _ = require('lodash')
 
@@ -40,7 +40,7 @@ export class EventService {
       })
 
       if (filter.name) {
-        results = researchSort(results, filter.name, item => item.name)
+        results = sortSearchedElements(results, filter.name, item => item.name)
         logger.debug(results)
       }
 
