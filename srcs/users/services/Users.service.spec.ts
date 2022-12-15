@@ -4,7 +4,7 @@ import { clearDatabase } from '../../../tests/helpers/clearDatabase.helper'
 import {
   PseudoIsDefinedWithPersonalIdentity,
   UserService,
-} from './users.service'
+} from './Users.service'
 
 const accountMailerMock = {
   resetPassword: jest.fn(),

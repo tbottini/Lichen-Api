@@ -1,4 +1,3 @@
-import { UserService } from './services/Users.service'
 import { prisma } from '../commons/prisma/prisma'
 const { Router } = require('express')
 const regex = require('../modules/regexUtils')
@@ -24,6 +23,7 @@ import { UserRequestWithBody } from '../commons/interfaces/Request.types'
 import { tryCompleteRequest } from '../commons/router/fallbackError'
 import { UserRepositoryPublic, IncludesUsers } from './repositories/Users.scope'
 import { GetSelfDto } from './dto/GetSelf.dto'
+import { UserService } from './services/Users.service'
 import { logger } from '../modules/logger'
 import { logBody } from '../modules/middleware-logger'
 import { AccountMailer } from './services/AccountMail.service'
@@ -65,34 +65,39 @@ export const userRouter = new Router()
       websiteUrl,
       bio,
       medium,
+      position,
     } = req.body
 
-    if (!email || !password) {
-      return res.status(400).json({ error: 'parameters missing' })
-    }
+    await tryCompleteRequest(res, async () => {
+      const parsedPosition = parseIfDefined(position, () =>
+        parsePosition(position)
+      )
 
-    const users = await prisma.user.findMany({
-      where: {
-        email: {
-          equals: email,
-          mode: 'insensitive',
+      if (!email || !password) {
+        return res.status(400).json({ error: 'parameters missing' })
+      }
+
+      const users = await prisma.user.findMany({
+        where: {
+          email: {
+            equals: email,
+            mode: 'insensitive',
+          },
         },
-      },
-    })
+      })
 
-    if (users.length > 0)
-      return res.status(400).json({ error: 'email is taken' })
+      if (users.length > 0)
+        return res.status(400).json({ error: 'email is taken' })
 
-    const passwordCorrect = passwordUtils.check(password)
-    const emailCorrect = regex.email.test(email)
-    if (!passwordCorrect || !emailCorrect)
-      return res.status(400).json({ error: 'email or password bad format' })
+      const passwordCorrect = passwordUtils.check(password)
+      const emailCorrect = regex.email.test(email)
+      if (!passwordCorrect || !emailCorrect) {
+        return res.status(400).json({ error: 'email or password bad format' })
+      }
+      const mediumAttr = new EnumAttr(mediumEnum, medium)
+      if (mediumAttr.error)
+        return res.status(400).json({ error: 'bad format for enum attr' })
 
-    const mediumAttr = new EnumAttr(mediumEnum, medium)
-    if (mediumAttr.error)
-      return res.status(400).json({ error: 'bad format for enum attr' })
-
-    tryCompleteRequest(res, async () => {
       const token = await userService.createUser({
         email,
         password,
@@ -103,6 +108,7 @@ export const userRouter = new Router()
         description,
         bio,
         medium: mediumAttr.value,
+        position: parsedPosition,
       })
 
       res.json({ token })
