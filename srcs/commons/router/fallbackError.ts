@@ -4,6 +4,7 @@ export async function tryCompleteRequest(
 ) {
   try {
     await callback()
+    return true
   } catch (e: any) {
     if (e.type == 'InternalError') {
       return res
@@ -12,6 +13,7 @@ export async function tryCompleteRequest(
     }
 
     res.status(400).json(JSON.stringify(e, Object.getOwnPropertyNames(e)))
+    return false
   }
 }
 

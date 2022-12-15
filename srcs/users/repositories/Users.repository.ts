@@ -8,8 +8,29 @@ import {
   UserUpdatbleAttributes as UserUpdatableAttributes,
 } from './Users.scope'
 import { prisma } from '../../commons/prisma/prisma'
+import { CreateUser } from '../services/Users.service'
 
 export class UsersRepository {
+  async create(createUserDto: CreateUser): Promise<any> {
+    const createdUser = await prisma.user.create({
+      data: {
+        email: createUserDto.email,
+        password: createUserDto.password,
+        firstname: createUserDto.firstname,
+        lastname: createUserDto.lastname,
+        pseudo: createUserDto.pseudo,
+        websiteUrl: createUserDto.websiteUrl,
+        description: createUserDto.description,
+        bio: createUserDto.bio,
+        medium: createUserDto.medium,
+        positionLatitude: createUserDto.position?.latitude,
+        positionLongitude: createUserDto.position?.longitude,
+      },
+    })
+
+    return createdUser
+  }
+
   async update(userId: number, updateData: UpdateUser): Promise<UserPublicDto> {
     const user = await prisma.user.update({
       where: {

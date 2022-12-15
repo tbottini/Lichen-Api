@@ -49,6 +49,42 @@ describe('Users Routes Test', () => {
       expect(res.body).toHaveProperty('token')
     })
 
+    it('should create an user with an position', async () => {
+      const res = await request(app)
+        .post('/users/register')
+        .send({
+          firstname: 'george',
+          lastname: 'orwell',
+          email: 'george.orwell@bigbrother.com',
+          password: 'notEffiscientPassword@1234,',
+          position: {
+            latitude: 30,
+            longitude: 430,
+          },
+        })
+
+      expect(res.statusCode).toEqual(200)
+
+      const createdUser = await apiSelf(res.body.token)
+      expect(createdUser.position?.latitude).toEqual(30)
+      expect(createdUser.position?.longitude).toEqual(430)
+    })
+
+    it('should failed with a position defined with bad attribute for longitude or latitude', async () => {
+      const res = await request(app)
+        .post('/users/register')
+        .send({
+          email: 'george.orwell@bigbrother.com',
+          password: 'notEffiscientPassword@1234,',
+          position: {
+            latitude: 'a',
+            longitude: 430,
+          },
+        })
+
+      expect(res.statusCode).toEqual(400)
+    })
+
     //todo set a test for insensitive case email
     it('should failed when register with the same adress with a maj', async () => {
       await UserTestHandler.addUser({
