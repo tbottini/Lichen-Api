@@ -111,7 +111,7 @@ export class UsersRepository {
   }
 
   private toUsers(users: UserRepositoryPublic[]): UserPublicDto[] {
-    return users.map(this.toUser)
+    return users.map(user => this.toUser(user))
   }
 
   private toUser(user: UserRepositoryPublic): UserPublicDto {
