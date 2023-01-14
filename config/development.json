@@ -1,8 +1,11 @@
 {
   "database": {
-    "url": "postgresql://postgres:psql@localhost:5432/lichen_2?schema=public"
+    "url": "postgresql://postgres:psql@localhost:5432/lichen?schema=public"
   },
   "app": {
     "port": 9000
+  },
+  "webapp": {
+    "url": "http://localhost:8081"
   }
 }

@@ -1,4 +1,3 @@
-const _ = require('lodash')
 import * as jwt from '../modules/jwt'
 import { prisma } from '../commons/prisma/prisma'
 const { Router } = require('express')

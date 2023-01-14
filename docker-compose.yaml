@@ -8,7 +8,23 @@ services:
       - db
     volumes:
       - ./public/images:/usr/lichen/public/images
+    environment:
+      - NODE_ENV=production
+    ports:
+      - 9000:9000
 
+  api-staging:
+    container_name: api-staging
+    restart: always
+    image: 938875074697.dkr.ecr.eu-west-3.amazonaws.com/lichen
+    depends_on:
+      - db
+    volumes:
+      - ./public-staging/images:/usr/lichen/public/images
+    ports:
+      - 9100:9100
+    environment:
+      - NODE_ENV=staging
 
   web:
     container_name: web
@@ -16,6 +32,20 @@ services:
     image: 938875074697.dkr.ecr.eu-west-3.amazonaws.com/lichen-web
     ports:
       - 8081:8081
+    environment:
+      - NODE_ENV=production
+      - PORT=8081
+
+  
+  web-staging:
+    container_name: web-staging
+    restart: always
+    image: 938875074697.dkr.ecr.eu-west-3.amazonaws.com/lichen-web
+    ports:
+      - 8082:8082
+    environment:
+      - NODE_ENV=staging
+      - PORT=8082
 
   webserver:
     image: nginx:latest

@@ -6,8 +6,12 @@ services:
     build: .
     depends_on:
       - db
+    ports:
+      - 9000:9000
     volumes:
       - ./public:/usr/lichen/public
+    environment:
+      - NODE_ENV=development
 
   web:
     container_name: web
@@ -15,17 +19,19 @@ services:
     build: ../lichen-web
     ports:
       - 8081:8081
+    environment:
+      - NODE_ENV=development
 
-  reverse-proxy: 
-    build: ./infra/reverse-proxy/
-    container_name: reverse-proxy
-    restart: unless-stopped
-    ports: 
-      - 8085:80
-      - 8086:443
-    depends_on:
-      - api
-      - web
+  # reverse-proxy: 
+  #   build: ./infra/reverse-proxy/
+  #   container_name: reverse-proxy
+  #   restart: unless-stopped
+  #   ports: 
+  #     - 8085:80
+  #     - 8086:443
+  #   depends_on:
+  #     - api
+  #     - web
   db:
     container_name: postgres
     image: postgres

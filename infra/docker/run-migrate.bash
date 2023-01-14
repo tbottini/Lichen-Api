@@ -1,1 +1,2 @@
-NODE_ENV=prod docker compose run api npm run migrate:update
+docker-compose run api bash 
+npm run migrate:prod

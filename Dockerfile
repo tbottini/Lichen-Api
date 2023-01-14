@@ -12,4 +12,4 @@ RUN npm ci --production
 COPY . .
 
 EXPOSE 9000
-CMD ["npm", "run", "start:prod"]
+CMD ["npm", "run", "start"]
