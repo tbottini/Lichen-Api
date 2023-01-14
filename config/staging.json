@@ -1,0 +1,11 @@
+{
+  "database": {
+    "url": "postgresql://postgres:psql@postgres:5432/lichen_2?schema=public"
+  },
+  "app": {
+    "port": 9100
+  },
+  "webapp": {
+    "url": "https://app.test.reseau-lichen.fr"
+  }
+}

@@ -8,9 +8,11 @@ function getEnvFile(): string {
       return '.env.test'
     case 'development':
       return '.env.dev'
+    case 'staging':
+      return '.env.staging'
     default:
       throw new Error(
-        "env variable NODE_ENV isn't not valid value : production / dev / test"
+        `env variable ${process.env.NODE_ENV} for NODE_ENV isn't a valid value : production / dev / staging / test`
       )
   }
 }

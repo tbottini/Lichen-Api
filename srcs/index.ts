@@ -28,10 +28,9 @@ if (process.env.DATABASE_URL == null) {
 
 logger.info('NODE_ENV', process.env.NODE_ENV)
 
-const FRONT_APP_URL =
-  process.env.NODE_ENV == 'production'
-    ? 'https://app.reseau-lichen.fr'
-    : 'http://localhost:8081'
+const FRONT_APP_URL = config.webapp.url
+
+console.log('front app url ', FRONT_APP_URL)
 
 expressApp.use(
   cors({
@@ -67,7 +66,7 @@ expressApp
 logger.info('NODE_ENV ' + process.env.NODE_ENV)
 
 // start the Express server
-const PORT = config.get('app.port')
+const PORT = config.app.port
 if (!PORT) {
   throw new Error(
     `Config variable isnt defined in config file for ENV : ${process.env.NODE_ENV}`
