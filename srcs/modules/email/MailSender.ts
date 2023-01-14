@@ -4,7 +4,7 @@ import { logger } from '../logger'
 
 const DEFAULT_MAIL = 'no-reply@reseau-lichen.fr'
 
-export class MailSender {
+export class MailSenderAdapter {
   sender: MailjetMailSender
 
   constructor() {
