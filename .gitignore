@@ -5,3 +5,4 @@ html-report
 database-data
 node_modules
 coverage
+.env.staging

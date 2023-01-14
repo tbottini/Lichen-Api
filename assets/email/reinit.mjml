@@ -8,7 +8,7 @@
           Voici un lien pour réinitialiser votre mot de passe :<br></br>
         </mj-text>
 
-        <mj-text><a href="https://app.reseau-lichen.fr/reinit-password?token=$token" font-size="20px" background-color="#F1BC86" style="padding: 10px; text-decoration: none; background-color: #F1BC86; color: black; border-radius: 5px; font-family: Livvic; font-size: 20px; font-weight: 200; padding: 15px 20px; white-space: nowrap;">Réinitialisation du mot de passe</a></mj-text>
+        <mj-text><a href="https://$hostname/reinit-password?token=$token" font-size="20px" background-color="#F1BC86" style="padding: 10px; text-decoration: none; background-color: #F1BC86; color: black; border-radius: 5px; font-family: Livvic; font-size: 20px; font-weight: 200; padding: 15px 20px; white-space: nowrap;">Réinitialisation du mot de passe</a></mj-text>
 
         <mj-text font-size="20px" color="black" font-family="Livvic, Raleway, Arial" font-weight="200"> <br></br> Cordialement,<br></br>
           L'équipe de Lichen</mj-text>

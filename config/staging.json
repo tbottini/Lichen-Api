@@ -6,6 +6,6 @@
     "port": 9100
   },
   "webapp": {
-    "url": "https://app.test.reseau-lichen.fr"
+    "url": "app.test.reseau-lichen.fr"
   }
 }
