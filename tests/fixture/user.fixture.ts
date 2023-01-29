@@ -1,6 +1,6 @@
 import { Prisma, Project, User } from '@prisma/client'
 import { prisma } from '../../srcs/commons/prisma/prisma'
-
+import { Position } from '../../srcs/commons/class/Position.class'
 export function createUser(
   data?: Partial<Prisma.UserUncheckedCreateInput>
 ): Promise<User> {
@@ -20,6 +20,21 @@ export function createProject(
 ): Promise<Project> {
   return prisma.project.create({
     data: data,
+  })
+}
+
+export function setCityReferenceForUser(
+  userId: number,
+  position: Position
+): Promise<User> {
+  return prisma.user.update({
+    data: {
+      positionLatitude: position.latitude,
+      positionLongitude: position.longitude,
+    },
+    where: {
+      id: userId,
+    },
   })
 }
 

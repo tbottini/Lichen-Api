@@ -9,10 +9,13 @@ import {
 } from '../../swipe/Artwork.fixture'
 import { ArtworkRepository } from './Artwork.repository'
 import { CircularZone } from '../../attr/CircularZone'
-import { createUser } from '../../../tests/fixture/user.fixture'
+import {
+  createUser,
+  setCityReferenceForUser,
+} from '../../../tests/fixture/user.fixture'
 import { createLikeArtwork } from '../../../tests/fixture/like.fixture'
-import { createGalleryForUser } from '../../../tests/fixture/gallery.fixture'
 import { clearDatabase } from '../../../tests/helpers/clearDatabase.helper'
+import { Position } from '../../commons/class/Position.class'
 
 describe('Artwork Repository and ArtworkFeedQuery', () => {
   beforeAll(async () => {
@@ -118,10 +121,7 @@ describe('Artwork Repository and ArtworkFeedQuery', () => {
     it('should returns artwork by artist position', async () => {
       await createArtworkForAnotherArtist('title-1')
       await createArtworkForAnotherArtist('title-2')
-      await createGalleryForUser(otherUser.id, {
-        longitude: 10,
-        latitude: 20,
-      })
+      await setCityReferenceForUser(otherUser.id, new Position(20, 10))
 
       const artworks = await artworkRepository.getArtworkFeed({
         zoneFilter: new CircularZone(20, 10, 100),
@@ -129,6 +129,18 @@ describe('Artwork Repository and ArtworkFeedQuery', () => {
       })
 
       expect(artworks).toHaveLength(2)
+    })
+
+    it("shouldn't returns artwork of an artist if he doesn't defined his position and we search feed in a zone", async () => {
+      await createArtworkForAnotherArtist('title-1')
+      await createArtworkForAnotherArtist('title-2')
+
+      const artworks = await artworkRepository.getArtworkFeed({
+        zoneFilter: new CircularZone(20, 10, 100),
+        userId: user.id,
+      })
+
+      expect(artworks).toHaveLength(0)
     })
 
     it('should return artworks for a specific medium', async () => {
