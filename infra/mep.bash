@@ -17,4 +17,7 @@ docker pull 938875074697.dkr.ecr.eu-west-3.amazonaws.com/lichen:latest
 
 docker-compose up -d
 
+echo y | docker container prune
+echo y | docker image prune 
+
 ENDSSH
