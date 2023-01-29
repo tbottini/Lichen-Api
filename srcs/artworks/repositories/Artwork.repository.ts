@@ -7,7 +7,9 @@ import { GetNewsForUser } from '../../news/News.service'
 import { prisma } from '../../commons/prisma/prisma'
 
 export class ArtworkRepository {
-  public async getArtworkFeed(feedOptions: ArtworkFeedOptions) {
+  public async getArtworkFeed(
+    feedOptions: ArtworkFeedOptions
+  ): Promise<ArtworkUnitFeed[]> {
     const sql = this.feedSql(feedOptions)
 
     const artworks = await prisma.$queryRawUnsafe<ArtworkUnitFeed[]>(sql)
@@ -32,9 +34,12 @@ export class ArtworkRepository {
   }
 
   private feedSql(feedOptions: ArtworkFeedOptions) {
-    let select =
+    const queryBuilder = new QueryBuilder()
+
+    queryBuilder.select(
       'select artwork.*, project.title as "projectTitle", users.firstname, users.lastname, users.id as author'
-    let from = `
+    )
+    const from = `
     from
       "Artwork" as artwork
     inner join
@@ -47,57 +52,62 @@ export class ArtworkRepository {
       users.id = project."authorId"
     `
 
-    const whereQueries: string[] = []
-
     if (feedOptions.userId) {
-      whereQueries.push(`users.id != ${feedOptions.userId}
+      queryBuilder.where(`users.id != ${feedOptions.userId}
       and artwork.id not in (${this.getArtworkAlreadyLikedSql(
         feedOptions.userId
       )})`)
     }
 
     if (feedOptions.zoneFilter) {
-      select += ', gallery.longitude, gallery.latitude '
-      from += `
-      inner join
-          "Gallery" as gallery
-      on
-          gallery."userId" = users.id
-      `
+      const positionFilterSql = this.getPositionFilter(feedOptions.zoneFilter)
 
-      const squareZoneBounded = new RepositoryZoneFilter(
-        feedOptions.zoneFilter.longitude,
-        feedOptions.zoneFilter.latitude,
-        feedOptions.zoneFilter.radius
-      ).zone
-      if (!squareZoneBounded) {
-        throw new Error('Generated zone filter for Prisma is undefined')
-      }
-
-      whereQueries.push(`
-      gallery.latitude >= ${squareZoneBounded.minLatitude}
-      and gallery.latitude <= ${squareZoneBounded.maxLatitude}
-      and gallery.longitude >= ${squareZoneBounded.minLongitude}
-      and gallery.longitude <= ${squareZoneBounded.maxLongitude}
-      `)
+      queryBuilder.select(positionFilterSql.select)
+      queryBuilder.where(positionFilterSql.whereQuery)
     }
 
     if (feedOptions.medium != null && feedOptions.medium.length > 0) {
-      whereQueries.push(`
-        artwork.medium in (${feedOptions.medium.map(m => `'${m}'`).join(', ')})
-      `)
+      const mediumFilter = this.getFilterByMedium(feedOptions.medium)
+
+      queryBuilder.where(mediumFilter.whereQuery)
     }
 
-    return `${select} ${from} ${this.buildWhereSql(
-      whereQueries
-    )} order by random() limit 100`
+    return `${
+      queryBuilder.selectQuery
+    } ${from} ${queryBuilder.buildWhereSql()} order by random() limit 100`
   }
 
-  private buildWhereSql(whereQueries: string[]): string {
-    if (!whereQueries.length) {
-      return ''
+  private getPositionFilter(zoneFilter: CircularZone): {
+    select: string
+    whereQuery: string
+  } {
+    const squareZoneBounded = new RepositoryZoneFilter(
+      zoneFilter.longitude,
+      zoneFilter.latitude,
+      zoneFilter.radius
+    ).zone
+    if (!squareZoneBounded) {
+      throw new Error('Generated zone filter for Prisma is undefined')
     }
-    return ` where ${whereQueries.join(' and ')} `
+
+    return {
+      select:
+        ', users."positionLatitude" as latitude, users."positionLongitude" as longitude ',
+      whereQuery: `
+      users."positionLatitude" >= ${squareZoneBounded.minLatitude}
+      and users."positionLatitude" <= ${squareZoneBounded.maxLatitude}
+      and users."positionLongitude" >= ${squareZoneBounded.minLongitude}
+      and users."positionLongitude" <= ${squareZoneBounded.maxLongitude}
+      `,
+    }
+  }
+
+  private getFilterByMedium(medium: MediumValues[]): { whereQuery: string } {
+    return {
+      whereQuery: `
+      artwork.medium in (${medium.map(m => `'${m}'`).join(', ')})
+    `,
+    }
   }
 
   private getArtworkAlreadyLikedSql(idUser: number) {
@@ -143,6 +153,26 @@ export class ArtworkRepository {
         },
       },
     })
+  }
+}
+
+class QueryBuilder {
+  whereQueries: string[] = []
+  selectQuery = ''
+
+  where(query: string) {
+    this.whereQueries.push(query)
+  }
+
+  select(selection: string) {
+    this.selectQuery += selection
+  }
+
+  buildWhereSql(): string {
+    if (!this.whereQueries.length) {
+      return ''
+    }
+    return ` where ${this.whereQueries.join(' and ')} `
   }
 }
 
