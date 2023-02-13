@@ -3,7 +3,6 @@ import { mediumEnum } from '../medium/mediumEnum'
 import { prisma } from '../commons/prisma/prisma'
 const { Router } = require('express')
 import * as jwt from '../modules/jwt'
-import { logger } from '../modules/logger'
 const DateAttr = require('../attr/date')
 const fileMiddleware = require('../modules/middleware-file')
 const IndexAttr = require('../attr/index')
@@ -38,7 +37,6 @@ const router = new Router()
           authorId: req.user.id,
         },
       })
-      logger.debug(sizeOfArray)
 
       var mediumWrapper = new EnumAttr(mediumEnum, medium)
       if (mediumWrapper.error)
@@ -61,7 +59,6 @@ const router = new Router()
           },
         },
       })
-      logger.debug(result)
 
       return res.json(result)
     }
@@ -83,7 +80,6 @@ const router = new Router()
 
       //parse date
       const start = new DateAttr(req.body.start)
-      logger.debug(start)
       if (start.error)
         return res.status(400).json({ error: 'bad format for start attr' })
 
@@ -102,8 +98,6 @@ const router = new Router()
           },
         },
       })
-
-      logger.debug('is own ', isOwn)
 
       if (isOwn == null)
         return res
@@ -147,7 +141,6 @@ const router = new Router()
       //le nom de la column qui contenant l'id qui lit l'artwork
       //avec les autres artwork, ici idProject
 
-      logger.debug('idproject', req.params)
       const NAME_ARRAY = 'projectId'
       const TABLE_NAME = 'Artwork'
 
@@ -212,7 +205,6 @@ const router = new Router()
           id: req.params.id,
         },
       })
-      logger.debug(result)
       if (result == null)
         return res
           .status(404)
@@ -277,8 +269,6 @@ const router = new Router()
       const { title, description, start, medium, height, width, length } =
         req.body
 
-      logger.debug(req.body)
-
       if (!req.file)
         return res.status(400).json({ error: 'no image was provided' })
       const src = req.file.filename
@@ -299,7 +289,6 @@ const router = new Router()
           projectId: req.params.id,
         },
       })
-      logger.debug(sizeOfArray)
 
       var result = await prisma.artwork.create({
         data: {

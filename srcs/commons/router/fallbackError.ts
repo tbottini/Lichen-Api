@@ -1,3 +1,5 @@
+import { logger } from '../../modules/logger'
+
 export async function tryCompleteRequest(
   res: Response,
   callback: () => unknown
@@ -7,6 +9,8 @@ export async function tryCompleteRequest(
     return true
   } catch (e: any) {
     if (e.type == 'InternalError') {
+      logger.error(e)
+
       return res
         .status(500)
         .json(JSON.stringify(e, Object.getOwnPropertyNames(e)))

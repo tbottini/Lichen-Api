@@ -30,8 +30,6 @@ export class QueryFloat extends Query {
 
     this.value = parseFloat(value)
 
-    logger.debug(value)
-
     if (isNaN(this.value)) {
       this.value = undefined
       return false

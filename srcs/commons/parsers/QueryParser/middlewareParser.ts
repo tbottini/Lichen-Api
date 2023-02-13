@@ -7,17 +7,16 @@ export function parserMiddleware(options) {
     logger.debug(req.url)
     const rules = Object.entries(options)
     rules.forEach(rule => {
-      logger.debug(rule)
       const [attr, type] = rule
       const value = req.params[attr]
       if (type == 'int') {
         if (value == undefined) error = 'no id was provided'
-        let v = req.params[attr]
-        v = parseInt(v)
+        let paramValueForAttribute = req.params[attr]
+        paramValueForAttribute = parseInt(paramValueForAttribute)
 
-        logger.debug(v)
-        if (isNaN(v)) error = { error: 'bad format for id' }
-        else req.params[attr] = v
+        if (isNaN(paramValueForAttribute))
+          error = { error: 'bad format for id' }
+        else req.params[attr] = paramValueForAttribute
       }
     })
     if (error) return res.status(400).json(error)
@@ -31,7 +30,6 @@ export function parserQuery(options) {
     logger.debug(req.url)
     const rules = Object.entries(options)
     rules.forEach(rule => {
-      logger.debug(rule)
       const query = rule[0]
       const law = rule[1] as Query
       const value = req.query[query]
