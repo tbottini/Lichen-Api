@@ -76,8 +76,6 @@ export const artworksRouter = new Router()
         height,
       } = req.body
 
-      logger.debug(req.body)
-
       const isOwn = await prisma.artwork.findFirst({
         where: {
           id: parseInt(req.params.id),
@@ -88,7 +86,6 @@ export const artworksRouter = new Router()
           },
         },
       })
-      logger.debug('is own', isOwn)
       if (isOwn == null)
         return res
           .status(404)
@@ -165,7 +162,6 @@ export const artworksRouter = new Router()
           },
         },
       })
-      logger.debug(result)
       if (result.count == 0)
         return res
           .status(404)
@@ -220,7 +216,6 @@ export const artworksRouter = new Router()
         },
       })
       logger.debug('artwork as been liked ')
-      logger.debug(result)
       return res.json(result)
     }
   )

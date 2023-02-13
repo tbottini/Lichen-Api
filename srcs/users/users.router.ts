@@ -116,7 +116,6 @@ export const userRouter = new Router()
   })
   .post('/login', async (req, res: Response<{ token: string }>) => {
     const { email, password } = req.body
-    logger.debug('login', req.body)
     if (!email || !password)
       return res.status(400).json({ error: 'parameters missing' })
     const users = await prisma.user.findMany({
@@ -144,16 +143,12 @@ export const userRouter = new Router()
     const user = users[0]
     const passwordIdem = await passwordUtils.compare(password, user.password)
 
-    logger.debug(passwordIdem)
-
     if (!passwordIdem)
       return res.status(400).json({ error: 'bad password provide' })
 
     return res.json({ token: jwt.create(user) })
   })
   .get('/self', jwt.middleware, async (req, res: Response<GetSelfDto>) => {
-    logger.debug(req.user)
-
     prisma.user
       .findUnique({
         where: {
@@ -203,7 +198,6 @@ export const userRouter = new Router()
         },
       })
       .then(self => {
-        logger.debug('find')
         return res.json(reinjectUserFollow<{ email: string }>(self))
       })
       .catch(err => {
@@ -421,8 +415,6 @@ export const userRouter = new Router()
     //change the location of the gallery of user
     let { longitude, latitude } = req.body
 
-    logger.debug(req.body)
-
     if (!longitude || !latitude)
       return res.status(400).json({ error: 'params missing' })
 
@@ -490,7 +482,6 @@ function reinjectUserFollow<AdditionalUserData>(
   if (!user) {
     throw new Error('')
   }
-  logger.debug(user)
   user.following = user.following.map(follow => {
     //parmis les personnes que l'on suit
     follow.userFollowed.followAt = follow.creation
@@ -505,7 +496,6 @@ function reinjectUserFollow<AdditionalUserData>(
   user.likes = user.likes
     .filter(like => like.artwork != null)
     .map(like => {
-      logger.debug(like)
       like.artwork.likeAt = like.creation
       return like.artwork
     })

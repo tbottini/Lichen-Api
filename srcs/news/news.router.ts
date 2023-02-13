@@ -9,7 +9,6 @@ import {
 } from '../commons/parsers/QueryParser'
 import { NewsService } from './News.service'
 import { CircularZone } from '../attr/CircularZone'
-import { logger } from '../modules/logger'
 
 const mediumSearch = {
   artwork: 'artwork', //toutes les notif sur les nouveaux artwork
@@ -48,9 +47,6 @@ export const newsRouter = new Router().get(
     const endDate = new Date(anchor.getTime())
     endDate.setDate(anchor.getDate() - duration)
     anchor.setDate(anchor.getDate() + 1)
-
-    logger.debug(endDate.toDateString())
-    logger.debug(anchor.toDateString())
 
     return res.json(
       await newsService.getNewsForUser({
