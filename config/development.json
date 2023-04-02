@@ -7,5 +7,9 @@
   },
   "webapp": {
     "url": "http://localhost:8081"
+  },
+  "s3": {
+    "accessKeyId": "AKIA5VGKQXCE4PMNBK4R",
+    "secretAccessKey": "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"
   }
 }

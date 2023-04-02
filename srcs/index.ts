@@ -60,7 +60,7 @@ expressApp
 
     console.log(url)
 
-    res.end(url)
+    res.redirect(url)
   })
 
   .use('/_ipx/:size/public/images/:image_name', async (req, res) => {
@@ -69,8 +69,7 @@ expressApp
     })
 
     console.log(url)
-
-    res.end(url)
+    res.redirect(url)
   })
   .use(bodyParser.urlencoded({ extended: false }))
   .use(bodyParser.json())
