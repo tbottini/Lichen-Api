@@ -106,7 +106,7 @@ export const artworksRouter = new Router()
         return res.status(400).json({ error: 'bad format for enum attr' })
 
       if (req.file) {
-        var src = req.file.filename
+        var src = req.file.key
       }
 
       //check error
@@ -215,6 +215,7 @@ export const artworksRouter = new Router()
           },
         },
       })
+
       logger.debug('artwork as been liked ')
       return res.json(result)
     }

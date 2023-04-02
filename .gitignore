@@ -6,3 +6,4 @@ database-data
 node_modules
 coverage
 .env.staging
+config/production.json

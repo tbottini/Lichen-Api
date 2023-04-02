@@ -8,6 +8,7 @@
     "migrate:test": "NODE_ENV=test ts-node scripts/migrate",
     "migrate:prod": "NODE_ENV=production ts-node scripts/migrate",
     "migrate:staging": "NODE_ENV=staging ts-node scripts/migrate",
+    "migrateImageToS3": "NODE_ENV=production ts-node scripts/migrate-image-to-s3",
     "format": "yarn prettier --write .",
     "reset:test": "DATABASE_URL=postgresql://postgres:psql@postgres:5432/lichen_test?schema=public yarn prisma migrate reset --force",
     "test": "NODE_ENV=test jest --runInBand ",

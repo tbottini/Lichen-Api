@@ -1,4 +1,5 @@
 const { v4: uuidv4 } = require('uuid')
+import { S3Client } from '@aws-sdk/client-s3'
 import { ImageResourcesService } from './images/ImageResourcesService'
 import { logger } from './logger'
 const multer = require('multer')
@@ -11,13 +12,14 @@ const imageResources = new ImageResourcesService()
  * @returns
  */
 function fileMiddleware(type = 'image', _dir = 'public', _subdir = 'images') {
+  const client = new S3Client({})
+
   const upload = multer({
     storage: multerS3({
-      s3: imageResources.s3,
+      s3: client,
       bucket: imageResources.BUCKET,
-      key: (_req, file, cb) => {
-        console.log('test key')
-        cb(null, uuidv4() + '.' + file.mimetype.split('/')[1])
+      key: (_req, file, getKey) => {
+        getKey(null, uuidv4() + '.' + file.mimetype.split('/')[1])
       },
     }),
     fileFilter: (_req, file, cb) => {
