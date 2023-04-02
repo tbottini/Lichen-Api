@@ -11,12 +11,10 @@ import { middlewareLogger } from './modules/middleware-logger'
 import { newsRouter } from './news/news.router'
 const expressApp: Application = express()
 
-const { createIPX, createIPXMiddleware } = require('ipx')
-const ipx = createIPX()
-
 const projects = require('./route/projects.router.ts')
 import { swipeRouter } from './swipe/Swipe.router'
 import { userRouter } from './users/users.router'
+import { ImageResourcesService } from './modules/images/ImageResourcesService'
 
 // const expressSwagger = require('express-swagger-generator')(expressApp)
 // expressSwagger(require('./swagger.options.js'))
@@ -32,6 +30,16 @@ const FRONT_APP_URL = config.webapp.url
 
 console.log('front app url ', FRONT_APP_URL)
 
+class Dependencies {
+  getImageService() {
+    return new ImageResourcesService()
+  }
+}
+
+const dep = new Dependencies()
+
+const imageService = dep.getImageService()
+
 expressApp.use(
   cors({
     origin: FRONT_APP_URL,
@@ -44,10 +52,29 @@ expressApp.use(
 expressApp
   .use(middlewareLogger)
   .use(express.json())
-  .use('/_ipx', createIPXMiddleware(ipx))
+
+  .use('/images/:image_name', async (req, res) => {
+    const url = await imageService.getImageUrl({
+      filename: req.params.image_name,
+    })
+
+    console.log(url)
+
+    res.end(url)
+  })
+
+  .use('/_ipx/:size/public/images/:image_name', async (req, res) => {
+    const url = await imageService.getImageUrl({
+      filename: req.params.image_name,
+    })
+
+    console.log(url)
+
+    res.end(url)
+  })
   .use(bodyParser.urlencoded({ extended: false }))
   .use(bodyParser.json())
-  .use(express.static('public'))
+// .use(express.static('public'))
 
 // define a route handler for the default home page
 expressApp.get('/', (req, res) => {

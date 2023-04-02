@@ -28,11 +28,12 @@ const router = new Router()
       if (start.error)
         return res.status(400).json({ error: 'bad format for start attr' })
 
-      if (!req.file)
+      if (!req.file) {
         return res.status(400).json({ error: 'no image was provided' })
-      const src = req.file.filename
+      }
+      const src = req.file.key
 
-      var sizeOfArray = await prisma.project.count({
+      const sizeOfArray = await prisma.project.count({
         where: {
           authorId: req.user.id,
         },
@@ -109,7 +110,7 @@ const router = new Router()
         return res.status(400).json({ error: 'bad format for enum attr' })
 
       if (req.file) {
-        var src = req.file.filename
+        var src = req.file.key
       }
 
       //check error
@@ -271,7 +272,8 @@ const router = new Router()
 
       if (!req.file)
         return res.status(400).json({ error: 'no image was provided' })
-      const src = req.file.filename
+
+      const src = req.file.key
 
       if (medium != null) {
         var catAttr = mediumEnum[medium]

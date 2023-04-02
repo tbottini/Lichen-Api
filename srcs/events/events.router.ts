@@ -46,7 +46,7 @@ export const eventsRouter = new Router()
         return res.status(400).json({ error: 'Attribute name is empty' })
       }
 
-      const src = req.file ? req.file.filename : undefined
+      const src = req.file ? req.file.key : undefined
 
       const mediumQuery = new EnumAttr(mediumEnum, medium)
       if (mediumQuery.error) {
@@ -165,7 +165,7 @@ export const eventsRouter = new Router()
         return res.status(400).json({ error: 'bad format for enum attr' })
 
       if (req.file) {
-        var src = req.file.filename
+        var src = req.file.key
       }
 
       logger.debug('DATE START', dateStart)
