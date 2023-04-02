@@ -57,8 +57,6 @@ export class NewsService {
       promises
     )
 
-    logger.debug(artworks, events)
-
     return { events, artworks, artworksLike, eventFollow }
   }
 
