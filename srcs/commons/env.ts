@@ -1,6 +1,7 @@
 require('dotenv').config({ path: getEnvFile() })
 
 function getEnvFile(): string {
+  console.log('Try to load env ', process.env.NODE_ENV)
   switch (process.env.NODE_ENV) {
     case 'production':
       return '.env'

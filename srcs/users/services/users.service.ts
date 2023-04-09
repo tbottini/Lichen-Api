@@ -7,6 +7,7 @@ import { MediumValues } from '../../medium/mediumEnum'
 import { passwordUtils } from '../../modules/password'
 import { sortSearchedElements } from '../../modules/research'
 import { createJwt } from '../../modules/jwt'
+import { ImageSrc } from '../../modules/images/ImageDomainBroadcaster'
 
 const userRepository = new UsersRepository()
 
@@ -120,6 +121,15 @@ export class UserService {
     )
 
     return filteredUsers
+  }
+
+  async getImages(): Promise<ImageSrc[]> {
+    const users = await prisma.user.findMany({
+      select: {
+        src: true,
+      },
+    })
+    return users.filter(u => u.src) as ImageSrc[]
   }
 }
 

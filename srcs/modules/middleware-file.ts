@@ -1,24 +1,16 @@
 const { v4: uuidv4 } = require('uuid')
-import { S3Client } from '@aws-sdk/client-s3'
 import { ImageResourcesService } from './images/ImageResourcesService'
 import { logger } from './logger'
 const multer = require('multer')
-const multerS3 = require('multer-s3')
+import sharp from 'sharp'
+import fs from 'fs'
+import { IMAGE_WIDTH_SIZE, getResizedImageBuffer } from './file_size_enum'
 
-const imageResources = new ImageResourcesService()
-
-/**
- * @param type is the type of file who'll be received image/pdf
- * @returns
- */
 function fileMiddleware(type = 'image', _dir = 'public', _subdir = 'images') {
-  const client = new S3Client({})
-
-  const upload = multer({
-    storage: multerS3({
-      s3: client,
-      bucket: imageResources.BUCKET,
-      key: (_req, file, getKey) => {
+  const uploadOriginalSize = multer({
+    storage: multer.diskStorage({
+      destination: '/tmp', // store in local filesystem
+      filename: (_req, file, getKey) => {
         getKey(null, uuidv4() + '.' + file.mimetype.split('/')[1])
       },
     }),
@@ -32,7 +24,42 @@ function fileMiddleware(type = 'image', _dir = 'public', _subdir = 'images') {
     },
   })
 
-  return upload.single('file')
+  return [uploadOriginalSize.single('file'), middlewareImagePublisher]
 }
+
+async function pushResizedImageFromLocalFile(
+  file: File,
+  width: number,
+  size: 'small' | 'medium'
+): Promise<void> {
+  const buffer = await getResizedImageBuffer(file.path, width)
+  await imageResources.publishObject({
+    filename: file.filename + '_' + size,
+    body: buffer,
+  })
+}
+
+type File = { path: string; filename: string }
+
+async function publishMultiImage(file: File) {
+  await pushResizedImageFromLocalFile(file, IMAGE_WIDTH_SIZE.small, 'small')
+  // await pushResizedImageFromLocalFile(file, IMAGE_WIDTH_SIZE.medium, 'medium')
+  await imageResources.publishObject({
+    filename: file.filename,
+    body: await sharp(file.path).toBuffer(),
+  })
+}
+
+async function middlewareImagePublisher(req, res, next) {
+  const file = {
+    filename: req.file.filename,
+    path: req.file.path,
+  }
+  await publishMultiImage(file)
+  fs.rmSync(file.path)
+  next()
+}
+
+const imageResources = new ImageResourcesService()
 
 module.exports = fileMiddleware
