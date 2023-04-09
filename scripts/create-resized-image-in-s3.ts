@@ -16,37 +16,38 @@ export async function createResizedImageInS3() {
 
   for (const image of images) {
     try {
-    console.log('process image ', image.src)
-    const src = image.src
+      console.log('process image ', image.src)
+      const src = image.src
 
-    const mustResize =
-      !(await imageService.exists(src + '_small')) ||
-      !(await imageService.exists(src + '_medium'))
+      const mustResize =
+        !(await imageService.exists(src + '_small')) ||
+        !(await imageService.exists(src + '_medium'))
 
-    if (mustResize) {
-      const imageBuffer = await imageService.getImageBuffer(src)
-      if (!imageBuffer) {
-        continue
+      if (mustResize) {
+        const imageBuffer = await imageService.getImageBuffer(src)
+        if (!imageBuffer) {
+          continue
+        }
+
+        console.log(`Try to push small size image`)
+        await pushResizedFileFromBuffer(
+          imageBuffer,
+          src,
+          IMAGE_WIDTH_SIZE.small,
+          'small'
+        )
+
+        console.log(`Try to push medium size image`)
+        await pushResizedFileFromBuffer(
+          imageBuffer,
+          src,
+          IMAGE_WIDTH_SIZE.medium,
+          'medium'
+        )
       }
-
-      console.log(`Try to push small size image`)
-      await pushResizedFileFromBuffer(
-        imageBuffer,
-        src,
-        IMAGE_WIDTH_SIZE.small,
-        'small'
-      )
-
-      console.log(`Try to push medium size image`)
-      await pushResizedFileFromBuffer(
-        imageBuffer,
-        src,
-        IMAGE_WIDTH_SIZE.medium,
-        'medium'
-      )
+    } catch (e) {
+      console.log('cannot process image with src', image.src, 'error', e)
     }
-  } catch (e) {
-    console.log('cannot process image with src', image.src, 'error', e)
   }
 }
 
