@@ -15,6 +15,7 @@ export async function createResizedImageInS3() {
   const images = await broadcaster.getImages()
 
   for (const image of images) {
+    try {
     console.log('process image ', image.src)
     const src = image.src
 
@@ -44,6 +45,8 @@ export async function createResizedImageInS3() {
         'medium'
       )
     }
+  } catch (e) {
+    console.log('cannot process image with src', image.src, 'error', e)
   }
 }
 
