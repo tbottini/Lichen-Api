@@ -11,6 +11,7 @@ import {
 } from '../../commons/class/ZoneBoundary.class'
 import { sortSearchedElements } from '../../modules/research'
 import { logger } from '../../modules/logger'
+import { ImageSrc } from '../../modules/images/ImageDomainBroadcaster'
 
 export class ArtworkService {
   async getAllTasks(
@@ -63,6 +64,16 @@ export class ArtworkService {
     }
 
     return results
+  }
+
+  async getImages(): Promise<ImageSrc[]> {
+    const artworks = await prisma.artwork.findMany({
+      select: {
+        src: true,
+      },
+    })
+
+    return artworks
   }
 }
 

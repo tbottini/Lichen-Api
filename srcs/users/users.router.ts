@@ -30,6 +30,7 @@ import { AccountMailer } from './services/AccountMail.service'
 import { parseIfDefined } from '../commons/parsers/parser.common'
 import { getFilenameFromFile } from '../commons/parsers/FileParser'
 import { passwordUtils } from '../modules/password'
+import { Dependencies } from '../dependencies'
 const EnumAttr = require('../attr/enum')
 const PasswordAttr = require('../attr/password')
 const fileMiddleware = require('../modules/middleware-file')
@@ -43,8 +44,9 @@ export const userScope = {
   private: privateScope,
 }
 
-const accountMailer = new AccountMailer()
-const userService = new UserService(accountMailer)
+const dependencies = new Dependencies()
+
+const userService = dependencies.getUserService()
 const galleryService = new GalleryService()
 
 interface Response<T> {

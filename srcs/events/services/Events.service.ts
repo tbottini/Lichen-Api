@@ -5,6 +5,7 @@ import { MediumValues } from '../../medium/mediumEnum'
 import { logger } from '../../modules/logger'
 import { sortSearchedElements } from '../../modules/research'
 import { userScope } from '../../users/users.router'
+import { ImageSrc } from '../../modules/images/ImageDomainBroadcaster'
 const _ = require('lodash')
 
 export class EventService {
@@ -48,6 +49,15 @@ export class EventService {
     } catch (e) {
       throw new InternalError(e)
     }
+  }
+
+  async getImages(): Promise<ImageSrc[]> {
+    const events = await prisma.event.findMany({
+      select: {
+        src: true,
+      },
+    })
+    return events.filter(e => e.src) as ImageSrc[]
   }
 }
 

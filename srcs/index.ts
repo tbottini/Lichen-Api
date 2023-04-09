@@ -49,10 +49,26 @@ expressApp.use(
   })
 )
 
+type ImageSize = 'original' | 'small' | 'medium'
+
 expressApp
   .use(middlewareLogger)
   .use(express.json())
 
+  .use('/images/:image_size/:image_name', async (req, res) => {
+    const size: ImageSize = req.params.image_size as ImageSize
+    if (!['original', 'small', 'medium'].includes(size)) {
+      return res.status(400).end('wrong format for image_size')
+    }
+    const url = await imageService.getImageUrl({
+      filename: req.params.image_name,
+      size: size,
+    })
+
+    console.log(url)
+
+    res.redirect(url)
+  })
   .use('/images/:image_name', async (req, res) => {
     const url = await imageService.getImageUrl({
       filename: req.params.image_name,
@@ -62,7 +78,6 @@ expressApp
 
     res.redirect(url)
   })
-
   .use('/_ipx/:size/public/images/:image_name', async (req, res) => {
     const url = await imageService.getImageUrl({
       filename: req.params.image_name,

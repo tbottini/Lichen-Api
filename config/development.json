@@ -10,6 +10,7 @@
   },
   "s3": {
     "accessKeyId": "AKIA5VGKQXCE4PMNBK4R",
-    "secretAccessKey": "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"
+    "secretAccessKey": "enswvsO1bHDbjNpFvnDRilKLxmPopoRg914+5n8m",
+    "region": "eu-west-3"
   }
 }

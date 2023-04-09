@@ -1,6 +1,6 @@
 export function getFilenameFromFile(file: ReceivedFile): string | undefined {
   if (file) {
-    return file.key
+    return file.filename
   }
 }
 
@@ -10,7 +10,7 @@ interface ReceivedFile {
   encoding: '7bit'
   mimetype: 'image/jpeg'
   destination: string
-  key: string
+  filename: string
   path: string
   size: number
 }
