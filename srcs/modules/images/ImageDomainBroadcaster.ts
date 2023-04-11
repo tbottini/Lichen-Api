@@ -2,7 +2,6 @@ import { ArtworkService } from '../../artworks/services/Artwork.service'
 import { ProjectService } from '../../artworks/services/Project.service'
 import { Dependencies } from '../../dependencies'
 import { EventService } from '../../events/services/Events.service'
-import { UserService } from '../../users/services/Users.service'
 
 const dependencies = new Dependencies()
 
