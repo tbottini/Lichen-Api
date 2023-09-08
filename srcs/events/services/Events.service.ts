@@ -10,22 +10,31 @@ const _ = require('lodash')
 
 export class EventService {
   async getEvents(filter: GetEventFilter) {
-    let whereClause: Prisma.EventWhereInput = {
-      dateStart: {
-        lte: filter.dateEnd,
-        gte: filter.dateStart,
-      },
-      name: {
-        mode: 'insensitive',
-        contains: filter.name,
-      },
-      medium:
-        filter.mediums.length == 0
-          ? undefined
-          : {
-              in: filter.mediums,
-            },
+    let mediumFilter: any = undefined
+    if (filter.mediums && filter.mediums.length != 0) {
+      mediumFilter = {
+        in: filter.mediums,
+      }
     }
+
+    let whereClause: Prisma.EventWhereInput = {
+      dateStart:
+        filter.dateEnd && filter.dateStart
+          ? {
+              lte: filter.dateEnd,
+              gte: filter.dateStart,
+            }
+          : undefined,
+      name: filter.name
+        ? {
+            mode: 'insensitive',
+            contains: filter.name,
+          }
+        : undefined,
+      medium: mediumFilter,
+      organisatorId: filter.galleryId ? filter.galleryId : undefined,
+    }
+
     if (filter.zone != undefined) {
       whereClause = _.assign(whereClause, filter.zone?.getZoneFilter())
     }
@@ -64,9 +73,10 @@ export class EventService {
 interface GetEventFilter {
   name?: string
   dateEnd?: Date
-  dateStart: Date
-  zone: CircularZone | undefined
-  mediums: MediumValues[]
+  dateStart?: Date
+  zone?: CircularZone | undefined
+  mediums?: MediumValues[]
+  galleryId?: number
 }
 
 export class InternalError extends Error {

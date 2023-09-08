@@ -23,10 +23,8 @@ import { UserRequestWithBody } from '../commons/interfaces/Request.types'
 import { tryCompleteRequest } from '../commons/router/fallbackError'
 import { UserRepositoryPublic, IncludesUsers } from './repositories/Users.scope'
 import { GetSelfDto } from './dto/GetSelf.dto'
-import { UserService } from './services/Users.service'
 import { logger } from '../modules/logger'
 import { logBody } from '../modules/middleware-logger'
-import { AccountMailer } from './services/AccountMail.service'
 import { parseIfDefined } from '../commons/parsers/parser.common'
 import { getFilenameFromFile } from '../commons/parsers/FileParser'
 import { passwordUtils } from '../modules/password'
@@ -229,12 +227,14 @@ export const userRouter = new Router()
       const { lagMin, lagMax, longMin, longMax, medium } = req.query
 
       const result = await galleryService.getGalleries(
-        {
-          latitudeMax: lagMax,
-          latitudeMin: lagMin,
-          longitudeMax: longMax,
-          longitudeMin: longMin,
-        },
+        lagMin && lagMax && longMin && longMax
+          ? {
+              latitudeMax: lagMax,
+              latitudeMin: lagMin,
+              longitudeMax: longMax,
+              longitudeMin: longMin,
+            }
+          : undefined,
         medium == undefined || medium == '' ? undefined : medium
       )
 
