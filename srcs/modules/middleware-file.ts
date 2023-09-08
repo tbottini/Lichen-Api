@@ -51,6 +51,11 @@ async function publishMultiImage(file: File) {
 }
 
 async function middlewareImagePublisher(req, res, next) {
+  if (!req.file) {
+    next()
+    return
+  }
+
   const file = {
     filename: req.file.filename,
     path: req.file.path,

@@ -32,10 +32,10 @@ export function parserQuery(options) {
     rules.forEach(rule => {
       const query = rule[0]
       const law = rule[1] as Query
-      const value = req.query[query]
+      const queryValue = req.query[query]
 
-      if (value != null) {
-        if (law.parse(value)) {
+      if (queryValue != null) {
+        if (law.parse(queryValue)) {
           req.query[query] = law.value
         } else {
           logger.debug('bad query format')

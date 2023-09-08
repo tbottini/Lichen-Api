@@ -36,6 +36,80 @@ const eventService = new EventService()
 
 export const eventsRouter = new Router()
   .post(
+    '/:galleryId',
+    [fileMiddleware(), positionParser.middleware],
+    async (req, res) => {
+      if (
+        req.headers.authorization !==
+        `Bearer 0u1Kz9kusLXRfLOZ6zVv0pP6m0skePmMVkUAzKWLM2Ogds7cggaK5miww6kBstqb`
+      ) {
+        return res.status(401).end()
+      }
+
+      const { name, description, dateStart, dateEnd, medium } = req.body
+      const { latitude, longitude } = req.body.parsed
+
+      if (!name) {
+        return res.status(400).json({ error: 'Attribute name is empty' })
+      }
+
+      const src = req.file ? req.file.filename : undefined
+
+      const mediumQuery = new EnumAttr(mediumEnum, medium)
+      if (mediumQuery.error) {
+        return res.status(400).json({ error: 'Bad format for enum attr' })
+      }
+
+      const dateStartQuery = new DateAttr(dateStart)
+      if (dateStartQuery.error) {
+        return res.status(400).json({ error: 'Bad format for date start attr' })
+      }
+
+      const dateEndAttr = new DateAttr(dateEnd)
+      if (dateEndAttr.error) {
+        return res.status(400).json({ error: 'Bad format for date end attr' })
+      }
+
+      const userId = parseInt(req.params.galleryId)
+
+      const sizeOfArray = await prisma.event.count({
+        where: {
+          organisatorId: userId,
+        },
+      })
+
+      try {
+        const result = await prisma.event.create({
+          data: {
+            name: name,
+            description: description,
+            dateStart: dateStartQuery.value,
+            dateEnd: dateEndAttr.value,
+            src: src,
+            index: sizeOfArray,
+            medium: mediumQuery.value,
+            longitude,
+            latitude,
+            organisator: {
+              connect: {
+                id: userId,
+              },
+            },
+          },
+          include: {
+            organisator: {
+              select: userScope.public,
+            },
+          },
+        })
+        return res.json(result)
+      } catch (e) {
+        console.log(e)
+        return res.status(500).end('Internal Error')
+      }
+    }
+  )
+  .post(
     '/',
     [jwt.middleware, fileMiddleware(), positionParser.middleware],
     async (req, res) => {
@@ -108,8 +182,16 @@ export const eventsRouter = new Router()
      */
 
     tryCompleteRequest(res, async () => {
-      const { dateStart, dateEnd, name, latitude, longitude, radius, medium } =
-        req.query
+      const {
+        dateStart,
+        dateEnd,
+        name,
+        latitude,
+        longitude,
+        radius,
+        medium,
+        galleryId,
+      } = req.query
 
       const zone = CircularZone.parse(latitude, longitude, radius)
       const mediums = parseMultipleEnum(medium, mediumEnum)
@@ -121,6 +203,7 @@ export const eventsRouter = new Router()
           dateStart,
           dateEnd,
           mediums,
+          galleryId: galleryId ? parseInt(galleryId) : undefined,
         })
       )
     })
