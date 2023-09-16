@@ -1,0 +1,16 @@
+    <mj-section>
+      <mj-column>
+
+        <mj-text font-size="20px" color="black" line-height="27px" font-family="Livvic, Raleway, Arial" font-weight="200">Bonjour $toName,
+          <br></br>
+
+          Vous avez reçu une demande de contact de la part de $fromName. Il a fait cette demande depuis l'application Lichen, nous avons transmis cette demande sans lui fournir votre email.<br></br>
+          $requestContent<br></br>
+        </mj-text>
+
+        <mj-text font-size="20px" color="black" font-family="Livvic, Raleway, Arial" font-weight="200">
+          Vous pouvez le contacter grâce à son adresse mail : $fromEmail depuis votre boîte mail.
+        <br></br> Cordialement,<br></br>
+          L'équipe de Lichen</mj-text>
+      </mj-column>
+    </mj-section>

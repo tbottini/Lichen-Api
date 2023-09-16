@@ -38,6 +38,7 @@ export class MailjetMailSender {
         {
           From: {
             Email: from,
+            Name: 'Lichen',
           },
           To: [
             {

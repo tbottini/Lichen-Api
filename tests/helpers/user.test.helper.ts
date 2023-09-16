@@ -7,8 +7,7 @@ import {
   ProjectCreateInput,
   EventCreateInput,
 } from '../userTestHandler'
-import { apiCreateUser, apiLogin } from './api.helpers'
-const request = require('supertest')
+import { apiCreateUser, apiLogin, apiSelf } from './api.helpers'
 
 export async function createUserList(listData: UserFixtureCreationDto[]) {
   // var users = await Promise.all(listData.map(async (data) => await this.addUser(data)));
@@ -57,8 +56,10 @@ export async function addUser({
       ...gallery,
     }
   }
+  const self = await apiSelf(token)
 
   const user = {
+    id: self.id,
     token: token,
     ...dataRequest,
     projects: [] as ProjectWithArtworks[],

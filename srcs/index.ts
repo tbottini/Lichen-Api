@@ -15,6 +15,7 @@ const projects = require('./route/projects.router.ts')
 import { swipeRouter } from './swipe/Swipe.router'
 import { userRouter } from './users/users.router'
 import { ImageResourcesService } from './modules/images/ImageResourcesService'
+import { connectionRouter } from './modules/connectionDemand/connection.router'
 
 // const expressSwagger = require('express-swagger-generator')(expressApp)
 // expressSwagger(require('./swagger.options.js'))
@@ -103,6 +104,7 @@ expressApp
   .use('/artworks/', artworksRouter)
   .use('/news', newsRouter)
   .use('/swipe/', swipeRouter)
+  .use('/connection/', connectionRouter)
 
 logger.info('NODE_ENV ' + process.env.NODE_ENV)
 
