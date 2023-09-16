@@ -1,4 +1,4 @@
-import { Gallery, Role } from '@prisma/client'
+import { Role } from '@prisma/client'
 import { Position } from '../../interfaces/Position.type'
 import { MediumValues } from '../../medium/mediumEnum'
 

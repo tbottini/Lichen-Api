@@ -417,6 +417,7 @@ export const userRouter = new Router()
     //change the location of the gallery of user
     let { longitude, latitude } = req.body
 
+    console.log(req.body)
     if (!longitude || !latitude)
       return res.status(400).json({ error: 'params missing' })
 

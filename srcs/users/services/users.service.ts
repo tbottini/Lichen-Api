@@ -18,6 +18,14 @@ export class UserService {
     this.accountMailer = accountMailer
   }
 
+  getUser(filter: { id: number }) {
+    return prisma.user.findFirst({
+      where: {
+        id: filter.id,
+      },
+    })
+  }
+
   async createUser(dtoCreate: CreateUser): Promise<string> {
     const passwordHash = await passwordUtils.hash(dtoCreate.password)
 

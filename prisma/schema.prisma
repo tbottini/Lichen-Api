@@ -147,3 +147,10 @@ model EventFollow {
   event    Event?   @relation(fields: [eventId], references: [id])
   eventId  Int?
 }
+
+model Connection {
+  id              Int      @id @default(autoincrement())
+  fromEmail       String   @db.VarChar(255)
+  toEmail         String   @db.VarChar(255)
+  requestContent  String   @db.Text
+}

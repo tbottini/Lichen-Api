@@ -9,4 +9,5 @@ export async function clearDatabase() {
   await prisma.gallery.deleteMany()
   await prisma.userFollow.deleteMany()
   await prisma.user.deleteMany()
+  await prisma.connection.deleteMany()
 }

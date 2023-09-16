@@ -8,5 +8,10 @@
   },
   "webapp": {
     "url": ""
+  },
+  "s3": {
+    "accessKeyId": "test",
+    "secretAccessKey": "test",
+    "region": "eu-west-3"
   }
 }
