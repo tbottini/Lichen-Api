@@ -29,9 +29,12 @@ import { parseIfDefined } from '../commons/parsers/parser.common'
 import { getFilenameFromFile } from '../commons/parsers/FileParser'
 import { passwordUtils } from '../modules/password'
 import { Dependencies } from '../dependencies'
+import { forbiden, isAuthorizedWithHeader, notFound } from '../modules/auth'
 const EnumAttr = require('../attr/enum')
 const PasswordAttr = require('../attr/password')
 const fileMiddleware = require('../modules/middleware-file')
+
+import { t } from '../modules/payloadTransformer'
 
 const querySearch = {
   name: new QueryString(),
@@ -292,6 +295,23 @@ export const userRouter = new Router()
     })
     return res.json(result)
   })
+  .put('/:userId', middlewareAuthorizedToUpdateUser, async (req, res) => {
+    const userUpdateParser = t
+      .object<{ pseudo?: string; userId: number }>()
+      .schema({
+        pseudo: t.string(),
+        userId: t.int(),
+      })
+
+    const dto = userUpdateParser.parse({ ...req.body, ...req.params })
+    tryCompleteRequest(res, async () => {
+      return res.json(
+        await userService.updateUser(dto.userId, {
+          pseudo: dto.pseudo,
+        })
+      )
+    })
+  })
   .put('/', [jwt.middleware, fileMiddleware()], async (req, res) => {
     const {
       firstname,
@@ -454,6 +474,82 @@ export const userRouter = new Router()
 
     return res.json(result)
   })
+  .put(
+    '/:userId/gallery',
+    middlewareAuthorizedToUpdateUser,
+    async (req, res) => {
+      //change the location of the gallery of user
+
+      let { longitude, latitude } = req.body
+
+      if (!longitude || !latitude)
+        return res.status(400).json({ error: 'params missing' })
+
+      longitude = parseFloat(longitude)
+      latitude = parseFloat(latitude)
+      if (isNaN(longitude)) {
+        return res.status(400).json({ error: 'bad format for longitude' })
+      }
+      if (isNaN(latitude)) {
+        return res.status(400).json({ error: 'bad foramt for latitude' })
+      }
+
+      //on check si l'utilisateur n'a pas encore de gallery
+      const result = await prisma.user.update({
+        where: {
+          id: parseInt(req.params.userId),
+        },
+        data: {
+          gallery: {
+            upsert: {
+              create: {
+                latitude: latitude,
+                longitude: longitude,
+              },
+              update: {
+                latitude: latitude,
+                longitude: longitude,
+              },
+            },
+          },
+        },
+        select: {
+          ...userScope.public,
+        },
+      })
+
+      return res.json(result)
+    }
+  )
+
+  .delete('/gallery/:userId', async (req, res) => {
+    console.log(await prisma.gallery.findMany({ where: {} }))
+
+    const gallery = await prisma.gallery.findFirst({
+      where: {
+        userId: parseInt(req.params.userId),
+      },
+    })
+    console.log(req.params, gallery)
+    if (!gallery) {
+      return notFound(res)
+    }
+
+    if (!isAuthorizedWithHeader(req.headers.authorization, gallery.userId)) {
+      return forbiden(res)
+    }
+
+    const result = await prisma.gallery.deleteMany({
+      where: {
+        user: {
+          id: gallery.userId,
+        },
+      },
+    })
+
+    return res.json(result)
+  })
+
   .delete('/self/gallery', [jwt.middleware], async (req, res) => {
     const result = await prisma.gallery.deleteMany({
       where: {
@@ -523,4 +619,11 @@ function reinjectUserFollow<AdditionalUserData>(
           }
         : null,
   }
+}
+
+function middlewareAuthorizedToUpdateUser(req, res, next) {
+  if (!isAuthorizedWithHeader(req.headers.authorization, req.params.userId)) {
+    return forbiden(res)
+  }
+  next()
 }

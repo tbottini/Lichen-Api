@@ -15,11 +15,14 @@ export function create(user) {
 
 export const createJwt = create
 
-export function verify(jwt) {
+export function verify(token: string) {
   try {
-    const decoded = jwt.verify(jwt, SECRET)
+    const decoded = jwt.verify(token, SECRET, {
+      algorithm: 'HS256',
+    })
     return decoded
   } catch (err) {
+    console.log(err)
     return null
   }
 }

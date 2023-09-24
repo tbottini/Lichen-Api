@@ -60,6 +60,8 @@ export class EventService {
     }
   }
 
+  async updateEvent() {}
+
   async getImages(): Promise<ImageSrc[]> {
     const events = await prisma.event.findMany({
       select: {

@@ -18,7 +18,7 @@ export class GalleryService {
       select: publicScope,
     })
 
-    return foundGalleries
+    return foundGalleries.filter(g => !!g.gallery)
   }
 }
 
