@@ -20,6 +20,7 @@ import { logger } from '../modules/logger'
 import { parseMultipleEnum } from '../commons/parsers/Enum.parser'
 import { tryCompleteRequest } from '../commons/router/fallbackError'
 import { EventService } from './services/Events.service'
+import { forbiden, isAuthorizedWithHeader, notFound } from '../modules/auth'
 
 const querySearch = {
   dateStart: new QueryDate(),
@@ -36,14 +37,16 @@ const eventService = new EventService()
 
 export const eventsRouter = new Router()
   .post(
-    '/:galleryId',
+    '/:userId',
     [fileMiddleware(), positionParser.middleware],
     async (req, res) => {
       if (
-        req.headers.authorization !==
-        `Bearer 0u1Kz9kusLXRfLOZ6zVv0pP6m0skePmMVkUAzKWLM2Ogds7cggaK5miww6kBstqb`
+        !isAuthorizedWithHeader(
+          req.headers.authorization,
+          parseInt(req.params.userId)
+        )
       ) {
-        return res.status(401).end()
+        return forbiden(res)
       }
 
       const { name, description, dateStart, dateEnd, medium } = req.body
@@ -70,7 +73,7 @@ export const eventsRouter = new Router()
         return res.status(400).json({ error: 'Bad format for date end attr' })
       }
 
-      const userId = parseInt(req.params.galleryId)
+      const userId = parseInt(req.params.userId)
 
       const sizeOfArray = await prisma.event.count({
         where: {
@@ -212,34 +215,45 @@ export const eventsRouter = new Router()
     '/:id',
     [
       parserMiddleware({ id: 'int' }),
-      jwt.middleware,
       fileMiddleware(),
       positionParser.middleware,
     ],
     async (req, res) => {
       const { name, description, dateStart, dateEnd, index, medium } = req.body
+
       const { longitude, latitude } = req.body.parsed
 
       logger.debug(req.body)
 
-      // we check if the event belongs to the user
-      const isOwn = await prisma.event.findFirst({
+      const event = await prisma.event.findFirst({
         where: {
           id: parseInt(req.params.id),
-          organisator: {
-            id: req.user.id,
-          },
         },
       })
-      logger.debug('is own', isOwn)
-      if (isOwn == null)
-        return res
-          .status(404)
-          .json({ error: 'no events exist at this id for you' })
+      const organisator = await prisma.user.findFirst({
+        where: {
+          id: event?.organisatorId,
+        },
+      })
 
+      if (!organisator) {
+        return notFound(res)
+      }
+      if (!isAuthorizedWithHeader(req.headers.authorization, organisator.id)) {
+        console.log('unauthorized')
+        return forbiden(res)
+      }
+
+      // update index if defined
       if (index) {
         //on update l'index selon sa position dans le user
-        const indexAttr = new IndexAttr('organisatorId', req.user.id, 'Event')
+        const indexAttr = new IndexAttr(
+          'organisatorId',
+          organisator.id,
+          'Event'
+        )
+
+        // update sql sur les index pour le ownerId
         await indexAttr.queryUpdateIndex(req.params.id, index)
       }
 
@@ -247,11 +261,10 @@ export const eventsRouter = new Router()
       if (mediumAttr.error)
         return res.status(400).json({ error: 'bad format for enum attr' })
 
+      let src
       if (req.file) {
-        var src = req.file.filename
+        src = req.file.filename
       }
-
-      logger.debug('DATE START', dateStart)
 
       const dateStartAttr = new DateAttr(dateStart)
       if (dateStartAttr.error)
@@ -271,7 +284,8 @@ export const eventsRouter = new Router()
           dateStart: dateStartAttr.value,
           dateEnd: dateEndAttr.value,
           medium: mediumAttr.value,
-          latitude: latitude,
+
+          latitude,
           longitude,
           src: src,
         },
@@ -284,26 +298,38 @@ export const eventsRouter = new Router()
       return res.json(result)
     }
   )
-  .delete(
-    '/:id',
-    [parserMiddleware({ id: 'int' }), jwt.middleware],
-    async (req, res) => {
-      //on update l'index selon sa position dans le user
-      const indexAttr = new IndexAttr('organisatorId', req.user.id, 'Event')
-      await indexAttr.uncrementOver(req.params.id)
-
-      return res.json(
-        await prisma.event.deleteMany({
-          where: {
-            id: req.params.id,
-            organisator: {
-              id: req.user.id,
-            },
-          },
-        })
-      )
+  .delete('/:id', async (req, res) => {
+    const event = await prisma.event.findFirst({
+      where: {
+        id: parseInt(req.params.id),
+      },
+    })
+    if (!event) {
+      return notFound(res)
     }
-  )
+
+    if (
+      !isAuthorizedWithHeader(req.headers.authorization, event.organisatorId)
+    ) {
+      return forbiden(res)
+    }
+
+    //on update l'index selon sa position dans le user
+    const indexAttr = new IndexAttr(
+      'organisatorId',
+      event.organisatorId,
+      'Event'
+    )
+    await indexAttr.uncrementOver(event.organisatorId)
+
+    return res.json(
+      await prisma.event.delete({
+        where: {
+          id: event.id,
+        },
+      })
+    )
+  })
 
   .get('/:id', parserMiddleware({ id: 'int' }), async (req, res) => {
     const result = await prisma.event.findUnique({
