@@ -43,7 +43,7 @@ type File = { path: string; filename: string }
 
 async function publishMultiImage(file: File) {
   await pushResizedImageFromLocalFile(file, IMAGE_WIDTH_SIZE.small, 'small')
-  // await pushResizedImageFromLocalFile(file, IMAGE_WIDTH_SIZE.medium, 'medium')
+  await pushResizedImageFromLocalFile(file, IMAGE_WIDTH_SIZE.medium, 'medium')
   await imageResources.publishObject({
     filename: file.filename,
     body: await sharp(file.path).toBuffer(),
