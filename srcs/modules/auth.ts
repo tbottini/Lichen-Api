@@ -23,7 +23,8 @@ export function isAuthorized(header: string, ownerId: number) {
 
   const user = verify(header)
 
-  console.log(user)
+  console.log(user, ownerId)
+
   if (!user) {
     return false
   }

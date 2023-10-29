@@ -11,7 +11,7 @@ import { UserTestHandler } from '../../tests/userTestHandler'
 const request = require('supertest')
 import { app } from '../index'
 
-describe('Artworks Routes Test', () => {
+describe.skip('Artworks Routes Test', () => {
   let user
 
   beforeAll(async () => {

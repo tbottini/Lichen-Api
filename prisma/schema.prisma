@@ -29,6 +29,8 @@ model User {
   creation    DateTime @default(now())
   role        Role     @default(USER)
 
+  isVirtual   Boolean  @default(false)
+
   //one to many
   projects    Project[]
   events      Event[]        @relation("EventsCreate")

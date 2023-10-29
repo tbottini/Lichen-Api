@@ -19,6 +19,7 @@ export const publicScope = {
   creation: true,
   positionLatitude: true,
   positionLongitude: true,
+  isVirtual: true,
 } as const
 
 export const privateScope = {
@@ -39,6 +40,7 @@ export type UserBase = {
   role: Role
   medium: MediumValues | null
   gallery: GalleryDto | null
+  isVirtual: boolean
 }
 
 export type RawUserPosition = {
@@ -47,12 +49,6 @@ export type RawUserPosition = {
 }
 
 export type UserRepositoryPublic = UserBase & RawUserPosition
-
-export type UserRepositoryPrivate = UserRepositoryPublic &
-  IncludesUsers & {
-    email: string
-    password: string
-  }
 
 export type IncludesUsers = {
   followed: any
@@ -79,10 +75,6 @@ export type UserPublicDto = UserBase & {
   position: Position | null
 }
 
-export type UserPrivateDto = UserRepositoryPrivate & {
-  position: Position | null
-}
-
 export type UserUpdatbleAttributes = Partial<{
   email: string
   password: string
@@ -94,4 +86,17 @@ export type UserUpdatbleAttributes = Partial<{
   bio: string | null
   websiteUrl: string | null
   medium: MediumValues | null
+  isVirtual: boolean
 }>
+
+// ! n'est pas utilisé dans du code de prod
+export type UserRepositoryPrivate = UserRepositoryPublic &
+  IncludesUsers & {
+    email: string
+    password: string
+  }
+
+// ! n'est pas utilisé dans le code de prod
+export type UserPrivateDto = UserRepositoryPrivate & {
+  position: Position | null
+}

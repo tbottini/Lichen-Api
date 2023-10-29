@@ -35,7 +35,6 @@ const filter = level =>
   })()
 
 const transports = [
-  // create a logging target for errors and fatals
   new File({
     filename: 'log/error.log',
     level: 'error',
@@ -71,14 +70,14 @@ const logFormat = printf(function (info) {
   }: ${typeof info.message == 'string' ? info.message : '\n' + JSON.stringify(info.message, null, 4)}`
 })
 
-if (process.env.NODE_ENV != 'test') {
-  logger.add(
-    new Console({
-      level: 'debug',
-      format: combine(colorize(), logFormat),
-    })
-  )
-}
+// if (process.env.NODE_ENV != 'test') {
+logger.add(
+  new Console({
+    level: 'debug',
+    format: combine(colorize(), logFormat),
+  })
+)
+
 logger.stream = {
   write: function (message, encoding) {
     logger.http(message)

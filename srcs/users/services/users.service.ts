@@ -2,7 +2,14 @@ import { Position } from '../../commons/class/Position.class'
 import { prisma } from '../../commons/prisma/prisma'
 import { IAccountMailer } from './AccountMail.service'
 import { UsersRepository } from '../repositories/Users.repository'
-import { UserPublicDto } from '../repositories/Users.scope'
+import {
+  IncludesUsers,
+  UserFullPublicDto,
+  UserPublicDto,
+  UserRepositoryPublic,
+  privateScope,
+  publicScope,
+} from '../repositories/Users.scope'
 import { MediumValues } from '../../medium/mediumEnum'
 import { passwordUtils } from '../../modules/password'
 import { sortSearchedElements } from '../../modules/research'
@@ -10,6 +17,11 @@ import { createJwt } from '../../modules/jwt'
 import { ImageSrc } from '../../modules/images/ImageDomainBroadcaster'
 
 const userRepository = new UsersRepository()
+
+export const userScope = {
+  public: publicScope,
+  private: privateScope,
+}
 
 export class UserService {
   accountMailer: IAccountMailer
@@ -24,6 +36,47 @@ export class UserService {
         id: filter.id,
       },
     })
+  }
+
+  async getProfileUser(userId: number) {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        ...userScope.public,
+
+        projects: {
+          orderBy: { index: 'asc' },
+          include: {
+            artworks: { orderBy: { index: 'asc' } },
+          },
+        },
+        events: { orderBy: { index: 'asc' } },
+        followed: {
+          select: {
+            userFollowing: { select: userScope.public },
+          },
+        },
+        following: {
+          select: {
+            userFollowed: { select: userScope.public },
+          },
+        },
+        likes: {
+          include: {
+            artwork: true,
+          },
+        },
+        eventFollow: true,
+      },
+    })
+
+    if (!user) {
+      throw new Error(`Cannot found user with id : ${userId}`)
+    }
+
+    return reinjectUserFollow(user)
   }
 
   async createUser(dtoCreate: CreateUser): Promise<string> {
@@ -168,6 +221,7 @@ type UpdateUser = Partial<{
   medium: MediumValues
   email: string
   password: string
+  isVirtual: boolean
 }>
 
 export type CreateUser = {
@@ -194,5 +248,51 @@ export class PseudoIsDefinedWithPersonalIdentity extends Error {
 export class CanCreateUserWithPseudoAndNameError extends Error {
   constructor() {
     super(`Trying to create user with pseudo and firstname or lastname`)
+  }
+}
+
+export function reinjectUserFollow<AdditionalUserData>(
+  user: (UserRepositoryPublic & IncludesUsers & AdditionalUserData) | null
+): UserFullPublicDto & AdditionalUserData {
+  if (!user) {
+    throw new Error('')
+  }
+  user.following = user.following.map(follow => {
+    //parmis les personnes que l'on suit
+    follow.userFollowed.followAt = follow.creation
+    return follow.userFollowed
+  })
+
+  user.followed = user.followed.map(follow => {
+    follow.userFollowing.followAt = follow.creation
+    return follow.userFollowing
+  })
+
+  user.likes = user.likes
+    .filter(like => like.artwork != null)
+    .map(like => {
+      like.artwork.likeAt = like.creation
+      return like.artwork
+    })
+
+  user.eventFollow = user.eventFollow
+    .map(eventFollow => {
+      //! error e.event can be null
+      //todo error: when event is delete / the eventsFollow attribute may doesnt remove the event link
+      if (eventFollow.event == null) return null
+      eventFollow.event.followAt = eventFollow.creation
+      return eventFollow.event
+    })
+    .filter(eventFollow => eventFollow != null)
+
+  return {
+    ...user,
+    position:
+      user.positionLatitude && user.positionLongitude
+        ? {
+            latitude: user.positionLatitude,
+            longitude: user.positionLongitude,
+          }
+        : null,
   }
 }

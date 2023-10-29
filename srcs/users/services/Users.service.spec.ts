@@ -17,6 +17,51 @@ describe('Users Service', () => {
     await clearDatabase()
   })
 
+  describe('Find one', () => {
+    it('should throw an error when user is not found', async () => {
+      await expect(userService.getProfileUser(10)).rejects.toThrow(
+        'Cannot found user with id : 10'
+      )
+    })
+
+    it('should find one user profile with the complete data', async () => {
+      const created = await createUser({
+        email: 'thomasbottini@reseau-lichen.fr',
+      })
+
+      const user = await userService.getProfileUser(created.id)
+
+      expect(user.isVirtual).toEqual(false)
+      const field = [
+        'firstname',
+        'pseudo',
+        'lastname',
+        'id',
+        'websiteUrl',
+        'description',
+        'src',
+        'role',
+        'medium',
+        'gallery',
+        'bio',
+        'creation',
+        'positionLatitude',
+        'positionLongitude',
+        'isVirtual',
+        'projects',
+        'events',
+        'followed',
+        'following',
+        'likes',
+        'eventFollow',
+        'position',
+      ]
+      field.forEach(field => {
+        expect(user[field]).toBeDefined()
+      })
+    })
+  })
+
   describe('Forgot password', () => {
     it('should send an email when forgot password', async () => {
       await createUser({
@@ -78,6 +123,23 @@ describe('Users Service', () => {
       await userService.updateUser(user.id, {
         firstname: 'thomas',
       })
+    })
+
+    it('should set the isVirtual attribute of user', async () => {
+      const user = await createUser({
+        email: 'arnaudbottini@reseau-lichen.fr',
+        pseudo: '',
+      })
+
+      const updated = await userService.updateUser(user.id, {
+        isVirtual: true,
+      })
+      expect(updated.isVirtual).toBeTruthy()
+
+      const updatedToFalse = await userService.updateUser(user.id, {
+        isVirtual: false,
+      })
+      expect(updatedToFalse.isVirtual).toBeFalsy()
     })
   })
 
