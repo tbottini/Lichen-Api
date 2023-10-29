@@ -1,4 +1,5 @@
 const { Router } = require('express')
+import { User } from '@prisma/client'
 import { Dependencies } from '../../dependencies'
 import * as jwt from '../../modules/jwt'
 import { ConnectionService } from './connection.service'

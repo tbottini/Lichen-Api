@@ -21,7 +21,6 @@ import { EmailAttr } from '../attr/Email.attribute'
 import { parsePosition } from '../commons/parsers/Position.parser'
 import { UserRequestWithBody } from '../commons/interfaces/Request.types'
 import { tryCompleteRequest } from '../commons/router/fallbackError'
-import { UserRepositoryPublic, IncludesUsers } from './repositories/Users.scope'
 import { GetSelfDto } from './dto/GetSelf.dto'
 import { logger } from '../modules/logger'
 import { logBody } from '../modules/middleware-logger'
@@ -35,6 +34,7 @@ const PasswordAttr = require('../attr/password')
 const fileMiddleware = require('../modules/middleware-file')
 
 import { t } from '../modules/payloadTransformer'
+import { reinjectUserFollow } from './services/Users.service'
 
 const querySearch = {
   name: new QueryString(),
@@ -245,45 +245,15 @@ export const userRouter = new Router()
     }
   )
   .get('/:id', parserMiddleware({ id: 'int' }), async (req, res) => {
-    prisma.user
-      .findUnique({
-        where: {
-          id: req.params.id,
-        },
-        select: {
-          ...userScope.public,
+    const getOneUserParser = t.object<{ userId: number }>().schema({
+      userId: t.int(),
+    })
 
-          projects: {
-            orderBy: { index: 'asc' },
-            include: {
-              artworks: { orderBy: { index: 'asc' } },
-            },
-          },
-          events: { orderBy: { index: 'asc' } },
-          followed: {
-            select: {
-              userFollowing: { select: userScope.public },
-            },
-          },
-          following: {
-            select: {
-              userFollowed: { select: userScope.public },
-            },
-          },
-          likes: {
-            include: {
-              artwork: true,
-            },
-          },
-          eventFollow: true,
-        },
-      })
-      .then(result => {
-        return res.json(reinjectUserFollow(result))
-      })
-      .catch(() => {
-        return res.status(400).json({ error: 'No user found with this token' })
-      })
+    tryCompleteRequest(res, async () => {
+      const dto = getOneUserParser.parse({ ...req.params })
+
+      return res.json(await userService.getProfileUser(dto.userId))
+    })
   })
   .delete('/self', jwt.middleware, async (req, res) => {
     logger.debug('delete users ' + req.user.id + '...')
@@ -295,19 +265,47 @@ export const userRouter = new Router()
     })
     return res.json(result)
   })
+  .put(
+    '/new-position',
+    [...jwt.middleware],
+    async (
+      req: UserRequestWithBody<{
+        position: { longitude: string; latitude: string }
+      }>,
+      res: Response<UserPublicDto>
+    ) => {
+      const { position } = req.body
+
+      console.log('position', position)
+
+      tryCompleteRequest(res, async () => {
+        const parsedPosition = parsePosition(position)
+
+        const result = await userService.updateUserPosition({
+          userId: req.user.id,
+          newPosition: parsedPosition,
+        })
+
+        return res.status(200).json(result)
+      })
+    }
+  )
   .put('/:userId', middlewareAuthorizedToUpdateUser, async (req, res) => {
     const userUpdateParser = t
-      .object<{ pseudo?: string; userId: number }>()
+      .object<{ pseudo?: string; userId: number; isVirtual?: boolean }>()
       .schema({
         pseudo: t.string(),
-        userId: t.int(),
+        userId: t.required().int(),
+        isVirtual: t.boolean(),
       })
 
-    const dto = userUpdateParser.parse({ ...req.body, ...req.params })
     tryCompleteRequest(res, async () => {
+      const dto = userUpdateParser.parse({ ...req.body, ...req.params })
+
       return res.json(
         await userService.updateUser(dto.userId, {
           pseudo: dto.pseudo,
+          isVirtual: dto.isVirtual,
         })
       )
     })
@@ -362,29 +360,6 @@ export const userRouter = new Router()
       return res.json(result)
     })
   })
-  .put(
-    '/new-position',
-    [...jwt.middleware],
-    async (
-      req: UserRequestWithBody<{
-        position: { longitude: string; latitude: string }
-      }>,
-      res: Response<UserPublicDto>
-    ) => {
-      const { position } = req.body
-
-      tryCompleteRequest(res, async () => {
-        const parsedPosition = parsePosition(position)
-
-        const result = await userService.updateUserPosition({
-          userId: req.user.id,
-          newPosition: parsedPosition,
-        })
-
-        return res.status(200).json(result)
-      })
-    }
-  )
   .post(
     '/:id/follow',
     [jwt.middleware, parserMiddleware({ id: 'int' })],
@@ -574,52 +549,6 @@ export const userRouter = new Router()
     }
     res.json({ msg: 'an email was sent to your email address' })
   })
-
-function reinjectUserFollow<AdditionalUserData>(
-  user: (UserRepositoryPublic & IncludesUsers & AdditionalUserData) | null
-): UserFullPublicDto & AdditionalUserData {
-  if (!user) {
-    throw new Error('')
-  }
-  user.following = user.following.map(follow => {
-    //parmis les personnes que l'on suit
-    follow.userFollowed.followAt = follow.creation
-    return follow.userFollowed
-  })
-
-  user.followed = user.followed.map(follow => {
-    follow.userFollowing.followAt = follow.creation
-    return follow.userFollowing
-  })
-
-  user.likes = user.likes
-    .filter(like => like.artwork != null)
-    .map(like => {
-      like.artwork.likeAt = like.creation
-      return like.artwork
-    })
-
-  user.eventFollow = user.eventFollow
-    .map(eventFollow => {
-      //! error e.event can be null
-      //todo error: when event is delete / the eventsFollow attribute may doesnt remove the event link
-      if (eventFollow.event == null) return null
-      eventFollow.event.followAt = eventFollow.creation
-      return eventFollow.event
-    })
-    .filter(eventFollow => eventFollow != null)
-
-  return {
-    ...user,
-    position:
-      user.positionLatitude && user.positionLongitude
-        ? {
-            latitude: user.positionLatitude,
-            longitude: user.positionLongitude,
-          }
-        : null,
-  }
-}
 
 function middlewareAuthorizedToUpdateUser(req, res, next) {
   if (!isAuthorizedWithHeader(req.headers.authorization, req.params.userId)) {

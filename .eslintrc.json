@@ -16,6 +16,7 @@
   "rules": {
     "no-undef": "error",
     "@typescript-eslint/no-var-requires": "warn",
-    "no-var": "warn"
+    "no-var": "warn",
+    "@typescript-eslint/no-namespace": false
   }
 }

@@ -86,6 +86,7 @@ export class UsersRepository {
       medium,
       email,
       password,
+      isVirtual,
     }: UserUpdatableAttributes
   ): Promise<UserPublicDto> {
     const result = await prisma.user.update({
@@ -104,6 +105,7 @@ export class UsersRepository {
         medium,
         email,
         password,
+        isVirtual,
       },
     })
 
@@ -127,6 +129,7 @@ export class UsersRepository {
       creation: user.creation,
       role: user.role,
       medium: user.medium,
+      isVirtual: user.isVirtual,
       position:
         user.positionLatitude && user.positionLongitude
           ? {
