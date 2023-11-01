@@ -4,12 +4,13 @@ import { app } from '../index'
 import { UserTestHandler } from '../../tests/userTestHandler'
 import {
   apiCreateUser,
+  apiGetUser,
   apiSelf,
   apiUpdateUserPosition,
   expectDefaultPositionIsDefined,
 } from '../../tests/helpers/api.helpers'
 import { clearDatabase } from '../../tests/helpers/clearDatabase.helper'
-import { addUser } from '../../tests/helpers/user.test.helper'
+import { addUser, apiCreateGallery } from '../../tests/helpers/user.test.helper'
 
 describe('Users Routes Test', () => {
   const createUserReference = () =>
@@ -22,7 +23,7 @@ describe('Users Routes Test', () => {
       medium: 'STAMP',
     })
 
-  const getUserReferenceId = async token => {
+  const getUserReferenceId = async (token: string) => {
     const userReferenceData = await UserTestHandler.self(token)
     return userReferenceData.id
   }
@@ -136,6 +137,19 @@ describe('Users Routes Test', () => {
       expect(self.positionLongitude).toBe(10)
       expect(self.position?.latitude).toBe(20)
       expect(self.position?.longitude).toBe(10)
+    })
+  })
+
+  describe('Get', () => {
+    it('should return the user', async () => {
+      const token = await apiCreateUser({
+        email: 'getSelfInfo@protonmail.com',
+      })
+      const user = await apiSelf(token)
+
+      const getted = await apiGetUser(user.id)
+
+      expect(getted.id).toBeDefined
     })
   })
 
@@ -276,10 +290,10 @@ describe('Users Routes Test', () => {
     }
 
     it('should find gallery according to medium', async () => {
-      const userMedium = await addUser({
+      const userMedium = await apiCreateGallery({
         email: 'Jean@journaux.com',
-        firstname: 'jean',
-        lastname: 'dumont',
+        pseudo: 'test',
+
         longitude: 80,
         latitude: 80,
         medium: 'STAMP',
@@ -298,6 +312,7 @@ describe('Users Routes Test', () => {
       const foundStampGallery = foundStampGalleries.body.find(
         gallery => gallery.id == gallery.id
       )
+      expect(foundStampGallery).toBeDefined()
       expect(foundStampGallery).toMatchObject({
         medium: 'STAMP',
       })

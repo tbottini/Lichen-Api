@@ -169,6 +169,7 @@ export interface UserFixtureCreationDto {
   events?: EventCreateInput[]
   medium?: Medium
   projects?: ProjectCreateInput[]
+  pseudo?: string
 }
 
 export type ProjectWithArtworks = Project & { artworks: Artwork[] }

@@ -10,7 +10,9 @@ describe('Gallery service', () => {
   beforeEach(async () => {
     await clearDatabase()
 
-    const user = await createUser({})
+    const user = await createUser({
+      pseudo: 'test',
+    })
     await createGalleryForUser(user.id, {
       latitude: 10.5,
       longitude: 10.5,

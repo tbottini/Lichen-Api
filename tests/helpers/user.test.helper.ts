@@ -22,10 +22,17 @@ export async function createUserList(listData: UserFixtureCreationDto[]) {
   return userArray
 }
 
+export function apiCreateGallery(
+  data: Pick<UserFixtureCreationDto, 'email' | 'pseudo' | 'medium' | 'events' | 'longitude' | 'latitude'>
+) {
+  return addUser(data)
+}
+
 export async function addUser({
   email,
   firstname,
   lastname,
+  pseudo,
   projects,
   latitude,
   longitude,
@@ -38,6 +45,7 @@ export async function addUser({
     email,
     firstname,
     lastname,
+    pseudo,
     password: DEFAULT_PASSWORD,
     medium,
   }

@@ -244,7 +244,7 @@ export const userRouter = new Router()
       return res.json(result)
     }
   )
-  .get('/:id', parserMiddleware({ id: 'int' }), async (req, res) => {
+  .get('/:userId', async (req, res) => {
     const getOneUserParser = t.object<{ userId: number }>().schema({
       userId: t.int(),
     })

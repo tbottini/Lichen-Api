@@ -86,7 +86,6 @@ class FieldTransformer {
   optionnal() {
     this.optionnalityIsDefined = true
     this.pipeline.push((value, context) => {
-      console.log('optional', value)
       if (value === undefined) {
         context.stop()
         return

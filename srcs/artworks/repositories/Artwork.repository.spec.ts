@@ -40,7 +40,9 @@ describe('Artwork Repository and ArtworkFeedQuery', () => {
     let likeArtwork: (artworkId: number) => Promise<ArtworkLikes>
 
     beforeAll(async () => {
-      user = await createUser()
+      user = await createUser({
+        firstname: 'u1',
+      })
       project = await createProject({
         title: 'projectTitle',
         authorId: user.id,
@@ -48,6 +50,7 @@ describe('Artwork Repository and ArtworkFeedQuery', () => {
       createArtworkForClient = configureArtworkCreation(project.id)
 
       otherUser = await createUser({
+        firstname: 'u2',
         email: 'test@gmail.com',
       })
       otherProject = await createProject({
@@ -118,6 +121,18 @@ describe('Artwork Repository and ArtworkFeedQuery', () => {
       expect(artworks).toHaveLength(0)
     })
 
+    it("shouldn't returns artwork of an artist if he doesn't defined his position and we search feed in a zone", async () => {
+      await createArtworkForAnotherArtist('title-1')
+      await createArtworkForAnotherArtist('title-2')
+
+      const artworks = await artworkRepository.getArtworkFeed({
+        zoneFilter: new CircularZone(20, 10, 100),
+        userId: user.id,
+      })
+
+      expect(artworks).toHaveLength(0)
+    })
+
     it('should returns artwork by artist position', async () => {
       await createArtworkForAnotherArtist('title-1')
       await createArtworkForAnotherArtist('title-2')
@@ -129,18 +144,6 @@ describe('Artwork Repository and ArtworkFeedQuery', () => {
       })
 
       expect(artworks).toHaveLength(2)
-    })
-
-    it("shouldn't returns artwork of an artist if he doesn't defined his position and we search feed in a zone", async () => {
-      await createArtworkForAnotherArtist('title-1')
-      await createArtworkForAnotherArtist('title-2')
-
-      const artworks = await artworkRepository.getArtworkFeed({
-        zoneFilter: new CircularZone(20, 10, 100),
-        userId: user.id,
-      })
-
-      expect(artworks).toHaveLength(0)
     })
 
     it('should return artworks for a specific medium', async () => {
