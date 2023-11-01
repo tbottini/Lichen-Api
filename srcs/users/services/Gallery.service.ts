@@ -10,8 +10,10 @@ export class GalleryService {
     const where = {
       gallery: filter ? toPrismaPolarFilter(filter) : undefined,
       medium: medium ? mediumToPrismaFilter(medium) : undefined,
-      pseudo: { not: null },
+      pseudo: { not: null }, // todo : c'est une dette technique, on empeche les utilisateurs sans pseudo = gallerie d'être retournés
     }
+
+    console.log(where)
 
     const foundGalleries = await prisma.user.findMany({
       where,

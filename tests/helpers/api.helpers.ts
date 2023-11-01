@@ -26,6 +26,12 @@ export async function apiCreateUser(creationData?: {
   return res.body.token
 }
 
+export async function apiGetUser(userId: number): Promise<UserPrivateDto> {
+  const res = await request(app).get('/users/' + userId)
+
+  return res.body
+}
+
 export async function apiSelf(token: string): Promise<UserPrivateDto> {
   const res = await request(app)
     .get('/users/self')

@@ -2,6 +2,8 @@ const regex = require('../modules/regexUtils')
 
 const passwordModule = require('../modules/password')
 
+console.log(passwordModule)
+
 class PasswordAttr {
   _value
   error = false

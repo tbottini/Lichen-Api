@@ -27,31 +27,13 @@ function fileMiddleware(type = 'image', _dir = 'public', _subdir = 'images') {
   return [uploadOriginalSize.single('file'), middlewareImagePublisher]
 }
 
-async function pushResizedImageFromLocalFile(
-  file: File,
-  width: number,
-  size: 'small' | 'medium'
-): Promise<void> {
-  const buffer = await getResizedImageBuffer(file.path, width)
-  await imageResources.publishObject({
-    filename: file.filename + '_' + size,
-    body: buffer,
-  })
-}
-
-type File = { path: string; filename: string }
-
-async function publishMultiImage(file: File) {
-  await pushResizedImageFromLocalFile(file, IMAGE_WIDTH_SIZE.small, 'small')
-  await pushResizedImageFromLocalFile(file, IMAGE_WIDTH_SIZE.medium, 'medium')
-  await imageResources.publishObject({
-    filename: file.filename,
-    body: await sharp(file.path).toBuffer(),
-  })
-}
-
 async function middlewareImagePublisher(req, res, next) {
   if (!req.file) {
+    next()
+    return
+  }
+
+  if (process.env.NODE_ENV === 'test') {
     next()
     return
   }
@@ -65,6 +47,29 @@ async function middlewareImagePublisher(req, res, next) {
   next()
 }
 
+async function publishMultiImage(file: File) {
+  await pushResizedImageFromLocalFile(file, IMAGE_WIDTH_SIZE.small, 'small')
+  await pushResizedImageFromLocalFile(file, IMAGE_WIDTH_SIZE.medium, 'medium')
+  await imageResources.publishObject({
+    filename: file.filename,
+    body: await sharp(file.path).toBuffer(),
+  })
+}
+
+async function pushResizedImageFromLocalFile(
+  file: File,
+  width: number,
+  size: 'small' | 'medium'
+): Promise<void> {
+  const buffer = await getResizedImageBuffer(file.path, width)
+  await imageResources.publishObject({
+    filename: file.filename + '_' + size,
+    body: buffer,
+  })
+}
+
 const imageResources = new ImageResourcesService()
 
 module.exports = fileMiddleware
+
+type File = { path: string; filename: string }
