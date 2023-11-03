@@ -68,6 +68,11 @@ describe('payload', () => {
         bool: 'sldjfqfdlksjm',
       }).bool
     ).toBeFalsy()
+    expect(
+      schema.parse({
+        bool: true,
+      }).bool
+    ).toBeTruthy()
   })
 
   it('should throw an error if required field is not present', () => {
