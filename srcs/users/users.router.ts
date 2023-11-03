@@ -302,6 +302,8 @@ export const userRouter = new Router()
     tryCompleteRequest(res, async () => {
       const dto = userUpdateParser.parse({ ...req.body, ...req.params })
 
+      console.log(dto)
+
       return res.json(
         await userService.updateUser(dto.userId, {
           pseudo: dto.pseudo,

@@ -123,7 +123,11 @@ class FieldTransformer {
 
   boolean() {
     this.pipeline.push(
-      value => value == 'true' || value == 'True' || value == 't'
+      value =>
+        (value as unknown as boolean) == true ||
+        value == 'true' ||
+        value == 'True' ||
+        value == 't'
     )
     return this
   }
