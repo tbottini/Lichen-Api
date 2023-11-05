@@ -37,7 +37,7 @@ export class MjmlTemplateRepository {
   }
 
   getTemplate(templateName: string): MjmlMailTemplate {
-    return this.templates[templateName]
+    return this.templates[templateName].duplicate()
   }
 
   private readMjml(templateFilename) {
