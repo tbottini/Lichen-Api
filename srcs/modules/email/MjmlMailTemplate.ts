@@ -3,7 +3,7 @@ const mjml = require('mjml')
 export class MjmlMailTemplate {
   body: string
 
-  constructor(body: string) {
+  constructor(body) {
     this.body = body
   }
 

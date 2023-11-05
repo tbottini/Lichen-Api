@@ -1,4 +1,5 @@
 import fs from 'fs'
+import { logger } from '../logger'
 import { MjmlMailTemplate } from './MjmlMailTemplate'
 
 export function createProductionMjmlTemplateRepository(assetFolder: string) {
@@ -38,7 +39,6 @@ export class MjmlTemplateRepository {
   }
 
   getTemplate(templateName: string): MjmlMailTemplate {
-    console.log(this.templates[templateName])
     if (!this.templates[templateName]) {
       throw new Error(`Template with name : ${templateName} doesn't exists`)
     }
