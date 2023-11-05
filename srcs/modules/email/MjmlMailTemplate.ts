@@ -12,7 +12,7 @@ export class MjmlMailTemplate {
     return this
   }
 
-  generate() {
+  generate(): string {
     return mjml(this.body).html
   }
 

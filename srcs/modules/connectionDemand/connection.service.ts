@@ -1,6 +1,9 @@
 import { prisma } from '../../commons/prisma/prisma'
 import { MailSenderAdapter } from '../email/MailSender'
-import { MjmlTemplateRepository } from '../email/MjmlTemplateRepository'
+import {
+  MjmlTemplateRepository,
+  createProductionMjmlTemplateRepository,
+} from '../email/MjmlTemplateRepository'
 
 const ASSET_FOLDER = './assets/email/'
 
@@ -10,7 +13,7 @@ export class ConnectionService {
 
   constructor() {
     this.mailService = new MailSenderAdapter()
-    this.mailRepository = new MjmlTemplateRepository(ASSET_FOLDER)
+    this.mailRepository = createProductionMjmlTemplateRepository(ASSET_FOLDER)
     this.mailRepository.registerTemplate('connectionDemand', 'connectionDemand')
   }
 

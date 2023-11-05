@@ -1,5 +1,8 @@
 import { MailSenderAdapter } from '../../modules/email/MailSender'
-import { MjmlTemplateRepository } from '../../modules/email/MjmlTemplateRepository'
+import {
+  MjmlTemplateRepository,
+  createProductionMjmlTemplateRepository,
+} from '../../modules/email/MjmlTemplateRepository'
 const config = require('config')
 
 const ASSET_FOLDER = './assets/email/'
@@ -14,7 +17,7 @@ export class AccountMailer implements IAccountMailer {
 
   constructor() {
     this.mailService = new MailSenderAdapter()
-    this.mailRepository = new MjmlTemplateRepository(ASSET_FOLDER)
+    this.mailRepository = createProductionMjmlTemplateRepository(ASSET_FOLDER)
     this.mailRepository.registerTemplate('reinit', 'reinit')
   }
 
