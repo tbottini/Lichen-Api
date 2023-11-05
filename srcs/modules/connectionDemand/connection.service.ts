@@ -18,9 +18,9 @@ export class ConnectionService {
   }
 
   async sendConnectionRequestTo(demand: ConnectionRequest) {
-    if (await this.exists(demand.fromEmail, demand.to)) {
-      throw new Error('demand already exists')
-    }
+    // if (await this.exists(demand.fromEmail, demand.to)) {
+    //   throw new Error('demand already exists')
+    // }
 
     const demandCreated = await prisma.connection.create({
       data: {
@@ -32,8 +32,10 @@ export class ConnectionService {
 
     console.log(demand)
 
-    const demandMail = this.mailRepository
-      .getTemplate('connectionDemand')
+    const demandMail = this.mailRepository.getTemplate('connectionDemand')
+
+    console.log(demandMail.body)
+    demandMail
       .set('toName', demand.toName)
       .set('requestContent', demand.requestContent)
       .set('fromEmail', demand.fromEmail)
