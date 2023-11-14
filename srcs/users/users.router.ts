@@ -257,13 +257,8 @@ export const userRouter = new Router()
   })
   .delete('/self', jwt.middleware, async (req, res) => {
     logger.debug('delete users ' + req.user.id + '...')
-    const result = await prisma.user.delete({
-      where: {
-        id: req.user.id,
-      },
-      select: userScope.private,
-    })
-    return res.json(result)
+    await userService.deleteAccount(req.user.id)
+    return res.json(null)
   })
   .put(
     '/new-position',
