@@ -1,4 +1,4 @@
-import { ArtworkLikes } from '@prisma/client'
+import { ArtworkLikes, EventFollow, UserFollow } from '@prisma/client'
 import { prisma } from '../../srcs/commons/prisma/prisma'
 
 export function createLikeArtwork({
@@ -18,6 +18,52 @@ export function createLikeArtwork({
       artwork: {
         connect: {
           id: artworkLiked,
+        },
+      },
+    },
+  })
+}
+
+export function createFollow({
+  followedBy,
+  following,
+}: {
+  followedBy: number
+  following: number
+}): Promise<UserFollow> {
+  return prisma.userFollow.create({
+    data: {
+      userFollowed: {
+        connect: {
+          id: followedBy,
+        },
+      },
+      userFollowing: {
+        connect: {
+          id: following,
+        },
+      },
+    },
+  })
+}
+
+export function createEventFollow({
+  event,
+  user,
+}: {
+  event: number
+  user: number
+}): Promise<EventFollow> {
+  return prisma.eventFollow.create({
+    data: {
+      event: {
+        connect: {
+          id: event,
+        },
+      },
+      user: {
+        connect: {
+          id: user,
         },
       },
     },

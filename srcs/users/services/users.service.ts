@@ -193,6 +193,75 @@ export class UserService {
     })
     return users.filter(u => u.src) as ImageSrc[]
   }
+
+  async deleteAccount(userId: number): Promise<void> {
+    await prisma.gallery.delete({
+      where: {
+        userId: userId,
+      },
+    })
+
+    const projectsId = await prisma.project.findMany({
+      select: {
+        id: true,
+      },
+      where: { authorId: userId },
+    })
+    const artworksId = await prisma.artwork.findMany({
+      select: {
+        id: true,
+      },
+      where: { projectId: { in: projectsId.map(p => p.id) } },
+    })
+
+    await prisma.artworkLikes.deleteMany({
+      where: {
+        artworkId: {
+          in: artworksId.map(a => a.id),
+        },
+      },
+    })
+
+    await prisma.artwork.deleteMany({
+      where: {
+        id: {
+          in: artworksId.map(a => a.id),
+        },
+      },
+    })
+
+    await prisma.project.deleteMany({
+      where: {
+        authorId: userId,
+      },
+    })
+
+    const events = await prisma.event.findMany({
+      where: {
+        organisatorId: userId,
+      },
+    })
+    await prisma.eventFollow.deleteMany({
+      where: {
+        eventId: {
+          in: events.map(e => e.id),
+        },
+      },
+    })
+    await prisma.event.deleteMany({
+      where: {
+        id: {
+          in: events.map(e => e.id),
+        },
+      },
+    })
+
+    await prisma.user.delete({
+      where: {
+        id: userId,
+      },
+    })
+  }
 }
 
 function isNameDefined(user: {

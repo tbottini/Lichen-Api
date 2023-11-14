@@ -1,6 +1,16 @@
 require('../../commons/env')
-import { createUser } from '../../../tests/fixture/user.fixture'
+
+import { createArtwork } from '../../../tests/fixture/artwork.fixture'
+import { createEvent } from '../../../tests/fixture/event.fixture'
+import { createGalleryForUser } from '../../../tests/fixture/gallery.fixture'
+import {
+  createEventFollow,
+  createFollow,
+  createLikeArtwork,
+} from '../../../tests/fixture/like.fixture'
+import { createProject, createUser } from '../../../tests/fixture/user.fixture'
 import { clearDatabase } from '../../../tests/helpers/clearDatabase.helper'
+import { prisma } from '../../commons/prisma/prisma'
 import {
   PseudoIsDefinedWithPersonalIdentity,
   UserService,
@@ -59,6 +69,80 @@ describe('Users Service', () => {
       field.forEach(field => {
         expect(user[field]).toBeDefined()
       })
+    })
+  })
+
+  describe('deleteAccount', () => {
+    it('should delete the users, with project, artwork, gallery, likes, followedUsers', async () => {
+      const user = await createUser({
+        email: 'thomasbottini@reseau-lichen.fr',
+      })
+      const other = await createUser({
+        email: 'arnaud@reseau-lichen.fr',
+      })
+
+      await createGalleryForUser(user.id, {
+        longitude: 0,
+        latitude: 0,
+      })
+
+      const project = await createProject({
+        title: 'project1',
+        description: 'descr',
+        index: 0,
+        authorId: user.id,
+      })
+
+      const artwork = await createArtwork({
+        title: 'artwork1',
+        index: 0,
+        projectId: project.id,
+        src: 'url...',
+      })
+
+      await createLikeArtwork({
+        likeBy: user.id,
+        artworkLiked: artwork.id,
+      })
+      await createLikeArtwork({
+        likeBy: other.id,
+        artworkLiked: artwork.id,
+      })
+      await createFollow({ followedBy: user.id, following: other.id })
+      await createFollow({ followedBy: other.id, following: user.id })
+
+      const event = await createEvent({
+        name: 'e1',
+        organisatorId: user.id,
+      })
+      const otherEvent = await createEvent({
+        name: 'e2',
+        organisatorId: other.id,
+      })
+
+      await createEventFollow({
+        user: user.id,
+        event: otherEvent.id,
+      })
+      await createEventFollow({
+        user: other.id,
+        event: event.id,
+      })
+
+      await userService.deleteAccount(user.id)
+
+      const results = await Promise.all([
+        prisma.user.findFirst({ where: { id: user.id } }),
+        prisma.artwork.findFirst({ where: { projectId: project.id } }),
+        prisma.project.findFirst({ where: { authorId: user.id } }),
+        prisma.userFollow.findFirst({ where: { userFollowedId: user.id } }),
+        prisma.userFollow.findFirst({ where: { userFollowingId: user.id } }),
+        prisma.eventFollow.findFirst({ where: { userId: user.id } }),
+        prisma.event.findFirst({ where: { organisatorId: user.id } }),
+        prisma.gallery.findFirst({ where: { userId: user.id } }),
+      ])
+
+      results.forEach(r => expect(r).toBeNull())
     })
   })
 
