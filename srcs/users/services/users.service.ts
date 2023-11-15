@@ -195,7 +195,7 @@ export class UserService {
   }
 
   async deleteAccount(userId: number): Promise<void> {
-    await prisma.gallery.delete({
+    await prisma.gallery.deleteMany({
       where: {
         userId: userId,
       },

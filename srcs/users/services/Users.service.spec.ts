@@ -73,6 +73,14 @@ describe('Users Service', () => {
   })
 
   describe('deleteAccount', () => {
+    it('should delete account even if the user set the minimum required data for his account', async () => {
+      const user = await createUser({
+        email: 'thomasbottini@reseau-lichen.fr',
+      })
+
+      await userService.deleteAccount(user.id)
+    })
+
     it('should delete the users, with project, artwork, gallery, likes, followedUsers', async () => {
       const user = await createUser({
         email: 'thomasbottini@reseau-lichen.fr',
