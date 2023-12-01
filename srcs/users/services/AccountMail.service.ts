@@ -24,7 +24,7 @@ export class AccountMailer implements IAccountMailer {
   resetPassword(receiverEmail: string, params: ResetPasswordParams): void {
     const resetMail = this.mailRepository
       .getTemplate('reinit')
-      .set('hostname', config.webapp.url)
+      .set('hostname', config.webapp.hostname)
       .set('token', params.token)
       .set('id', params.id.toString())
       .set('firstname', params.firstname || '')
