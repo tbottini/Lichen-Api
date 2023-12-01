@@ -271,8 +271,6 @@ export const userRouter = new Router()
     ) => {
       const { position } = req.body
 
-      console.log('position', position)
-
       tryCompleteRequest(res, async () => {
         const parsedPosition = parsePosition(position)
 
@@ -296,8 +294,6 @@ export const userRouter = new Router()
 
     tryCompleteRequest(res, async () => {
       const dto = userUpdateParser.parse({ ...req.body, ...req.params })
-
-      console.log(dto)
 
       return res.json(
         await userService.updateUser(dto.userId, {
@@ -409,7 +405,6 @@ export const userRouter = new Router()
     //change the location of the gallery of user
     let { longitude, latitude } = req.body
 
-    console.log(req.body)
     if (!longitude || !latitude)
       return res.status(400).json({ error: 'params missing' })
 
@@ -495,14 +490,11 @@ export const userRouter = new Router()
   )
 
   .delete('/gallery/:userId', async (req, res) => {
-    console.log(await prisma.gallery.findMany({ where: {} }))
-
     const gallery = await prisma.gallery.findFirst({
       where: {
         userId: parseInt(req.params.userId),
       },
     })
-    console.log(req.params, gallery)
     if (!gallery) {
       return notFound(res)
     }

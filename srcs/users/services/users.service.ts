@@ -39,7 +39,6 @@ export class UserService {
   }
 
   async getProfileUser(userId: number) {
-    console.log('user', userId)
     const user = await prisma.user.findUnique({
       where: {
         id: userId,
@@ -327,16 +326,20 @@ export function reinjectUserFollow<AdditionalUserData>(
   if (!user) {
     throw new Error('')
   }
-  user.following = user.following.map(follow => {
-    //parmis les personnes que l'on suit
-    follow.userFollowed.followAt = follow.creation
-    return follow.userFollowed
-  })
 
-  user.followed = user.followed.map(follow => {
-    follow.userFollowing.followAt = follow.creation
-    return follow.userFollowing
-  })
+  user.following = user.following
+    .filter(follow => follow.userFollowed)
+    .map(follow => {
+      follow.userFollowed.followAt = follow.creation
+      return follow.userFollowed
+    })
+
+  user.followed = user.followed
+    .filter(follow => follow.userFollowing)
+    .map(follow => {
+      follow.userFollowing.followAt = follow.creation
+      return follow.userFollowing
+    })
 
   user.likes = user.likes
     .filter(like => like.artwork != null)

@@ -39,9 +39,23 @@ describe('Users Service', () => {
         email: 'thomasbottini@reseau-lichen.fr',
       })
 
+      const other = await createUser({
+        email: 'thomasbottini2@reseau-lichen.fr',
+      })
+      await createFollow({
+        followedByUserId: created.id,
+        followingUserId: other.id,
+      })
+      await createFollow({
+        followedByUserId: other.id,
+        followingUserId: created.id,
+      })
+
       const user = await userService.getProfileUser(created.id)
 
       expect(user.isVirtual).toEqual(false)
+
+      console.log(user)
       const field = [
         'firstname',
         'pseudo',
@@ -69,6 +83,60 @@ describe('Users Service', () => {
       field.forEach(field => {
         expect(user[field]).toBeDefined()
       })
+    })
+
+    it('should not throw if deleted user is getted from following', async () => {
+      const created = await createUser({
+        email: 'thomasbottini@reseau-lichen.fr',
+      })
+
+      const other = await createUser({
+        email: 'thomasbottini2@reseau-lichen.fr',
+      })
+      await createFollow({
+        followedByUserId: created.id,
+        followingUserId: other.id,
+      })
+      await createFollow({
+        followedByUserId: other.id,
+        followingUserId: created.id,
+      })
+
+      await prisma.user.delete({
+        where: {
+          id: other.id,
+        },
+      })
+
+      await userService.getProfileUser(created.id)
+    })
+
+    it('should not throw in case we delete the event', async () => {
+      const created = await createUser({
+        email: 'thomasbottini@reseau-lichen.fr',
+      })
+
+      const other = await createUser({
+        email: 'thomasbottini2@reseau-lichen.fr',
+      })
+
+      const event = await createEvent({
+        name: 'e1',
+        organisatorId: other.id,
+      })
+
+      await createEventFollow({
+        event: event.id,
+        user: created.id,
+      })
+
+      await prisma.event.delete({
+        where: {
+          id: event.id,
+        },
+      })
+
+      await userService.getProfileUser(created.id)
     })
   })
 
@@ -116,8 +184,14 @@ describe('Users Service', () => {
         likeBy: other.id,
         artworkLiked: artwork.id,
       })
-      await createFollow({ followedBy: user.id, following: other.id })
-      await createFollow({ followedBy: other.id, following: user.id })
+      await createFollow({
+        followedByUserId: user.id,
+        followingUserId: other.id,
+      })
+      await createFollow({
+        followedByUserId: other.id,
+        followingUserId: user.id,
+      })
 
       const event = await createEvent({
         name: 'e1',

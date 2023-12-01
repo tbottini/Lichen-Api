@@ -25,22 +25,22 @@ export function createLikeArtwork({
 }
 
 export function createFollow({
-  followedBy,
-  following,
+  followedByUserId,
+  followingUserId,
 }: {
-  followedBy: number
-  following: number
+  followedByUserId: number
+  followingUserId: number
 }): Promise<UserFollow> {
   return prisma.userFollow.create({
     data: {
       userFollowed: {
         connect: {
-          id: followedBy,
+          id: followedByUserId,
         },
       },
       userFollowing: {
         connect: {
-          id: following,
+          id: followingUserId,
         },
       },
     },
