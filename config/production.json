@@ -6,6 +6,7 @@
     "port": 9000
   },
   "webapp": {
+    "hostname": "app.reseau-lichen.fr",
     "url": "https://app.reseau-lichen.fr"
   },
   "s3": {
