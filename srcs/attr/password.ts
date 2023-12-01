@@ -1,8 +1,6 @@
+import { hash } from '../modules/password'
+
 const regex = require('../modules/regexUtils')
-
-const passwordModule = require('../modules/password')
-
-console.log(passwordModule)
 
 class PasswordAttr {
   _value
@@ -12,7 +10,7 @@ class PasswordAttr {
   async getValue() {
     if (!this._value) return undefined
 
-    return await passwordModule.hash(this._value)
+    return await hash(this._value)
   }
 
   constructor(password) {

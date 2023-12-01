@@ -11,7 +11,7 @@ import {
   publicScope,
 } from '../repositories/Users.scope'
 import { MediumValues } from '../../medium/mediumEnum'
-import { passwordUtils } from '../../modules/password'
+import { hash } from '../../modules/password'
 import { sortSearchedElements } from '../../modules/research'
 import { createJwt } from '../../modules/jwt'
 import { ImageSrc } from '../../modules/images/ImageDomainBroadcaster'
@@ -81,7 +81,7 @@ export class UserService {
   }
 
   async createUser(dtoCreate: CreateUser): Promise<string> {
-    const passwordHash = await passwordUtils.hash(dtoCreate.password)
+    const passwordHash = await hash(dtoCreate.password)
 
     if (isNameDefined(dtoCreate) && isNotEmpty(dtoCreate.pseudo)) {
       throw new CanCreateUserWithPseudoAndNameError()
