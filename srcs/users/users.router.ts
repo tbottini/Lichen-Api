@@ -26,7 +26,7 @@ import { logger } from '../modules/logger'
 import { logBody } from '../modules/middleware-logger'
 import { parseIfDefined } from '../commons/parsers/parser.common'
 import { getFilenameFromFile } from '../commons/parsers/FileParser'
-import { passwordUtils } from '../modules/password'
+import { check, compare } from '../modules/password'
 import { Dependencies } from '../dependencies'
 import { forbiden, isAuthorizedWithHeader, notFound } from '../modules/auth'
 const EnumAttr = require('../attr/enum')
@@ -92,7 +92,7 @@ export const userRouter = new Router()
       if (users.length > 0)
         return res.status(400).json({ error: 'email is taken' })
 
-      const passwordCorrect = passwordUtils.check(password)
+      const passwordCorrect = check(password)
       const emailCorrect = regex.email.test(email)
       if (!passwordCorrect || !emailCorrect) {
         return res.status(400).json({ error: 'email or password bad format' })
@@ -144,7 +144,7 @@ export const userRouter = new Router()
       return res.status(404).json({ error: 'user not found' })
     // we arbitrarily take the first one
     const user = users[0]
-    const passwordIdem = await passwordUtils.compare(password, user.password)
+    const passwordIdem = await compare(password, user.password)
 
     if (!passwordIdem)
       return res.status(400).json({ error: 'bad password provide' })
