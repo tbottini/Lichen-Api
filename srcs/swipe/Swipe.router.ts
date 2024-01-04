@@ -10,6 +10,7 @@ import {
 import { mediumEnum, MediumValues } from '../medium/mediumEnum'
 import { RequestMaybeWithUser } from '../commons/interfaces/Request.types'
 import { unrequiredJwt } from '../modules/jwt'
+import { logger } from '../modules/logger'
 
 const swipeService = new SwipeService()
 export const swipeRouter = Router()
@@ -34,6 +35,10 @@ swipeRouter.get(
         return res.status(400).json(e)
       }
     }
+
+    logger.info(
+      `Recupere le feed de swipe du user ${req?.user?.id ?? '"inconnu"'}`
+    )
 
     const parsedLimit = limit ?? 10
 

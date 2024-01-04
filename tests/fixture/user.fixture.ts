@@ -8,7 +8,7 @@ export function createUser(
     .create({
       data: {
         ...data,
-        email: data?.email ?? 'toto@test-email.com',
+        email: data?.email ?? `toto-${new Date().getTime()}@test-email.com`,
         password: data?.password ?? 'SimplePassword1234,',
       },
     })

@@ -41,8 +41,15 @@ describe('Swipe integration spec', () => {
     expect(res.body).toHaveLength(1)
   })
 
-  it('should acept query without token and provide all artworks if no filter was provided', async () => {
+  it('should accept query without token and provide all artworks if no filter was provided', async () => {
     const res = await request(app).get('/swipe/random').query({})
     expect(res.body).toHaveLength(2)
+  })
+
+  test("ça ne doit pas fournir les oeuvres de l'utilisateur", async () => {
+    const res = await addToken(request(app).get('/swipe/random').query({}))
+    expect(res.body).toHaveLength(2)
+    expect(res.body[0].id).not.toBe(1)
+    expect(res.body[1].id).not.toBe(1)
   })
 })
