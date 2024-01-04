@@ -4,7 +4,7 @@ _Gestion des certificats_ : on utilise greenlock pour gérer les certificats ssl
 
 ## Production
 
-pour faire tourner lichen en production : [./AWS.md]
+Pour faire tourner lichen en production : [a relative link](./AWS.md)
 
 ## Test
 
@@ -13,7 +13,6 @@ pour faire tourner lichen en production : [./AWS.md]
 - Via docker-compose de dev
 
 `docker-compose -f ./docker-compose.dev.yaml -d --build`
-
 
 - Via les dockerfiles
 

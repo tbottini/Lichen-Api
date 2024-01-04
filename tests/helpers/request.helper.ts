@@ -25,3 +25,30 @@ export function createUserWithProjects() {
     ],
   })
 }
+
+export function projectsPreset(artworks) {
+  return [
+    {
+      title: 'project1',
+      artworks: artworks ?? [],
+    },
+  ]
+}
+
+export function artworkPreset(options) {
+  const obj = {
+    title: 'artwork1',
+  }
+
+  ;(options ?? []).forEach(option => {
+    Object.assign(obj, option)
+  })
+
+  return obj
+}
+
+export function drawingMedium() {
+  return {
+    medium: mediumEnum.DRAWING,
+  }
+}

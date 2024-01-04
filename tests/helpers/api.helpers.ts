@@ -144,6 +144,12 @@ export async function apiCreateEvent(
   return res.body
 }
 
+export async function apiDeleteEvent(token: string, eventId: number) {
+  const res = await request(app)
+    .delete('/events/' + eventId)
+    .set('Authorization', 'bearer ' + token)
+}
+
 export async function apiGetEvent(eventId: number) {
   return (await request(app).get('/events/' + eventId)).body
 }

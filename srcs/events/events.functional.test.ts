@@ -3,6 +3,7 @@ const request = require('supertest')
 import {
   apiCreateEvent,
   apiCreateUser,
+  apiDeleteEvent,
   apiGetEvent,
   apiSelf,
 } from '../../tests/helpers/api.helpers'
@@ -64,6 +65,34 @@ describe('Events', () => {
           lastname: 'orwell',
         },
       })
+    })
+
+    it('doit créé deux events', async () => {
+      const createdEvent = await apiCreateEvent(token, {
+        name: 'event#1',
+        description: 'description#1',
+        dateStart: new Date(2000, 12, 30, 12, 30, 10),
+        dateEnd: new Date(2001, 1, 3, 12, 30, 10),
+        latitude: 10,
+        longitude: 12,
+        index: 0,
+      })
+      expect(createdEvent.latitude).toBe(10)
+      expect(createdEvent.longitude).toBe(12)
+
+      await apiDeleteEvent(token, createdEvent.id)
+
+      const secondCreated = await apiCreateEvent(token, {
+        name: 'event#2',
+        description: 'description#2',
+        dateStart: new Date(2000, 12, 30, 12, 30, 10),
+        dateEnd: new Date(2001, 1, 3, 12, 30, 10),
+        latitude: 20,
+        longitude: 22,
+        index: 0,
+      })
+      expect(secondCreated.latitude).toBe(20)
+      expect(secondCreated.longitude).toBe(22)
     })
 
     it('should create an event with image', async () => {
