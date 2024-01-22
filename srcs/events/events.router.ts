@@ -118,73 +118,78 @@ export const eventsRouter = new Router()
       return res.status(500).end('Internal Error')
     }
   })
-  .post(
-    '/',
-    [jwt.middleware, fileMiddleware(), positionParser.middleware],
-    async (req, res) => {
-      const { name, description, dateStart, dateEnd, medium } = req.body
-      const { latitude, longitude } = req.body.parsed
+  .post('/', [jwt.middleware, fileMiddleware()], async (req, res) => {
+    const { name, description, dateStart, dateEnd, medium } = req.body
 
-      if (!name) {
-        return res.status(400).json({ error: 'Attribute name is empty' })
-      }
+    logger.debug(`dtoPosition: ${JSON.stringify(req.body)}`)
 
-      logger.info(`position: ${latitude} ${longitude}`)
-
-      const src = req.file ? req.file.filename : undefined
-
-      const mediumQuery = new EnumAttr(mediumEnum, medium)
-      if (mediumQuery.error) {
-        return res.status(400).json({ error: 'Bad format for enum attr' })
-      }
-
-      const dateStartQuery = new DateAttr(dateStart)
-      if (dateStartQuery.error) {
-        return res.status(400).json({ error: 'Bad format for date start attr' })
-      }
-
-      const dateEndAttr = new DateAttr(dateEnd)
-      if (dateEndAttr.error) {
-        return res.status(400).json({ error: 'Bad format for date end attr' })
-      }
-
-      const sizeOfArray = await prisma.event.count({
-        where: {
-          organisatorId: req.user.id,
-        },
+    const eventParser = t
+      .object<{ latitude?: number; longitude?: number }>()
+      .schema({
+        latitude: t.float().optionnal(),
+        longitude: t.float().optionnal(),
       })
 
-      try {
-        const result = await prisma.event.create({
-          data: {
-            name: name,
-            description: description,
-            dateStart: dateStartQuery.value,
-            dateEnd: dateEndAttr.value,
-            src: src,
-            index: sizeOfArray,
-            medium: mediumQuery.value,
-            longitude,
-            latitude,
-            organisator: {
-              connect: {
-                id: req.user.id,
-              },
-            },
-          },
-          include: {
-            organisator: {
-              select: userScope.public,
-            },
-          },
-        })
-        return res.json(result)
-      } catch (e) {
-        console.log(e)
-        return res.status(500).end('Internal Error')
-      }
+    const dtoPosition = eventParser.parse(req.body.position)
+    logger.debug(`dtoPosition: ${JSON.stringify(dtoPosition)}`)
+
+    if (!name) {
+      return res.status(400).json({ error: 'Attribute name is empty' })
     }
-  )
+
+    const src = req.file ? req.file.filename : undefined
+
+    const mediumQuery = new EnumAttr(mediumEnum, medium)
+    if (mediumQuery.error) {
+      return res.status(400).json({ error: 'Bad format for enum attr' })
+    }
+
+    const dateStartQuery = new DateAttr(dateStart)
+    if (dateStartQuery.error) {
+      return res.status(400).json({ error: 'Bad format for date start attr' })
+    }
+
+    const dateEndAttr = new DateAttr(dateEnd)
+    if (dateEndAttr.error) {
+      return res.status(400).json({ error: 'Bad format for date end attr' })
+    }
+
+    const sizeOfArray = await prisma.event.count({
+      where: {
+        organisatorId: req.user.id,
+      },
+    })
+
+    try {
+      const result = await prisma.event.create({
+        data: {
+          name: name,
+          description: description,
+          dateStart: dateStartQuery.value,
+          dateEnd: dateEndAttr.value,
+          src: src,
+          index: sizeOfArray,
+          medium: mediumQuery.value,
+          longitude: dtoPosition.longitude,
+          latitude: dtoPosition.latitude,
+          organisator: {
+            connect: {
+              id: req.user.id,
+            },
+          },
+        },
+        include: {
+          organisator: {
+            select: userScope.public,
+          },
+        },
+      })
+      return res.json(result)
+    } catch (e) {
+      console.log(e)
+      return res.status(500).end('Internal Error')
+    }
+  })
   .get('/', parserQuery(querySearch), async (req, res) => {
     /*
      * pour les dates on met une date de départ et une date de fin
