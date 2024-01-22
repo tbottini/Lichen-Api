@@ -129,6 +129,8 @@ export const eventsRouter = new Router()
         return res.status(400).json({ error: 'Attribute name is empty' })
       }
 
+      logger.info(`position: ${latitude} ${longitude}`)
+
       const src = req.file ? req.file.filename : undefined
 
       const mediumQuery = new EnumAttr(mediumEnum, medium)
